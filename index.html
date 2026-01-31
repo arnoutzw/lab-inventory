@@ -254,6 +254,7 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             const [showSettings, setShowSettings] = useState(false);
             const [showAddBox, setShowAddBox] = useState(false);
             const [view, setView] = useState('boxes');
+            const [showAllItems, setShowAllItems] = useState(false);
 
             useEffect(() => {
                 const saved = localStorage.getItem(STORAGE_KEY);
@@ -270,6 +271,7 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
 
             useEffect(() => { if (!loading && items.length > 0) localStorage.setItem(STORAGE_KEY, JSON.stringify({ boxes, items })); }, [items, boxes, loading]);
             useEffect(() => { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }, [settings]);
+            useEffect(() => { setShowAllItems(false); }, [search, filterTheme]);
 
             const updateQuantity = useCallback((id, delta) => { setItems(prev => prev.map(i => i.id === id ? {...i, quantity: Math.max(0, i.quantity + delta)} : i)); }, []);
             const saveItem = useCallback((item) => {
@@ -356,7 +358,7 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                     ) : (
                         <div className="bg-white rounded-xl shadow overflow-hidden">
                             <div className="divide-y max-h-96 overflow-y-auto">
-                                {filteredItems.slice(0,50).map(item => (
+                                {(showAllItems ? filteredItems : filteredItems.slice(0,50)).map(item => (
                                     <div key={item.id} className={`flex items-center p-3 ${isLowStock(item) ? 'bg-red-50' : ''}`} onClick={() => setEditItem(item)}>
                                         <div className="flex-1 min-w-0">
                                             <div className="font-medium truncate">{item.name}</div>
@@ -370,7 +372,7 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                                     </div>
                                 ))}
                             </div>
-                            {filteredItems.length > 50 && <div className="p-2 text-center text-gray-500 text-sm">+{filteredItems.length - 50} more</div>}
+                            {filteredItems.length > 50 && !showAllItems && <div onClick={() => setShowAllItems(true)} className="p-2 text-center text-blue-500 text-sm cursor-pointer hover:bg-gray-50">+{filteredItems.length - 50} more</div>}
                         </div>
                     )}
 
