@@ -26,7 +26,7 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
         .theme-electronics { background-color: #dbeafe; border-left: 4px solid #3b82f6; }
         .theme-mechanical { background-color: #d1fae5; border-left: 4px solid #10b981; }
         .theme-other { background-color: #f3f4f6; border-left: 4px solid #6b7280; }
-        .modal-overlay { background: rgba(0,0,0,0.5); }
+        .modal-overlay { display: flex; background: rgba(0,0,0,0.5); }
         #qr-reader { width: 100%; max-width: 400px; margin: 0 auto; }
         @media print { .no-print { display: none !important; } }
         .safe-bottom { padding-bottom: env(safe-area-inset-bottom); }
@@ -164,6 +164,79 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             );
         };
 
+        const AddBoxModal = ({ boxes, onSave, onClose }) => {
+            const suggestNextLabel = () => {
+                const prefixes = { 'KS': 'KUGGIS 13×18×8', 'KF': 'KUGGIS 18×26×8', 'KM': 'KUGGIS 18×26×15', 'KT': 'KUGGIS 26×35×15', 'FD': 'FJÄLLA Doos', 'FH': 'FULLSMOCKAD', 'LV': 'LÄTTVIST' };
+                for (const prefix of Object.keys(prefixes)) {
+                    const existing = boxes.filter(b => b.label.startsWith(prefix + '-')).map(b => parseInt(b.label.split('-')[1]) || 0);
+                    const maxNum = Math.max(0, ...existing);
+                    const next = String(maxNum + 1).padStart(2, '0');
+                    const suggestedLabel = `${prefix}-${next}`;
+                    if (!boxes.find(b => b.label === suggestedLabel)) {
+                        return { label: suggestedLabel, type: prefixes[prefix] };
+                    }
+                }
+                return { label: 'KS-01', type: 'KUGGIS 13×18×8' };
+            };
+            const suggestion = suggestNextLabel();
+            const [form, setForm] = useState({ label: suggestion.label, type: suggestion.type, location: '', theme: 'Electronics', contents: '' });
+            const prefixOptions = [
+                { prefix: 'KS', type: 'KUGGIS 13×18×8' },
+                { prefix: 'KF', type: 'KUGGIS 18×26×8' },
+                { prefix: 'KM', type: 'KUGGIS 18×26×15' },
+                { prefix: 'KT', type: 'KUGGIS 26×35×15' },
+                { prefix: 'FD', type: 'FJÄLLA Doos' },
+                { prefix: 'FH', type: 'FULLSMOCKAD' },
+                { prefix: 'LV', type: 'LÄTTVIST' }
+            ];
+            const updatePrefix = (prefix) => {
+                const opt = prefixOptions.find(p => p.prefix === prefix);
+                const existing = boxes.filter(b => b.label.startsWith(prefix + '-')).map(b => parseInt(b.label.split('-')[1]) || 0);
+                const next = String(Math.max(0, ...existing) + 1).padStart(2, '0');
+                setForm({ ...form, label: `${prefix}-${next}`, type: opt?.type || form.type });
+            };
+            return (
+                <div className="fixed inset-0 modal-overlay flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-screen overflow-y-auto">
+                        <h3 className="text-lg font-bold mb-4">Nieuwe Box</h3>
+                        <div className="space-y-3">
+                            <div>
+                                <label className="text-sm text-gray-600">Box Type</label>
+                                <select value={form.label.split('-')[0]} onChange={e => updatePrefix(e.target.value)} className="w-full px-3 py-3 border rounded-lg text-lg">
+                                    {prefixOptions.map(opt => <option key={opt.prefix} value={opt.prefix}>{opt.prefix} - {opt.type}</option>)}
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-sm text-gray-600">Label</label>
+                                <input value={form.label} onChange={e => setForm({...form, label: e.target.value})} className="w-full px-3 py-3 border rounded-lg text-lg" placeholder="KS-12"/>
+                            </div>
+                            <div>
+                                <label className="text-sm text-gray-600">Thema</label>
+                                <select value={form.theme} onChange={e => setForm({...form, theme: e.target.value})} className="w-full px-3 py-3 border rounded-lg text-lg">
+                                    <option value="Electronics">Electronics</option>
+                                    <option value="3D Printing">3D Printing</option>
+                                    <option value="Mechanical">Mechanical</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="text-sm text-gray-600">Locatie</label>
+                                <input placeholder="Blok 1 Lade A" value={form.location} onChange={e => setForm({...form, location: e.target.value})} className="w-full px-3 py-3 border rounded-lg text-lg"/>
+                            </div>
+                            <div>
+                                <label className="text-sm text-gray-600">Inhoud beschrijving</label>
+                                <input placeholder="Components, tools..." value={form.contents} onChange={e => setForm({...form, contents: e.target.value})} className="w-full px-3 py-3 border rounded-lg text-lg"/>
+                            </div>
+                        </div>
+                        <div className="flex gap-2 mt-4">
+                            <button onClick={() => { if(form.label && form.contents) onSave(form); }} className="flex-1 py-3 bg-blue-500 text-white rounded-lg text-lg">Opslaan</button>
+                            <button onClick={onClose} className="px-4 py-3 bg-gray-300 rounded-lg text-lg">Annuleer</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         const App = () => {
             const [loading, setLoading] = useState(true);
             const [boxes, setBoxes] = useState([]);
@@ -179,6 +252,7 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             const [showAddItem, setShowAddItem] = useState(false);
             const [showScanner, setShowScanner] = useState(false);
             const [showSettings, setShowSettings] = useState(false);
+            const [showAddBox, setShowAddBox] = useState(false);
             const [view, setView] = useState('boxes');
 
             useEffect(() => {
@@ -204,6 +278,7 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                 setEditItem(null); setShowAddItem(false);
             }, [items]);
             const deleteItem = useCallback((id) => { if (confirm('Verwijderen?')) { setItems(prev => prev.filter(i => i.id !== id)); setEditItem(null); } }, []);
+            const saveBox = useCallback((box) => { setBoxes(prev => [...prev, box]); setShowAddBox(false); }, []);
             const handleQRScan = useCallback((data) => { setShowScanner(false); if (data.startsWith('INVBOX:')) { const box = boxes.find(b => b.label === data.replace('INVBOX:', '')); if (box) setSelectedBox(box); } }, [boxes]);
 
             const exportData = () => { const blob = new Blob([JSON.stringify({ boxes, items }, null, 2)], { type: 'application/json' }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `inventory_${new Date().toISOString().split('T')[0]}.json`; a.click(); };
@@ -238,6 +313,7 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                             </div>
                             <div className="flex gap-2">
                                 <button onClick={() => setShowScanner(true)} className="p-2 bg-purple-500 text-white rounded-lg text-lg">📷</button>
+                                <button onClick={() => setShowAddBox(true)} className="p-2 bg-yellow-500 text-white rounded-lg text-lg">📦</button>
                                 <button onClick={() => setShowAddItem(true)} className="p-2 bg-green-500 text-white rounded-lg text-lg">➕</button>
                                 <button onClick={() => setShowSettings(true)} className="p-2 bg-gray-200 rounded-lg text-lg">⚙️</button>
                             </div>
@@ -308,6 +384,7 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                     {showScanner && <QRScanner onScan={handleQRScan} onClose={() => setShowScanner(false)} />}
                     {showSettings && <SettingsModal settings={settings} onSave={(s) => { setSettings(s); setShowSettings(false); }} onClose={() => setShowSettings(false)} />}
                     {(editItem || showAddItem) && <ItemModal item={editItem} boxes={boxes} onSave={saveItem} onClose={() => { setEditItem(null); setShowAddItem(false); }} onDelete={deleteItem} />}
+                    {showAddBox && <AddBoxModal boxes={boxes} onSave={saveBox} onClose={() => setShowAddBox(false)} />}
                 </div>
             );
         };
