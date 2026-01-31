@@ -347,7 +347,7 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                                 const boxItems = items.filter(i => i.box === box.label);
                                 const hasLowStock = settings.lowStockEnabled && boxItems.some(i => i.quantity <= settings.lowStockThreshold);
                                 return (
-                                    <div key={box.label} onClick={() => setSelectedBox(box)} className={`${getThemeClass(box.theme)} p-3 rounded-xl shadow active:scale-95 transition ${hasLowStock ? 'ring-2 ring-red-400' : ''}`}>
+                                    <div key={box.label} onClick={() => { setSearch(box.label); setView('items'); }} className={`${getThemeClass(box.theme)} p-3 rounded-xl shadow active:scale-95 transition ${hasLowStock ? 'ring-2 ring-red-400' : ''}`}>
                                         <div className="flex justify-between"><span className="font-bold">{box.label}</span>{hasLowStock && <span>⚠️</span>}</div>
                                         <div className="text-sm text-gray-700 truncate">{box.contents}</div>
                                         <div className="text-xs text-gray-400 mt-1">{boxItems.length} items</div>
