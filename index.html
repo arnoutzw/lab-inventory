@@ -19,7 +19,7 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
@@ -270,62 +270,28 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             WIDTH: 472,
             HEIGHT: 354,
 
-            // Generate QR code and return canvas with QR drawn on it
-            generateQRCanvas: function(text, size) {
-                return new Promise((resolve) => {
-                    const container = document.createElement('div');
-                    container.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
-                    document.body.appendChild(container);
-
-                    try {
-                        new window.QRCode(container, {
-                            text: text,
-                            width: size,
-                            height: size,
-                            colorDark: "#000000",
-                            colorLight: "#ffffff",
-                            correctLevel: window.QRCode.CorrectLevel.M
-                        });
-                    } catch (e) {
-                        console.error('QR generation failed:', e);
-                        document.body.removeChild(container);
-                        resolve(null);
-                        return;
-                    }
-
-                    // Wait for QR code to render (qrcodejs creates canvas async)
-                    setTimeout(() => {
-                        const qrCanvas = container.querySelector('canvas');
-                        const qrImg = container.querySelector('img');
-
-                        if (qrCanvas) {
-                            // Clone the canvas data
-                            const clonedCanvas = document.createElement('canvas');
-                            clonedCanvas.width = qrCanvas.width;
-                            clonedCanvas.height = qrCanvas.height;
-                            clonedCanvas.getContext('2d').drawImage(qrCanvas, 0, 0);
-                            document.body.removeChild(container);
-                            resolve(clonedCanvas);
-                        } else if (qrImg && qrImg.complete && qrImg.src) {
-                            // Fallback to img element
-                            const imgCanvas = document.createElement('canvas');
-                            imgCanvas.width = size;
-                            imgCanvas.height = size;
-                            const imgCtx = imgCanvas.getContext('2d');
-                            imgCtx.drawImage(qrImg, 0, 0, size, size);
-                            document.body.removeChild(container);
-                            resolve(imgCanvas);
-                        } else {
-                            console.error('No QR canvas or img found');
-                            document.body.removeChild(container);
-                            resolve(null);
-                        }
-                    }, 100);
-                });
+            // Generate barcode as canvas using JsBarcode (CODE128 format)
+            generateBarcodeCanvas: function(text) {
+                const barcodeCanvas = document.createElement('canvas');
+                try {
+                    JsBarcode(barcodeCanvas, text, {
+                        format: 'CODE128',
+                        width: 3,
+                        height: 80,
+                        displayValue: false,
+                        margin: 0,
+                        background: '#ffffff',
+                        lineColor: '#000000'
+                    });
+                    return barcodeCanvas;
+                } catch (e) {
+                    console.error('Barcode generation failed:', e);
+                    return null;
+                }
             },
 
             // Generate box label as image data URL
-            generateBoxLabel: async function(qrText, boxLabel, contents) {
+            generateBoxLabel: function(barcodeText, boxLabel, contents) {
                 const canvas = document.createElement('canvas');
                 canvas.width = this.WIDTH;
                 canvas.height = this.HEIGHT;
@@ -341,34 +307,42 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                 ctx.strokeRect(2, 2, this.WIDTH - 4, this.HEIGHT - 4);
                 ctx.setLineDash([]);
 
-                // Generate and draw QR code
-                if (qrText) {
-                    const qrCanvas = await this.generateQRCanvas(qrText, 200);
-                    if (qrCanvas) {
-                        const qrSize = 210;
-                        ctx.drawImage(qrCanvas, (this.WIDTH - qrSize) / 2, 15, qrSize, qrSize);
+                // Generate and draw barcode at top
+                if (barcodeText) {
+                    const barcodeCanvas = this.generateBarcodeCanvas(barcodeText);
+                    if (barcodeCanvas) {
+                        // Center barcode horizontally, place at top
+                        const barcodeWidth = Math.min(barcodeCanvas.width, this.WIDTH - 40);
+                        const barcodeHeight = 100;
+                        const x = (this.WIDTH - barcodeWidth) / 2;
+                        ctx.drawImage(barcodeCanvas, x, 20, barcodeWidth, barcodeHeight);
                     }
                 }
 
-                // Box label (bold, centered)
+                // Box label (bold, centered) - below barcode
                 ctx.fillStyle = '#000000';
-                ctx.font = 'bold 42px Arial';
+                ctx.font = 'bold 56px Arial';
                 ctx.textAlign = 'center';
-                ctx.fillText(boxLabel, this.WIDTH / 2, 280);
+                ctx.fillText(boxLabel, this.WIDTH / 2, 200);
 
                 // Contents (smaller, centered)
                 if (contents) {
-                    ctx.font = '24px Arial';
+                    ctx.font = '28px Arial';
                     ctx.fillStyle = '#666666';
-                    const truncated = contents.length > 30 ? contents.substring(0, 27) + '...' : contents;
-                    ctx.fillText(truncated, this.WIDTH / 2, 320);
+                    const truncated = contents.length > 25 ? contents.substring(0, 22) + '...' : contents;
+                    ctx.fillText(truncated, this.WIDTH / 2, 250);
                 }
+
+                // Small barcode text at bottom
+                ctx.font = '18px monospace';
+                ctx.fillStyle = '#999999';
+                ctx.fillText(barcodeText || '', this.WIDTH / 2, 330);
 
                 return canvas.toDataURL('image/png');
             },
 
             // Generate item 12NC label as image data URL
-            generateItemLabel: async function(qrText, nc, itemName) {
+            generateItemLabel: function(barcodeText, nc, itemName) {
                 const canvas = document.createElement('canvas');
                 canvas.width = this.WIDTH;
                 canvas.height = this.HEIGHT;
@@ -384,28 +358,35 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                 ctx.strokeRect(2, 2, this.WIDTH - 4, this.HEIGHT - 4);
                 ctx.setLineDash([]);
 
-                // Generate and draw QR code
-                if (qrText) {
-                    const qrCanvas = await this.generateQRCanvas(qrText, 200);
-                    if (qrCanvas) {
-                        const qrSize = 210;
-                        ctx.drawImage(qrCanvas, (this.WIDTH - qrSize) / 2, 10, qrSize, qrSize);
+                // Generate and draw barcode at top
+                if (barcodeText) {
+                    const barcodeCanvas = this.generateBarcodeCanvas(barcodeText);
+                    if (barcodeCanvas) {
+                        const barcodeWidth = Math.min(barcodeCanvas.width, this.WIDTH - 40);
+                        const barcodeHeight = 100;
+                        const x = (this.WIDTH - barcodeWidth) / 2;
+                        ctx.drawImage(barcodeCanvas, x, 20, barcodeWidth, barcodeHeight);
                     }
                 }
 
-                // 12NC code (monospace, bold)
+                // 12NC code (monospace, bold) - below barcode
                 ctx.fillStyle = '#000000';
-                ctx.font = 'bold 32px Courier New, monospace';
+                ctx.font = 'bold 40px Courier New, monospace';
                 ctx.textAlign = 'center';
-                ctx.fillText(nc || '', this.WIDTH / 2, 275);
+                ctx.fillText(nc || '', this.WIDTH / 2, 200);
 
                 // Item name (smaller)
                 if (itemName) {
-                    ctx.font = '22px Arial';
+                    ctx.font = '26px Arial';
                     ctx.fillStyle = '#666666';
-                    const truncated = itemName.length > 35 ? itemName.substring(0, 32) + '...' : itemName;
-                    ctx.fillText(truncated, this.WIDTH / 2, 315);
+                    const truncated = itemName.length > 30 ? itemName.substring(0, 27) + '...' : itemName;
+                    ctx.fillText(truncated, this.WIDTH / 2, 260);
                 }
+
+                // Small barcode text at bottom
+                ctx.font = '18px monospace';
+                ctx.fillStyle = '#999999';
+                ctx.fillText(barcodeText || '', this.WIDTH / 2, 330);
 
                 return canvas.toDataURL('image/png');
             },
@@ -442,11 +423,11 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             },
 
             // Print multiple labels (batch) - each label on its own 40x30mm page
-            printBatch: async function(labels, includeContents) {
+            printBatch: function(labels, includeContents) {
                 // Generate all label images first
                 const images = [];
                 for (const label of labels) {
-                    const img = await this.generateBoxLabel(label.qrText, label.title, includeContents ? label.subtitle : '');
+                    const img = this.generateBoxLabel(label.barcodeText, label.title, includeContents ? label.subtitle : '');
                     images.push(img);
                 }
 
@@ -674,7 +655,7 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             const selectAll = () => setSelectedBoxes(boxes.map(b => b.label));
             const selectNone = () => setSelectedBoxes([]);
 
-            const handlePrint = async () => {
+            const handlePrint = () => {
                 if (selectedBoxes.length === 0) return alert('Selecteer minstens 1 box');
 
                 // Generate labels for batch printing
@@ -683,7 +664,7 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                     const box = boxes.find(b => b.label === boxLabel);
                     for (let i = 0; i < copies; i++) {
                         labels.push({
-                            qrText: `INVBOX:${boxLabel}`,
+                            barcodeText: `INVBOX:${boxLabel}`,
                             title: boxLabel,
                             subtitle: box ? box.contents : ''
                         });
@@ -691,7 +672,7 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                 }
 
                 // Print using canvas-based images
-                await LabelImage.printBatch(labels, includeContents);
+                LabelImage.printBatch(labels, includeContents);
             };
 
             return (
@@ -961,10 +942,10 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                                             <QRCode value={(form.nc || '').replace(/ /g, '')} size={80} />
                                             <button
                                                 type="button"
-                                                onClick={async (e) => {
+                                                onClick={(e) => {
                                                     e.preventDefault();
                                                     const nc = (form.nc || '').replace(/ /g, '');
-                                                    const imageDataUrl = await LabelImage.generateItemLabel(nc, form.nc, form.name);
+                                                    const imageDataUrl = LabelImage.generateItemLabel(nc, form.nc, form.name);
                                                     LabelImage.print(imageDataUrl);
                                                 }}
                                                 className="text-xs text-blue-500 mt-1 hover:underline"
@@ -1331,10 +1312,10 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             }, []);
             const saveBox = useCallback((box) => { setBoxes(prev => [...prev, box]); setShowAddBox(false); }, []);
 
-            const printSingleQR = useCallback(async (box) => {
-                // Generate label with QR code and print
-                const qrText = `INVBOX:${box.label}`;
-                const imageDataUrl = await LabelImage.generateBoxLabel(qrText, box.label, box.contents);
+            const printSingleQR = useCallback((box) => {
+                // Generate label with barcode and print
+                const barcodeText = `INVBOX:${box.label}`;
+                const imageDataUrl = LabelImage.generateBoxLabel(barcodeText, box.label, box.contents);
                 LabelImage.print(imageDataUrl);
             }, []);            const handleQRScan = useCallback((data) => { setShowScanner(false); if (data.startsWith('INVBOX:')) { const box = boxes.find(b => b.label === data.replace('INVBOX:', '')); if (box) setSelectedBox(box); } }, [boxes]);
 
