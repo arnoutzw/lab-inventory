@@ -1080,17 +1080,59 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                                         <button
                                             type="button"
                                             onClick={async () => {
+                                                const url = form.image.startsWith('http') ? form.image : `https:${form.image}`;
+
+                                                // Try loading via image element (works around some CORS issues)
+                                                const loadViaImage = () => new Promise((resolve, reject) => {
+                                                    const img = new Image();
+                                                    img.crossOrigin = 'anonymous';
+                                                    img.onload = () => {
+                                                        try {
+                                                            const canvas = document.createElement('canvas');
+                                                            canvas.width = img.width;
+                                                            canvas.height = img.height;
+                                                            const ctx = canvas.getContext('2d');
+                                                            ctx.drawImage(img, 0, 0);
+                                                            canvas.toBlob(blob => {
+                                                                if (blob) resolve(blob);
+                                                                else reject(new Error('Canvas toBlob failed'));
+                                                            }, 'image/jpeg', 0.9);
+                                                        } catch (e) {
+                                                            reject(e);
+                                                        }
+                                                    };
+                                                    img.onerror = () => reject(new Error('Image load failed'));
+                                                    img.src = url;
+                                                });
+
+                                                // Try CORS proxy as fallback
+                                                const loadViaProxy = async () => {
+                                                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                                                    const response = await fetch(proxyUrl);
+                                                    if (!response.ok) throw new Error('Proxy fetch failed');
+                                                    return await response.blob();
+                                                };
+
                                                 try {
-                                                    const url = form.image.startsWith('http') ? form.image : `https:${form.image}`;
-                                                    const response = await fetch(url);
-                                                    if (!response.ok) throw new Error('Failed to fetch');
-                                                    const blob = await response.blob();
-                                                    if (!blob.type.startsWith('image/')) throw new Error('Not an image');
+                                                    let blob;
+                                                    try {
+                                                        blob = await loadViaImage();
+                                                    } catch (e1) {
+                                                        console.log('Direct load failed, trying proxy:', e1);
+                                                        try {
+                                                            blob = await loadViaProxy();
+                                                        } catch (e2) {
+                                                            throw new Error('CORS blocked - try downloading manually');
+                                                        }
+                                                    }
+                                                    if (!blob.type.startsWith('image/') && blob.type !== '') {
+                                                        throw new Error('Not an image');
+                                                    }
                                                     setPhoto(blob);
                                                     setPhotoPreview(URL.createObjectURL(blob));
                                                     alert('Photo updated from URL');
                                                 } catch (e) {
-                                                    alert('Failed to download image: ' + e.message);
+                                                    alert('Failed to download: ' + e.message);
                                                 }
                                             }}
                                             className="px-3 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600"
@@ -1495,6 +1537,35 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                 const total = itemsWithImages.length;
                 let success = 0, failed = 0, skipped = 0;
 
+                // Helper to load image via canvas (works around some CORS)
+                const loadViaImage = (url) => new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => {
+                        try {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = Math.min(img.width, 800);
+                            canvas.height = Math.min(img.height, 800);
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                            canvas.toBlob(blob => {
+                                if (blob) resolve(blob);
+                                else reject(new Error('Canvas failed'));
+                            }, 'image/jpeg', 0.85);
+                        } catch (e) { reject(e); }
+                    };
+                    img.onerror = () => reject(new Error('Load failed'));
+                    img.src = url;
+                });
+
+                // Helper to load via CORS proxy
+                const loadViaProxy = async (url) => {
+                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
+                    const response = await fetch(proxyUrl);
+                    if (!response.ok) throw new Error('Proxy failed');
+                    return await response.blob();
+                };
+
                 for (let i = 0; i < itemsWithImages.length; i++) {
                     const item = itemsWithImages[i];
                     onProgress({ current: i + 1, total, success, failed, skipped });
@@ -1507,12 +1578,21 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                             continue;
                         }
 
-                        // Fetch image from URL
-                        const response = await fetch(item.image);
-                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                        // Try loading image with fallbacks
+                        let blob;
+                        try {
+                            blob = await loadViaImage(item.image);
+                        } catch (e1) {
+                            try {
+                                blob = await loadViaProxy(item.image);
+                            } catch (e2) {
+                                throw new Error('CORS blocked');
+                            }
+                        }
 
-                        const blob = await response.blob();
-                        if (!blob.type.startsWith('image/')) throw new Error('Not an image');
+                        if (!blob.type.startsWith('image/') && blob.type !== '') {
+                            throw new Error('Not an image');
+                        }
 
                         await savePhoto(item.id, blob);
                         success++;
