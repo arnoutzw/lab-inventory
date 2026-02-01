@@ -1265,6 +1265,46 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             const [view, setView] = useState('boxes');
             const [showAllItems, setShowAllItems] = useState(false);
             const [expandedLocations, setExpandedLocations] = useState(new Set());
+            const [updateAvailable, setUpdateAvailable] = useState(false);
+
+            // Periodically check for new version
+            useEffect(() => {
+                const checkForUpdate = async () => {
+                    try {
+                        const response = await fetch('./index.html?t=' + Date.now(), { cache: 'no-store' });
+                        const html = await response.text();
+                        const match = html.match(/const GIT_HASH = '([a-f0-9]+)'/);
+                        if (match && match[1] !== GIT_HASH) {
+                            setUpdateAvailable(true);
+                        }
+                    } catch (e) {
+                        console.log('Version check failed:', e);
+                    }
+                };
+
+                // Check immediately, then every 5 minutes
+                checkForUpdate();
+                const interval = setInterval(checkForUpdate, 5 * 60 * 1000);
+                return () => clearInterval(interval);
+            }, []);
+
+            const performUpdate = async () => {
+                // Unregister service worker and clear caches
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (const registration of registrations) {
+                        await registration.unregister();
+                    }
+                }
+                if ('caches' in window) {
+                    const cacheNames = await caches.keys();
+                    for (const name of cacheNames) {
+                        await caches.delete(name);
+                    }
+                }
+                // Force reload from server
+                window.location.reload(true);
+            };
 
             useEffect(() => {
                 const loadData = async () => {
@@ -1621,6 +1661,15 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
 
             return (
                 <div className="container mx-auto p-3 max-w-4xl">
+                    {updateAvailable && (
+                        <button
+                            onClick={performUpdate}
+                            className="w-full mb-3 p-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow flex items-center justify-center gap-2 transition"
+                        >
+                            <span className="material-icons">system_update</span>
+                            <span className="font-medium">New version available - Click to update</span>
+                        </button>
+                    )}
                     <div className="bg-white rounded-xl shadow p-4 mb-3">
                         <div className="flex items-center justify-between">
                             <div>
