@@ -1040,6 +1040,29 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                                 <label className="text-sm text-gray-500">Product afbeelding URL</label>
                                 <div className="flex gap-2 items-start">
                                     <input placeholder="https://..." value={form.image || ''} onChange={e => setForm({...form, image: e.target.value})} className="flex-1 px-3 py-2 border rounded-lg text-sm"/>
+                                    {form.image && (
+                                        <button
+                                            type="button"
+                                            onClick={async () => {
+                                                try {
+                                                    const url = form.image.startsWith('http') ? form.image : `https:${form.image}`;
+                                                    const response = await fetch(url);
+                                                    if (!response.ok) throw new Error('Failed to fetch');
+                                                    const blob = await response.blob();
+                                                    if (!blob.type.startsWith('image/')) throw new Error('Not an image');
+                                                    setPhoto(blob);
+                                                    setPhotoPreview(URL.createObjectURL(blob));
+                                                    alert('Photo updated from URL');
+                                                } catch (e) {
+                                                    alert('Failed to download image: ' + e.message);
+                                                }
+                                            }}
+                                            className="px-3 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600"
+                                            title="Download and set as item photo"
+                                        >
+                                            <span className="material-icons text-sm">download</span>
+                                        </button>
+                                    )}
                                     {form.image && <img src={form.image.startsWith('http') ? form.image : `https:${form.image}`} alt="Product" className="w-16 h-16 object-cover rounded border" onError={e => e.target.style.display='none'}/>}
                                 </div>
                             </div>
