@@ -271,24 +271,43 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             const selectNone = () => setSelectedBoxes([]);
 
             const generateQRDataUrl = (text, size = 128) => {
-                return new Promise((resolve) => {
-                    const container = document.createElement('div');
-                    container.style.display = 'none';
-                    document.body.appendChild(container);
-                    new window.QRCode(container, {
-                        text: text,
-                        width: size,
-                        height: size,
-                        colorDark: "#000000",
-                        colorLight: "#ffffff"
-                    });
-                    setTimeout(() => {
-                        const img = container.querySelector('img');
-                        const canvas = container.querySelector('canvas');
-                        const dataUrl = img ? img.src : (canvas ? canvas.toDataURL() : '');
-                        document.body.removeChild(container);
-                        resolve(dataUrl);
-                    }, 100);
+                return new Promise((resolve, reject) => {
+                    try {
+                        // Create detached container
+                        const container = document.createElement('div');
+                        container.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
+                        document.body.appendChild(container);
+                        
+                        // Generate QR code
+                        new window.QRCode(container, {
+                            text: text,
+                            width: size,
+                            height: size,
+                            colorDark: "#000000",
+                            colorLight: "#ffffff"
+                        });
+                        
+                        // Extract data URL after render
+                        setTimeout(() => {
+                            try {
+                                const canvas = container.querySelector('canvas');
+                                const img = container.querySelector('img');
+                                let dataUrl = '';
+                                if (canvas) {
+                                    dataUrl = canvas.toDataURL('image/png');
+                                } else if (img && img.src) {
+                                    dataUrl = img.src;
+                                }
+                                document.body.removeChild(container);
+                                resolve(dataUrl);
+                            } catch (e) {
+                                document.body.removeChild(container);
+                                reject(e);
+                            }
+                        }, 150);
+                    } catch (e) {
+                        reject(e);
+                    }
                 });
             };
 
@@ -837,22 +856,28 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                 const generateQRDataUrl = (text, size = 128) => {
                     return new Promise((resolve) => {
                         const container = document.createElement('div');
-                        container.style.display = 'none';
+                        container.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
                         document.body.appendChild(container);
-                        new window.QRCode(container, {
-                            text: text,
-                            width: size,
-                            height: size,
-                            colorDark: "#000000",
-                            colorLight: "#ffffff"
-                        });
+                        try {
+                            new window.QRCode(container, {
+                                text: text,
+                                width: size,
+                                height: size,
+                                colorDark: "#000000",
+                                colorLight: "#ffffff"
+                            });
+                        } catch(e) {
+                            console.error('QR generation error:', e);
+                        }
                         setTimeout(() => {
-                            const img = container.querySelector('img');
                             const canvas = container.querySelector('canvas');
-                            const dataUrl = img ? img.src : (canvas ? canvas.toDataURL() : '');
+                            const img = container.querySelector('img');
+                            let dataUrl = '';
+                            if (canvas) dataUrl = canvas.toDataURL('image/png');
+                            else if (img && img.src) dataUrl = img.src;
                             document.body.removeChild(container);
                             resolve(dataUrl);
-                        }, 100);
+                        }, 150);
                     });
                 };
                 
