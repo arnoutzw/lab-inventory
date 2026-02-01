@@ -56,287 +56,287 @@
     {
       "label": "KS-01",
       "type": "KUGGIS 13\u00d718\u00d78",
-      "location": "Blok 1 Lade A",
+      "location": "Boards & Sensors Lade A",
       "theme": "Electronics",
       "contents": "ESP32 & Dev Boards"
     },
     {
       "label": "KS-02",
       "type": "KUGGIS 13\u00d718\u00d78",
-      "location": "Blok 1 Lade A",
+      "location": "Boards & Sensors Lade A",
       "theme": "Electronics",
       "contents": "ESP8266 & WiFi"
     },
     {
       "label": "KS-03",
       "type": "KUGGIS 13\u00d718\u00d78",
-      "location": "Blok 1 Lade A",
+      "location": "Boards & Sensors Lade A",
       "theme": "Electronics",
       "contents": "Arduino Boards"
     },
     {
       "label": "KS-04",
       "type": "KUGGIS 13\u00d718\u00d78",
-      "location": "Blok 1 Lade A",
+      "location": "Boards & Sensors Lade A",
       "theme": "Electronics",
       "contents": "Raspberry Pi / Pico"
     },
     {
       "label": "KS-05",
       "type": "KUGGIS 13\u00d718\u00d78",
-      "location": "Blok 1 Lade B",
+      "location": "Boards & Sensors Lade B",
       "theme": "Electronics",
       "contents": "Sensors - Temp/Humidity"
     },
     {
       "label": "KS-06",
       "type": "KUGGIS 13\u00d718\u00d78",
-      "location": "Blok 1 Lade B",
+      "location": "Boards & Sensors Lade B",
       "theme": "Electronics",
       "contents": "Sensors - Motion/Distance"
     },
     {
       "label": "KS-07",
       "type": "KUGGIS 13\u00d718\u00d78",
-      "location": "Blok 1 Lade B",
+      "location": "Boards & Sensors Lade B",
       "theme": "Electronics",
       "contents": "Sensors - Light/Color"
     },
     {
       "label": "KS-08",
       "type": "KUGGIS 13\u00d718\u00d78",
-      "location": "Blok 1 Lade B",
+      "location": "Boards & Sensors Lade B",
       "theme": "Electronics",
       "contents": "Sensors - Misc"
     },
     {
       "label": "KS-09",
       "type": "KUGGIS 13\u00d718\u00d78",
-      "location": "Blok 1 Lade C",
+      "location": "Boards & Sensors Lade C",
       "theme": "Electronics",
       "contents": "Connectors JST/Dupont"
     },
     {
       "label": "KS-10",
       "type": "KUGGIS 13\u00d718\u00d78",
-      "location": "Blok 1 Lade C",
+      "location": "Boards & Sensors Lade C",
       "theme": "Electronics",
       "contents": "USB Connectors"
     },
     {
       "label": "KS-11",
       "type": "KUGGIS 13\u00d718\u00d78",
-      "location": "Blok 1 Lade C",
+      "location": "Boards & Sensors Lade C",
       "theme": "Electronics",
       "contents": "Power Connectors"
     },
     {
       "label": "KM-01",
       "type": "KUGGIS 18\u00d726\u00d715",
-      "location": "Blok 1 Lade D",
+      "location": "Boards & Sensors Lade D",
       "theme": "Electronics",
       "contents": "Stepper Motors"
     },
     {
       "label": "KM-02",
       "type": "KUGGIS 18\u00d726\u00d715",
-      "location": "Blok 1 Lade D",
+      "location": "Boards & Sensors Lade D",
       "theme": "Electronics",
       "contents": "Servo Motors"
     },
     {
       "label": "KM-03",
       "type": "KUGGIS 18\u00d726\u00d715",
-      "location": "Blok 2 Lade A",
+      "location": "Displays & Passives Lade A",
       "theme": "Electronics",
       "contents": "DC/Brushless Motors"
     },
     {
       "label": "KM-04",
       "type": "KUGGIS 18\u00d726\u00d715",
-      "location": "Blok 2 Lade A",
+      "location": "Displays & Passives Lade A",
       "theme": "Electronics",
       "contents": "Motor Drivers"
     },
     {
       "label": "KM-05",
       "type": "KUGGIS 18\u00d726\u00d715",
-      "location": "Blok 2 Lade B",
+      "location": "Displays & Passives Lade B",
       "theme": "Electronics",
       "contents": "Displays OLED/LCD"
     },
     {
       "label": "KM-06",
       "type": "KUGGIS 18\u00d726\u00d715",
-      "location": "Blok 2 Lade B",
+      "location": "Displays & Passives Lade B",
       "theme": "Electronics",
       "contents": "LED Strips & Modules"
     },
     {
       "label": "KF-01",
       "type": "KUGGIS 18\u00d726\u00d78",
-      "location": "Blok 2 Lade C",
+      "location": "Displays & Passives Lade C",
       "theme": "Electronics",
       "contents": "PCB & Breadboards"
     },
     {
       "label": "KF-02",
       "type": "KUGGIS 18\u00d726\u00d78",
-      "location": "Blok 2 Lade C",
+      "location": "Displays & Passives Lade C",
       "theme": "Electronics",
       "contents": "Prototyping Supplies"
     },
     {
       "label": "KT-01",
       "type": "KUGGIS Tray 53\u00d736\u00d76",
-      "location": "Blok 2 Lade D",
+      "location": "Displays & Passives Lade D",
       "theme": "Electronics",
       "contents": "Resistors"
     },
     {
       "label": "KT-02",
       "type": "KUGGIS Tray 53\u00d736\u00d76",
-      "location": "Blok 2 Lade D",
+      "location": "Displays & Passives Lade D",
       "theme": "Electronics",
       "contents": "Capacitors"
     },
     {
       "label": "KT-03",
       "type": "KUGGIS Tray 53\u00d736\u00d76",
-      "location": "Blok 3 Lade A",
+      "location": "3D Print & Power Lade A",
       "theme": "Electronics",
       "contents": "LEDs"
     },
     {
       "label": "FH-01",
       "type": "FJ\u00c4DERHARV 24\u00d710\u00d734",
-      "location": "Blok 3 Lade B",
+      "location": "3D Print & Power Lade B",
       "theme": "3D Printing",
       "contents": "Nozzles & Hotend Parts"
     },
     {
       "label": "FH-02",
       "type": "FJ\u00c4DERHARV 24\u00d710\u00d734",
-      "location": "Blok 3 Lade B",
+      "location": "3D Print & Power Lade B",
       "theme": "3D Printing",
       "contents": "Extruder Parts"
     },
     {
       "label": "FH-03",
       "type": "FJ\u00c4DERHARV 24\u00d710\u00d734",
-      "location": "Blok 3 Lade B",
+      "location": "3D Print & Power Lade B",
       "theme": "3D Printing",
       "contents": "Belts & Pulleys"
     },
     {
       "label": "FH-04",
       "type": "FJ\u00c4DERHARV 24\u00d710\u00d734",
-      "location": "Blok 3 Lade C",
+      "location": "3D Print & Power Lade C",
       "theme": "Mechanical",
       "contents": "Bearings"
     },
     {
       "label": "FH-05",
       "type": "FJ\u00c4DERHARV 24\u00d710\u00d734",
-      "location": "Blok 3 Lade C",
+      "location": "3D Print & Power Lade C",
       "theme": "Mechanical",
       "contents": "Linear Rails & Rods"
     },
     {
       "label": "FD-01",
       "type": "FJ\u00c4DERHARV 24\u00d720\u00d734",
-      "location": "Blok 3 Lade D",
+      "location": "3D Print & Power Lade D",
       "theme": "3D Printing",
       "contents": "Hotends Complete"
     },
     {
       "label": "FD-02",
       "type": "FJ\u00c4DERHARV 24\u00d720\u00d734",
-      "location": "Blok 3 Lade D",
+      "location": "3D Print & Power Lade D",
       "theme": "3D Printing",
       "contents": "Print Bed Supplies"
     },
     {
       "label": "FD-03",
       "type": "FJ\u00c4DERHARV 24\u00d720\u00d734",
-      "location": "Blok 3 Lade E",
+      "location": "3D Print & Power Lade E",
       "theme": "Electronics",
       "contents": "Power Supplies"
     },
     {
       "label": "FD-04",
       "type": "FJ\u00c4DERHARV 24\u00d720\u00d734",
-      "location": "Blok 3 Lade E",
+      "location": "3D Print & Power Lade E",
       "theme": "Electronics",
       "contents": "Batteries & Chargers"
     },
     {
       "label": "FD-05",
       "type": "FJ\u00c4DERHARV 24\u00d720\u00d734",
-      "location": "Blok 4 Lade A",
+      "location": "ICs & Hardware Lade A",
       "theme": "Electronics",
       "contents": "Cables & Wires"
     },
     {
       "label": "FD-06",
       "type": "FJ\u00c4DERHARV 24\u00d720\u00d734",
-      "location": "Blok 4 Lade A",
+      "location": "ICs & Hardware Lade A",
       "theme": "Electronics",
       "contents": "Communication Modules"
     },
     {
       "label": "FD-07",
       "type": "FJ\u00c4DERHARV 24\u00d720\u00d734",
-      "location": "Blok 4 Lade B",
+      "location": "ICs & Hardware Lade B",
       "theme": "Electronics",
       "contents": "FPV & Drone Parts"
     },
     {
       "label": "LV-01",
       "type": "LIVV 20\u00d715\u00d78",
-      "location": "Blok 4 Lade C",
+      "location": "ICs & Hardware Lade C",
       "theme": "Electronics",
       "contents": "ICs & Chips"
     },
     {
       "label": "LV-02",
       "type": "LIVV 20\u00d715\u00d78",
-      "location": "Blok 4 Lade C",
+      "location": "ICs & Hardware Lade C",
       "theme": "Electronics",
       "contents": "Transistors & MOSFETs"
     },
     {
       "label": "LV-03",
       "type": "LIVV 20\u00d715\u00d78",
-      "location": "Blok 4 Lade C",
+      "location": "ICs & Hardware Lade C",
       "theme": "Electronics",
       "contents": "Diodes & Regulators"
     },
     {
       "label": "LV-04",
       "type": "LIVV 20\u00d715\u00d78",
-      "location": "Blok 4 Lade D",
+      "location": "ICs & Hardware Lade D",
       "theme": "Mechanical",
       "contents": "Screws M2-M3"
     },
     {
       "label": "LV-05",
       "type": "LIVV 20\u00d715\u00d78",
-      "location": "Blok 4 Lade D",
+      "location": "ICs & Hardware Lade D",
       "theme": "Mechanical",
       "contents": "Screws M4-M5"
     },
     {
       "label": "LV-06",
       "type": "LIVV 20\u00d715\u00d78",
-      "location": "Blok 4 Lade D",
+      "location": "ICs & Hardware Lade D",
       "theme": "Mechanical",
       "contents": "Nuts & Washers"
     },
     {
       "label": "LV-07",
       "type": "LIVV 20\u00d715\u00d78",
-      "location": "Blok 4 Lade D",
+      "location": "ICs & Hardware Lade D",
       "theme": "Mechanical",
       "contents": "Springs & Misc"
     }
