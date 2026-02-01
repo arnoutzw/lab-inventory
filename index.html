@@ -783,6 +783,30 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                                     <div className="text-gray-600">Version: {APP_VERSION}</div>
                                     <div className="text-gray-600">Git: {GIT_HASH}</div>
                                     <div className="text-gray-500 mt-2 text-xs">A PWA for managing lab components and boxes with QR code support.</div>
+                                    <button
+                                        onClick={async () => {
+                                            if (confirm('Check for updates and reload?')) {
+                                                // Unregister service worker and clear caches
+                                                if ('serviceWorker' in navigator) {
+                                                    const registrations = await navigator.serviceWorker.getRegistrations();
+                                                    for (const registration of registrations) {
+                                                        await registration.unregister();
+                                                    }
+                                                }
+                                                if ('caches' in window) {
+                                                    const cacheNames = await caches.keys();
+                                                    for (const name of cacheNames) {
+                                                        await caches.delete(name);
+                                                    }
+                                                }
+                                                // Force reload from server
+                                                window.location.reload(true);
+                                            }
+                                        }}
+                                        className="mt-3 w-full px-3 py-2 bg-blue-500 text-white rounded flex items-center justify-center gap-2 hover:bg-blue-600"
+                                    >
+                                        <span class="material-icons text-sm">refresh</span> Check for Updates
+                                    </button>
                                 </div>
                             )}
                         </div>
