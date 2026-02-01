@@ -1,22 +1,25 @@
 # Lab Inventory
 
-A Progressive Web App (PWA) for managing electronics lab inventory with QR code support, photo storage, and Philips 12NC identification.
+A Progressive Web App (PWA) for managing electronics lab inventory with barcode support, photo storage, and Philips 12NC identification.
 
 ## Features
 
 - **Box-based Organization**: Organize items in labeled storage boxes (KUGGIS, FJÄLLA, etc.)
-- **12NC Identification**: Each item has a unique Philips 12NC code with QR code
+- **Nested Location Menus**: Hierarchical navigation (e.g., Blok 1 > Lade A > boxes)
+- **Lab Map View**: Visual layout of physical storage locations
+- **12NC Identification**: Each item has a unique Philips 12NC code with barcode
 - **Photo Support**: Add photos to items, stored locally in IndexedDB
-- **QR Code Scanning**: Scan QR codes to quickly find boxes
-- **QR Code Printing**: Print QR labels via CUPS/system printer (40x30mm fixed size)
-  - Box QR labels (batch or single)
-  - Item 12NC QR labels
+- **Sync Photos from Links**: Download product images from URLs in Settings
+- **Barcode Scanning**: Scan barcodes to quickly find boxes
+- **Barcode Printing**: Print CODE128 barcode labels via CUPS/system printer (40x30mm)
+  - Box barcode labels (batch or single)
+  - Item 12NC barcode labels
   - Canvas-based image generation for precise sizing
 - **Category Filtering**: Filter by Electronics, 3D Printing, Mechanical, or Other
-- **Low Stock Alerts**: Configurable threshold warnings
+- **Overallocation Warnings**: Alerts when project allocations exceed available quantity
 - **Offline Support**: Works without internet connection (PWA)
 - **Auto-Update**: Automatically fetches latest version when online
-- **Version Info**: About section with version number and git hash
+- **Version Info**: About section with git hash, build date, and release history
 - **Force Update**: Manual update check button in Settings
 - **Mobile Optimized**: Touch-friendly interface with safe area support
 - **Dark Mode**: Toggle dark theme in settings
@@ -30,17 +33,19 @@ A Progressive Web App (PWA) for managing electronics lab inventory with QR code 
 
 ### Navigation
 
-- **Boxes View**: Grid of all storage boxes, click to filter items
-- **Items View**: Searchable list of all items with quick quantity controls
+- **Locaties**: Nested menu of locations (Blok > Lade > boxes)
+- **Items**: Searchable list of all items with quick quantity controls
+- **BoM**: Bill of Materials / project assignments
+- **Map**: Visual lab layout with clickable locations
 - **Search**: Type to filter, click "Wis" to clear
 
 ### Header Buttons
 
 | Button | Action |
 |--------|--------|
-| 📷 | Scan QR code |
+| 📷 | Scan barcode |
 | 📦 | Add new box |
-| 🖨️ | Print QR labels |
+| 🖨️ | Print barcode labels |
 | ➕ | Add new item |
 | ⚙️ | Settings |
 
@@ -48,29 +53,31 @@ A Progressive Web App (PWA) for managing electronics lab inventory with QR code 
 
 1. Click ➕ to add new item
 2. Click the photo placeholder to add a photo
-3. Fill in item details (name, category, box, quantity)
-4. 12NC code is auto-generated based on category
-5. QR code appears next to 12NC field
-6. Click "Opslaan" to save
+3. Fill in item details (name, category, subcategory, box, quantity)
+4. Add product link and image URL if available
+5. Assign to projects if needed
+6. 12NC code is auto-generated based on category
+7. Barcode appears next to 12NC field
+8. Click "Opslaan" to save
 
-### Printing QR Labels
+### Printing Barcode Labels
 
-Labels are generated as high-resolution images (472x354px at 300 DPI) for precise 40x30mm output.
+Labels are generated as high-resolution images (472x354px at 300 DPI) for precise 40x30mm output using CODE128 barcodes.
 
 **Batch Box Labels:**
 1. Click 🖨️ in the header
 2. Select boxes to print
 3. Set number of copies per label
 4. Toggle "Include box description"
-5. Click "Print Labels" - opens print preview with label grid
+5. Click "Print Labels" - each label prints on separate page
 
 **Single Box Label:**
 1. Click a box to open details
-2. Click "🖨️ Print QR" under the QR code
+2. Click "🖨️ Print Barcode" button
 
 **Item 12NC Label:**
 1. Click an item to edit
-2. Click "🖨️ Print" next to the 12NC QR code
+2. Click "🖨️ Print" next to the 12NC barcode
 
 ### Data Management
 
@@ -114,11 +121,11 @@ Each item has a unique 12-digit Philips NC code (introduced 1963).
 | 24 | Mechanical | Electromechanical parts |
 | 53 | Other | Service parts |
 
-### Item QR Codes
+### Item Barcodes
 
-Each item's 12NC code is encoded as a QR code (without spaces):
+Each item's 12NC code is encoded as a CODE128 barcode (without spaces):
 - Display: `4822 000 00001`
-- QR encodes: `482200000001`
+- Barcode encodes: `482200000001`
 
 ## File Structure
 
@@ -138,7 +145,7 @@ lab-inventory/
 - **Frontend**: React 18, Tailwind CSS
 - **Storage**: IndexedDB (primary), localStorage (fallback)
 - **Photo Storage**: IndexedDB blobs, auto-resized to max 800px
-- **QR Codes**: qrcodejs (generation), html5-qrcode (scanning)
+- **Barcodes**: JsBarcode (CODE128 generation), html5-qrcode (scanning)
 - **Label Generation**: HTML5 Canvas (472x354px at 300 DPI for 40x30mm labels)
 - **Printing**: Browser print dialog (works with CUPS)
 
@@ -173,7 +180,7 @@ The PWA uses a smart caching strategy:
 
 ## Box Label Format
 
-QR codes encode: `INVBOX:{box_label}` (e.g., `INVBOX:KS-01`)
+Barcodes encode: `INVBOX:{box_label}` (e.g., `INVBOX:KS-01`)
 
 ### Box Prefixes
 
