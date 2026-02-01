@@ -933,7 +933,28 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             }, [settings]);
             useEffect(() => { setShowAllItems(false); }, [search, filterTheme]);
 
-            const updateQuantity = useCallback((id, delta) => { setItems(prev => prev.map(i => i.id === id ? {...i, quantity: Math.max(0, i.quantity + delta)} : i)); }, []);
+            const updateQuantity = useCallback((id, delta) => { 
+                setItems(prev => {
+                    const item = prev.find(i => i.id === id);
+                    if (!item) return prev;
+                    
+                    const newQuantity = item.quantity + delta;
+                    
+                    // If quantity would become 0, ask to delete
+                    if (newQuantity <= 0) {
+                        // Use setTimeout to escape React's render cycle for confirm dialog
+                        setTimeout(() => {
+                            if (confirm('Aantal is 0. Verwijderen?')) {
+                                setItems(p => p.filter(i => i.id !== id));
+                                deletePhoto(id).catch(() => {});
+                            }
+                        }, 0);
+                        return prev; // Keep current state, deletion happens async
+                    }
+                    
+                    return prev.map(i => i.id === id ? {...i, quantity: newQuantity} : i);
+                });
+            }, []);
             const saveItem = useCallback((item) => {
                 let savedItem = item;
                 if (item.id) {
