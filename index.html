@@ -921,6 +921,7 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                     <div className="bg-white rounded-xl shadow p-3 mb-3">
                         <div className="flex gap-2 mb-2">
                             <input type="text" placeholder="🔍 Zoeken..." value={search} onChange={e => setSearch(e.target.value)} className="flex-1 px-3 py-2 border rounded-lg"/>
+                            {search && <button onClick={() => setSearch('')} className="px-3 py-2 bg-gray-200 rounded-lg text-sm">Wis</button>}
                             <select value={filterTheme} onChange={e => setFilterTheme(e.target.value)} className="px-2 py-2 border rounded-lg text-sm">
                                 <option value="all">Alles</option><option value="Electronics">Elec</option><option value="3D Printing">3DP</option><option value="Mechanical">Mech</option>
                             </select>
