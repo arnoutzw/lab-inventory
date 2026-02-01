@@ -234,19 +234,37 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                     return;
                 }
                 
-                // Generate QR in detached element to avoid React conflicts
-                const container = document.createElement('div');
-                try {
-                    new window.QRCode(container, {
-                        text: value,
-                        width: size,
-                        height: size,
-                        colorDark: "#000000",
-                        colorLight: "#ffffff"
-                    });
+                let cancelled = false;
+                
+                // Defer QR generation outside React's render cycle
+                const timeoutId = setTimeout(() => {
+                    if (cancelled) return;
+                    
+                    // Generate QR in detached element to avoid React conflicts
+                    const container = document.createElement('div');
+                    container.style.cssText = 'position:absolute;left:-9999px;';
+                    document.body.appendChild(container);
+                    
+                    try {
+                        new window.QRCode(container, {
+                            text: value,
+                            width: size,
+                            height: size,
+                            colorDark: "#000000",
+                            colorLight: "#ffffff"
+                        });
+                    } catch (e) {
+                        document.body.removeChild(container);
+                        console.error('QRCode generation error:', e);
+                        return;
+                    }
                     
                     // Wait for QR to render, then extract data URL
                     setTimeout(() => {
+                        if (cancelled) {
+                            document.body.removeChild(container);
+                            return;
+                        }
                         const canvas = container.querySelector('canvas');
                         const img = container.querySelector('img');
                         if (canvas) {
@@ -254,10 +272,14 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                         } else if (img) {
                             setQrDataUrl(img.src);
                         }
+                        document.body.removeChild(container);
                     }, 50);
-                } catch (e) {
-                    console.error('QRCode generation error:', e);
-                }
+                }, 0);
+                
+                return () => {
+                    cancelled = true;
+                    clearTimeout(timeoutId);
+                };
             }, [value, size]);
             
             if (!value || !qrDataUrl) return null;
@@ -626,16 +648,20 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                                                 onClick={(e) => {
                                                     e.preventDefault();
                                                     const nc = (form.nc || '').replace(/ /g, '');
-                                                    const container = document.createElement('div');
-                                                    container.style.display = 'none';
-                                                    document.body.appendChild(container);
-                                                    new window.QRCode(container, { text: nc, width: 150, height: 150 });
+                                                    // Defer QR generation to escape React's execution context
+                                                    setTimeout(() => {
+                                                        const container = document.createElement('div');
+                                                        container.style.display = 'none';
+                                                        document.body.appendChild(container);
+                                                        try {
+                                                            new window.QRCode(container, { text: nc, width: 150, height: 150 });
+                                                        } catch(e) { console.error('QR error:', e); }
                                                     setTimeout(() => {
                                                         const img = container.querySelector('img');
                                                         const canvas = container.querySelector('canvas');
                                                         const qrDataUrl = img ? img.src : (canvas ? canvas.toDataURL() : '');
                                                         document.body.removeChild(container);
-                                                        const printWindow = window.open('', '_blank', 'width=400,height=400');
+                                                            const printWindow = window.open('', '_blank', 'width=400,height=400');
                                                         if (!printWindow) { alert('Popup blocked!'); return; }
                                                         printWindow.document.write(`
                                                             <!DOCTYPE html><html><head><title>Print 12NC QR</title>
@@ -655,7 +681,8 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                                                             </body></html>
                                                         `);
                                                         printWindow.document.close();
-                                                    }, 100);
+                                                        }, 100);
+                                                    }, 0);
                                                 }}
                                                 className="text-xs text-blue-500 mt-1 hover:underline"
                                             >🖨️ Print</button>
