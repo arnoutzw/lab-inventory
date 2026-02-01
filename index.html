@@ -146,6 +146,108 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             }
             return true;
         };
+
+        // ========================================
+        // QR Code Pre-Generation System
+        // Completely separated from React to avoid conflicts
+        // ========================================
+        const QRCodeCache = {
+            cache: new Map(),
+            pending: new Map(),
+            
+            // Generate a single QR code (returns Promise)
+            generate: function(text, size = 128) {
+                const key = `${text}_${size}`;
+                
+                // Return cached version
+                if (this.cache.has(key)) {
+                    return Promise.resolve(this.cache.get(key));
+                }
+                
+                // Return pending promise if already generating
+                if (this.pending.has(key)) {
+                    return this.pending.get(key);
+                }
+                
+                // Generate new QR code
+                const promise = new Promise((resolve) => {
+                    // Use setTimeout to run completely outside any React context
+                    setTimeout(() => {
+                        const container = document.createElement('div');
+                        container.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
+                        document.body.appendChild(container);
+                        
+                        try {
+                            new window.QRCode(container, {
+                                text: text,
+                                width: size,
+                                height: size,
+                                colorDark: "#000000",
+                                colorLight: "#ffffff"
+                            });
+                        } catch (e) {
+                            document.body.removeChild(container);
+                            resolve('');
+                            return;
+                        }
+                        
+                        // Wait for QR to render
+                        setTimeout(() => {
+                            const canvas = container.querySelector('canvas');
+                            const img = container.querySelector('img');
+                            let dataUrl = '';
+                            if (canvas) {
+                                dataUrl = canvas.toDataURL('image/png');
+                            } else if (img && img.src) {
+                                dataUrl = img.src;
+                            }
+                            document.body.removeChild(container);
+                            this.cache.set(key, dataUrl);
+                            this.pending.delete(key);
+                            resolve(dataUrl);
+                        }, 50);
+                    }, 0);
+                });
+                
+                this.pending.set(key, promise);
+                return promise;
+            },
+            
+            // Pre-generate QR codes for all items and boxes
+            preGenerate: async function(items, boxes) {
+                const promises = [];
+                
+                // Generate for all items with 12NC
+                for (const item of items) {
+                    if (item.nc) {
+                        const nc = item.nc.replace(/ /g, '');
+                        promises.push(this.generate(nc, 80));  // Item display size
+                        promises.push(this.generate(nc, 150)); // Print size
+                    }
+                }
+                
+                // Generate for all boxes
+                for (const box of boxes) {
+                    const boxCode = `INVBOX:${box.label}`;
+                    promises.push(this.generate(boxCode, 100)); // Box display size
+                    promises.push(this.generate(boxCode, 150)); // Print size
+                }
+                
+                await Promise.all(promises);
+                console.log(`Pre-generated ${this.cache.size} QR codes`);
+            },
+            
+            // Get cached QR code synchronously (returns empty string if not cached)
+            get: function(text, size = 128) {
+                return this.cache.get(`${text}_${size}`) || '';
+            },
+            
+            // Clear cache
+            clear: function() {
+                this.cache.clear();
+                this.pending.clear();
+            }
+        };
         const STORAGE_KEY = 'arnout-lab-inventory-v2';
         const SETTINGS_KEY = 'arnout-lab-settings';
         // IndexedDB Helper for persistent storage with photo support
@@ -247,60 +349,28 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
 
 
         const QRCode = ({ value, size = 128 }) => {
-            const [qrDataUrl, setQrDataUrl] = useState(null);
+            const [qrDataUrl, setQrDataUrl] = useState(() => QRCodeCache.get(value, size));
             
             useEffect(() => {
                 if (!value) {
-                    setQrDataUrl(null);
+                    setQrDataUrl('');
                     return;
                 }
                 
+                // Check cache first
+                const cached = QRCodeCache.get(value, size);
+                if (cached) {
+                    setQrDataUrl(cached);
+                    return;
+                }
+                
+                // Generate if not cached (for dynamically added items)
                 let cancelled = false;
+                QRCodeCache.generate(value, size).then(dataUrl => {
+                    if (!cancelled) setQrDataUrl(dataUrl);
+                });
                 
-                // Defer QR generation outside React's render cycle
-                const timeoutId = setTimeout(() => {
-                    if (cancelled) return;
-                    
-                    // Generate QR in detached element to avoid React conflicts
-                    const container = document.createElement('div');
-                    container.style.cssText = 'position:absolute;left:-9999px;';
-                    document.body.appendChild(container);
-                    
-                    try {
-                        new window.QRCode(container, {
-                            text: value,
-                            width: size,
-                            height: size,
-                            colorDark: "#000000",
-                            colorLight: "#ffffff"
-                        });
-                    } catch (e) {
-                        document.body.removeChild(container);
-                        console.error('QRCode generation error:', e);
-                        return;
-                    }
-                    
-                    // Wait for QR to render, then extract data URL
-                    setTimeout(() => {
-                        if (cancelled) {
-                            document.body.removeChild(container);
-                            return;
-                        }
-                        const canvas = container.querySelector('canvas');
-                        const img = container.querySelector('img');
-                        if (canvas) {
-                            setQrDataUrl(canvas.toDataURL());
-                        } else if (img) {
-                            setQrDataUrl(img.src);
-                        }
-                        document.body.removeChild(container);
-                    }, 50);
-                }, 0);
-                
-                return () => {
-                    cancelled = true;
-                    clearTimeout(timeoutId);
-                };
+                return () => { cancelled = true; };
             }, [value, size]);
             
             if (!value || !qrDataUrl) return null;
@@ -350,48 +420,9 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             const selectAll = () => setSelectedBoxes(boxes.map(b => b.label));
             const selectNone = () => setSelectedBoxes([]);
 
+            // Use pre-generated QR codes from cache
             const generateQRDataUrl = (text, size = 128) => {
-                return new Promise((resolve, reject) => {
-                    // Defer QR generation outside React's execution context
-                    setTimeout(() => {
-                        try {
-                            // Create detached container
-                            const container = document.createElement('div');
-                            container.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
-                            document.body.appendChild(container);
-                            
-                            // Generate QR code
-                            new window.QRCode(container, {
-                                text: text,
-                                width: size,
-                                height: size,
-                                colorDark: "#000000",
-                                colorLight: "#ffffff"
-                            });
-                            
-                            // Extract data URL after render
-                            setTimeout(() => {
-                                try {
-                                    const canvas = container.querySelector('canvas');
-                                    const img = container.querySelector('img');
-                                    let dataUrl = '';
-                                    if (canvas) {
-                                        dataUrl = canvas.toDataURL('image/png');
-                                    } else if (img && img.src) {
-                                        dataUrl = img.src;
-                                    }
-                                    document.body.removeChild(container);
-                                    resolve(dataUrl);
-                                } catch (e) {
-                                    document.body.removeChild(container);
-                                    reject(e);
-                                }
-                            }, 100);
-                        } catch (e) {
-                            reject(e);
-                        }
-                    }, 0);
-                });
+                return QRCodeCache.generate(text, size);
             };
 
             const handlePrint = async () => {
@@ -694,44 +725,30 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                                             <QRCode value={(form.nc || '').replace(/ /g, '')} size={80} />
                                             <button 
                                                 type="button"
-                                                onClick={(e) => {
+                                                onClick={async (e) => {
                                                     e.preventDefault();
                                                     const nc = (form.nc || '').replace(/ /g, '');
-                                                    // Defer QR generation to escape React's execution context
-                                                    setTimeout(() => {
-                                                        const container = document.createElement('div');
-                                                        container.style.display = 'none';
-                                                        document.body.appendChild(container);
-                                                        try {
-                                                            new window.QRCode(container, { text: nc, width: 150, height: 150 });
-                                                        } catch(e) { console.error('QR error:', e); }
-                                                    setTimeout(() => {
-                                                        const img = container.querySelector('img');
-                                                        const canvas = container.querySelector('canvas');
-                                                        const qrDataUrl = img ? img.src : (canvas ? canvas.toDataURL() : '');
-                                                        document.body.removeChild(container);
-                                                            const printWindow = window.open('', '_blank', 'width=400,height=400');
-                                                        if (!printWindow) { alert('Popup blocked!'); return; }
-                                                        printWindow.document.write(`
-                                                            <!DOCTYPE html><html><head><title>Print 12NC QR</title>
-                                                            <style>
-                                                                body { font-family: Arial; display: flex; justify-content: center; padding: 10mm; }
-                                                                .label { display: flex; flex-direction: column; align-items: center; border: 0.5px dashed #ccc; padding: 5mm; }
-                                                                .label img { width: 30mm; height: 30mm; }
-                                                                .label .nc { font-size: 12pt; font-weight: bold; font-family: monospace; margin-top: 2mm; }
-                                                                .label .name { font-size: 8pt; color: #666; margin-top: 1mm; max-width: 50mm; text-align: center; }
-                                                            </style></head>
-                                                            <body><div class="label">
-                                                                <img src="${qrDataUrl}"/>
-                                                                <div class="nc">${escapeHtml(form.nc)}</div>
-                                                                <div class="name">${escapeHtml(form.name || '')}</div>
-                                                            </div>
-                                                            <scr" + "ipt>window.onload = () => setTimeout(() => window.print(), 500);</scr" + "ipt>
-                                                            </body></html>
-                                                        `);
-                                                        printWindow.document.close();
-                                                        }, 100);
-                                                    }, 0);
+                                                    const qrDataUrl = await QRCodeCache.generate(nc, 150);
+                                                    const printWindow = window.open('', '_blank', 'width=400,height=400');
+                                                    if (!printWindow) { alert('Popup blocked!'); return; }
+                                                    printWindow.document.write(`
+                                                        <!DOCTYPE html><html><head><title>Print 12NC QR</title>
+                                                        <style>
+                                                            body { font-family: Arial; display: flex; justify-content: center; padding: 10mm; }
+                                                            .label { display: flex; flex-direction: column; align-items: center; border: 0.5px dashed #ccc; padding: 5mm; }
+                                                            .label img { width: 30mm; height: 30mm; }
+                                                            .label .nc { font-size: 12pt; font-weight: bold; font-family: monospace; margin-top: 2mm; }
+                                                            .label .name { font-size: 8pt; color: #666; margin-top: 1mm; max-width: 50mm; text-align: center; }
+                                                        </style></head>
+                                                        <body><div class="label">
+                                                            <img src="${qrDataUrl}"/>
+                                                            <div class="nc">${escapeHtml(form.nc)}</div>
+                                                            <div class="name">${escapeHtml(form.name || '')}</div>
+                                                        </div>
+                                                        <scr" + "ipt>window.onload = () => setTimeout(() => window.print(), 500);</scr" + "ipt>
+                                                        </body></html>
+                                                    `);
+                                                    printWindow.document.close();
                                                 }}
                                                 className="text-xs text-blue-500 mt-1 hover:underline"
                                             ><span class="material-icons text-sm align-middle">print</span> Print</button>
@@ -942,6 +959,13 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                 };
                 loadData();
             }, []);
+            
+            // Pre-generate QR codes when items/boxes change
+            useEffect(() => {
+                if (!loading && (items.length > 0 || boxes.length > 0)) {
+                    QRCodeCache.preGenerate(items, boxes);
+                }
+            }, [loading, items, boxes]);
 
             useEffect(() => {
                 if (!loading && items.length > 0) {
@@ -1009,36 +1033,8 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             const saveBox = useCallback((box) => { setBoxes(prev => [...prev, box]); setShowAddBox(false); }, []);
 
             const printSingleQR = useCallback((box) => {
-                const generateQRDataUrl = (text, size = 128) => {
-                    return new Promise((resolve) => {
-                        // Defer QR generation outside React's execution context
-                        setTimeout(() => {
-                            const container = document.createElement('div');
-                            container.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
-                            document.body.appendChild(container);
-                            try {
-                                new window.QRCode(container, {
-                                    text: text,
-                                    width: size,
-                                    height: size,
-                                    colorDark: "#000000",
-                                    colorLight: "#ffffff"
-                                });
-                            } catch(e) {
-                                console.error('QR generation error:', e);
-                            }
-                            setTimeout(() => {
-                                const canvas = container.querySelector('canvas');
-                                const img = container.querySelector('img');
-                                let dataUrl = '';
-                                if (canvas) dataUrl = canvas.toDataURL('image/png');
-                                else if (img && img.src) dataUrl = img.src;
-                                document.body.removeChild(container);
-                                resolve(dataUrl);
-                            }, 100);
-                        }, 0);
-                    });
-                };
+                // Use pre-generated QR codes from cache
+                const generateQRDataUrl = (text, size = 128) => QRCodeCache.generate(text, size);
                 
                 generateQRDataUrl(`INVBOX:${box.label}`, 150).then(qrDataUrl => {
                     const printWindow = window.open('', '_blank', 'width=400,height=400');
