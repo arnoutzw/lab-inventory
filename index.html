@@ -262,7 +262,7 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
 
         // App version info
         const APP_VERSION = '1.0.0';
-        const GIT_HASH = '4b2aad8';
+        const GIT_HASH = '2c3aea7';
 
         // LabelImage - Generate label images using Canvas (for single 40x30mm labels)
         // 40x30mm at 300 DPI = 472x354 pixels
@@ -270,109 +270,144 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             WIDTH: 472,
             HEIGHT: 354,
 
-            // Generate box label as image data URL
-            generateBoxLabel: function(qrDataUrl, boxLabel, contents) {
+            // Generate QR code and return canvas with QR drawn on it
+            generateQRCanvas: function(text, size) {
                 return new Promise((resolve) => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = this.WIDTH;
-                    canvas.height = this.HEIGHT;
-                    const ctx = canvas.getContext('2d');
+                    const container = document.createElement('div');
+                    container.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
+                    document.body.appendChild(container);
 
-                    // White background
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(0, 0, this.WIDTH, this.HEIGHT);
-
-                    // Draw border (dashed)
-                    ctx.strokeStyle = '#cccccc';
-                    ctx.setLineDash([5, 5]);
-                    ctx.strokeRect(2, 2, this.WIDTH - 4, this.HEIGHT - 4);
-                    ctx.setLineDash([]);
-
-                    const drawText = () => {
-                        // Box label (bold, centered)
-                        ctx.fillStyle = '#000000';
-                        ctx.font = 'bold 42px Arial';
-                        ctx.textAlign = 'center';
-                        ctx.fillText(boxLabel, this.WIDTH / 2, 280);
-
-                        // Contents (smaller, centered)
-                        if (contents) {
-                            ctx.font = '24px Arial';
-                            ctx.fillStyle = '#666666';
-                            const truncated = contents.length > 30 ? contents.substring(0, 27) + '...' : contents;
-                            ctx.fillText(truncated, this.WIDTH / 2, 320);
-                        }
-
-                        resolve(canvas.toDataURL('image/png'));
-                    };
-
-                    // Draw QR code
-                    if (qrDataUrl) {
-                        const qrImg = new Image();
-                        qrImg.onload = () => {
-                            // QR centered, ~210px (18mm at 300dpi)
-                            const qrSize = 210;
-                            ctx.drawImage(qrImg, (this.WIDTH - qrSize) / 2, 15, qrSize, qrSize);
-                            drawText();
-                        };
-                        qrImg.onerror = () => drawText();
-                        qrImg.src = qrDataUrl;
-                    } else {
-                        drawText();
+                    try {
+                        new window.QRCode(container, {
+                            text: text,
+                            width: size,
+                            height: size,
+                            colorDark: "#000000",
+                            colorLight: "#ffffff",
+                            correctLevel: window.QRCode.CorrectLevel.M
+                        });
+                    } catch (e) {
+                        console.error('QR generation failed:', e);
+                        document.body.removeChild(container);
+                        resolve(null);
+                        return;
                     }
+
+                    // Wait for QR code to render (qrcodejs creates canvas async)
+                    setTimeout(() => {
+                        const qrCanvas = container.querySelector('canvas');
+                        const qrImg = container.querySelector('img');
+
+                        if (qrCanvas) {
+                            // Clone the canvas data
+                            const clonedCanvas = document.createElement('canvas');
+                            clonedCanvas.width = qrCanvas.width;
+                            clonedCanvas.height = qrCanvas.height;
+                            clonedCanvas.getContext('2d').drawImage(qrCanvas, 0, 0);
+                            document.body.removeChild(container);
+                            resolve(clonedCanvas);
+                        } else if (qrImg && qrImg.complete && qrImg.src) {
+                            // Fallback to img element
+                            const imgCanvas = document.createElement('canvas');
+                            imgCanvas.width = size;
+                            imgCanvas.height = size;
+                            const imgCtx = imgCanvas.getContext('2d');
+                            imgCtx.drawImage(qrImg, 0, 0, size, size);
+                            document.body.removeChild(container);
+                            resolve(imgCanvas);
+                        } else {
+                            console.error('No QR canvas or img found');
+                            document.body.removeChild(container);
+                            resolve(null);
+                        }
+                    }, 100);
                 });
             },
 
-            // Generate item 12NC label as image data URL
-            generateItemLabel: function(qrDataUrl, nc, itemName) {
-                return new Promise((resolve) => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = this.WIDTH;
-                    canvas.height = this.HEIGHT;
-                    const ctx = canvas.getContext('2d');
+            // Generate box label as image data URL
+            generateBoxLabel: async function(qrText, boxLabel, contents) {
+                const canvas = document.createElement('canvas');
+                canvas.width = this.WIDTH;
+                canvas.height = this.HEIGHT;
+                const ctx = canvas.getContext('2d');
 
-                    // White background
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillRect(0, 0, this.WIDTH, this.HEIGHT);
+                // White background
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, this.WIDTH, this.HEIGHT);
 
-                    // Draw border
-                    ctx.strokeStyle = '#cccccc';
-                    ctx.setLineDash([5, 5]);
-                    ctx.strokeRect(2, 2, this.WIDTH - 4, this.HEIGHT - 4);
-                    ctx.setLineDash([]);
+                // Draw border (dashed)
+                ctx.strokeStyle = '#cccccc';
+                ctx.setLineDash([5, 5]);
+                ctx.strokeRect(2, 2, this.WIDTH - 4, this.HEIGHT - 4);
+                ctx.setLineDash([]);
 
-                    const drawText = () => {
-                        // 12NC code (monospace, bold)
-                        ctx.fillStyle = '#000000';
-                        ctx.font = 'bold 32px Courier New, monospace';
-                        ctx.textAlign = 'center';
-                        ctx.fillText(nc || '', this.WIDTH / 2, 275);
-
-                        // Item name (smaller)
-                        if (itemName) {
-                            ctx.font = '22px Arial';
-                            ctx.fillStyle = '#666666';
-                            const truncated = itemName.length > 35 ? itemName.substring(0, 32) + '...' : itemName;
-                            ctx.fillText(truncated, this.WIDTH / 2, 315);
-                        }
-
-                        resolve(canvas.toDataURL('image/png'));
-                    };
-
-                    // Draw QR code
-                    if (qrDataUrl) {
-                        const qrImg = new Image();
-                        qrImg.onload = () => {
-                            const qrSize = 210;
-                            ctx.drawImage(qrImg, (this.WIDTH - qrSize) / 2, 10, qrSize, qrSize);
-                            drawText();
-                        };
-                        qrImg.onerror = () => drawText();
-                        qrImg.src = qrDataUrl;
-                    } else {
-                        drawText();
+                // Generate and draw QR code
+                if (qrText) {
+                    const qrCanvas = await this.generateQRCanvas(qrText, 200);
+                    if (qrCanvas) {
+                        const qrSize = 210;
+                        ctx.drawImage(qrCanvas, (this.WIDTH - qrSize) / 2, 15, qrSize, qrSize);
                     }
-                });
+                }
+
+                // Box label (bold, centered)
+                ctx.fillStyle = '#000000';
+                ctx.font = 'bold 42px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(boxLabel, this.WIDTH / 2, 280);
+
+                // Contents (smaller, centered)
+                if (contents) {
+                    ctx.font = '24px Arial';
+                    ctx.fillStyle = '#666666';
+                    const truncated = contents.length > 30 ? contents.substring(0, 27) + '...' : contents;
+                    ctx.fillText(truncated, this.WIDTH / 2, 320);
+                }
+
+                return canvas.toDataURL('image/png');
+            },
+
+            // Generate item 12NC label as image data URL
+            generateItemLabel: async function(qrText, nc, itemName) {
+                const canvas = document.createElement('canvas');
+                canvas.width = this.WIDTH;
+                canvas.height = this.HEIGHT;
+                const ctx = canvas.getContext('2d');
+
+                // White background
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, this.WIDTH, this.HEIGHT);
+
+                // Draw border
+                ctx.strokeStyle = '#cccccc';
+                ctx.setLineDash([5, 5]);
+                ctx.strokeRect(2, 2, this.WIDTH - 4, this.HEIGHT - 4);
+                ctx.setLineDash([]);
+
+                // Generate and draw QR code
+                if (qrText) {
+                    const qrCanvas = await this.generateQRCanvas(qrText, 200);
+                    if (qrCanvas) {
+                        const qrSize = 210;
+                        ctx.drawImage(qrCanvas, (this.WIDTH - qrSize) / 2, 10, qrSize, qrSize);
+                    }
+                }
+
+                // 12NC code (monospace, bold)
+                ctx.fillStyle = '#000000';
+                ctx.font = 'bold 32px Courier New, monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(nc || '', this.WIDTH / 2, 275);
+
+                // Item name (smaller)
+                if (itemName) {
+                    ctx.font = '22px Arial';
+                    ctx.fillStyle = '#666666';
+                    const truncated = itemName.length > 35 ? itemName.substring(0, 32) + '...' : itemName;
+                    ctx.fillText(truncated, this.WIDTH / 2, 315);
+                }
+
+                return canvas.toDataURL('image/png');
             },
 
             // Print a label image in a popup window
@@ -411,7 +446,7 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                 // Generate all label images first
                 const images = [];
                 for (const label of labels) {
-                    const img = await this.generateBoxLabel(label.qrDataUrl, label.title, includeContents ? label.subtitle : '');
+                    const img = await this.generateBoxLabel(label.qrText, label.title, includeContents ? label.subtitle : '');
                     images.push(img);
                 }
 
@@ -639,48 +674,17 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             const selectAll = () => setSelectedBoxes(boxes.map(b => b.label));
             const selectNone = () => setSelectedBoxes([]);
 
-            // Generate QR code - try cache first, then generate fresh
-            const generateQRDataUrl = (text, size = 128) => {
-                const cached = QRCodeCache.get(text, size);
-                if (cached) return Promise.resolve(cached);
-                
-                // Generate fresh
-                return new Promise((resolve) => {
-                    const container = document.createElement('div');
-                    container.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
-                    document.body.appendChild(container);
-                    try {
-                        new window.QRCode(container, { text, width: size, height: size, colorDark: "#000000", colorLight: "#ffffff" });
-                    } catch(e) { 
-                        document.body.removeChild(container);
-                        resolve(''); 
-                        return;
-                    }
-                    setTimeout(() => {
-                        const canvas = container.querySelector('canvas');
-                        const img = container.querySelector('img');
-                        let dataUrl = '';
-                        if (canvas) dataUrl = canvas.toDataURL('image/png');
-                        else if (img && img.src) dataUrl = img.src;
-                        document.body.removeChild(container);
-                        if (dataUrl) QRCodeCache.cache.set(`${text}_${size}`, dataUrl);
-                        resolve(dataUrl);
-                    }, 150);
-                });
-            };
-
             const handlePrint = async () => {
                 if (selectedBoxes.length === 0) return alert('Selecteer minstens 1 box');
 
                 // Generate labels for batch printing
                 const labels = [];
-                for (const label of selectedBoxes) {
-                    const box = boxes.find(b => b.label === label);
-                    const qrDataUrl = await generateQRDataUrl(`INVBOX:${label}`, 150);
+                for (const boxLabel of selectedBoxes) {
+                    const box = boxes.find(b => b.label === boxLabel);
                     for (let i = 0; i < copies; i++) {
                         labels.push({
-                            qrDataUrl,
-                            title: label,
+                            qrText: `INVBOX:${boxLabel}`,
+                            title: boxLabel,
                             subtitle: box ? box.contents : ''
                         });
                     }
@@ -957,32 +961,11 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                                             <QRCode value={(form.nc || '').replace(/ /g, '')} size={80} />
                                             <button
                                                 type="button"
-                                                onClick={(e) => {
+                                                onClick={async (e) => {
                                                     e.preventDefault();
                                                     const nc = (form.nc || '').replace(/ /g, '');
-
-                                                    const printWithImage = async (qrDataUrl) => {
-                                                        const imageDataUrl = await LabelImage.generateItemLabel(qrDataUrl, form.nc, form.name);
-                                                        LabelImage.print(imageDataUrl);
-                                                    };
-
-                                                    // Try cache first
-                                                    const cached = QRCodeCache.get(nc, 150);
-                                                    if (cached) { printWithImage(cached); return; }
-
-                                                    // Generate fresh
-                                                    const container = document.createElement('div');
-                                                    container.style.cssText = 'position:absolute;left:-9999px;';
-                                                    document.body.appendChild(container);
-                                                    try { new window.QRCode(container, { text: nc, width: 150, height: 150 }); } catch(err) {}
-                                                    setTimeout(() => {
-                                                        const canvas = container.querySelector('canvas');
-                                                        const img = container.querySelector('img');
-                                                        let dataUrl = canvas ? canvas.toDataURL() : (img ? img.src : '');
-                                                        document.body.removeChild(container);
-                                                        if (dataUrl) QRCodeCache.cache.set(`${nc}_150`, dataUrl);
-                                                        printWithImage(dataUrl);
-                                                    }, 200);
+                                                    const imageDataUrl = await LabelImage.generateItemLabel(nc, form.nc, form.name);
+                                                    LabelImage.print(imageDataUrl);
                                                 }}
                                                 className="text-xs text-blue-500 mt-1 hover:underline"
                                             ><span class="material-icons text-sm align-middle">print</span> Print</button>
@@ -1349,31 +1332,10 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             const saveBox = useCallback((box) => { setBoxes(prev => [...prev, box]); setShowAddBox(false); }, []);
 
             const printSingleQR = useCallback(async (box) => {
-                const generateAndPrint = async (qrDataUrl) => {
-                    const imageDataUrl = await LabelImage.generateBoxLabel(qrDataUrl, box.label, box.contents);
-                    LabelImage.print(imageDataUrl);
-                };
-
-                // Try cache first
+                // Generate label with QR code and print
                 const qrText = `INVBOX:${box.label}`;
-                const cached = QRCodeCache.get(qrText, 150);
-                if (cached) {
-                    generateAndPrint(cached);
-                } else {
-                    // Generate fresh QR
-                    const container = document.createElement('div');
-                    container.style.cssText = 'position:absolute;left:-9999px;';
-                    document.body.appendChild(container);
-                    try { new window.QRCode(container, { text: qrText, width: 150, height: 150 }); } catch(e) {}
-                    setTimeout(() => {
-                        const canvas = container.querySelector('canvas');
-                        const img = container.querySelector('img');
-                        let dataUrl = canvas ? canvas.toDataURL() : (img ? img.src : '');
-                        document.body.removeChild(container);
-                        if (dataUrl) QRCodeCache.cache.set(`${qrText}_150`, dataUrl);
-                        generateAndPrint(dataUrl);
-                    }, 200);
-                }
+                const imageDataUrl = await LabelImage.generateBoxLabel(qrText, box.label, box.contents);
+                LabelImage.print(imageDataUrl);
             }, []);            const handleQRScan = useCallback((data) => { setShowScanner(false); if (data.startsWith('INVBOX:')) { const box = boxes.find(b => b.label === data.replace('INVBOX:', '')); if (box) setSelectedBox(box); } }, [boxes]);
 
             const exportData = async () => {
