@@ -984,9 +984,47 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
 
         ReactDOM.render(<App />, document.getElementById('root'));
 
-        // Register Service Worker
+        // Register Service Worker with auto-update
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('./sw.js').then(() => console.log('SW registered'));
+            navigator.serviceWorker.register('./sw.js').then((registration) => {
+                console.log('SW registered');
+                
+                // Check for updates every 5 minutes
+                setInterval(() => {
+                    registration.update();
+                }, 5 * 60 * 1000);
+                
+                // Listen for new service worker
+                registration.addEventListener('updatefound', () => {
+                    const newWorker = registration.installing;
+                    console.log('New SW version found, installing...');
+                    
+                    newWorker.addEventListener('statechange', () => {
+                        if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            // New version installed, reload to activate
+                            console.log('New version ready, reloading...');
+                            window.location.reload();
+                        }
+                    });
+                });
+            });
+            
+            // Listen for messages from service worker
+            navigator.serviceWorker.addEventListener('message', (event) => {
+                if (event.data && event.data.type === 'SW_UPDATED') {
+                    console.log('SW updated to:', event.data.version);
+                    // Optionally show a notification or auto-reload
+                    window.location.reload();
+                }
+            });
+            
+            // Check for waiting service worker on page load
+            navigator.serviceWorker.ready.then((registration) => {
+                if (registration.waiting) {
+                    // There's already a waiting SW, activate it
+                    registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                }
+            });
         }
     </script>
 </body>
