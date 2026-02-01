@@ -331,42 +331,45 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
 
             const generateQRDataUrl = (text, size = 128) => {
                 return new Promise((resolve, reject) => {
-                    try {
-                        // Create detached container
-                        const container = document.createElement('div');
-                        container.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
-                        document.body.appendChild(container);
-                        
-                        // Generate QR code
-                        new window.QRCode(container, {
-                            text: text,
-                            width: size,
-                            height: size,
-                            colorDark: "#000000",
-                            colorLight: "#ffffff"
-                        });
-                        
-                        // Extract data URL after render
-                        setTimeout(() => {
-                            try {
-                                const canvas = container.querySelector('canvas');
-                                const img = container.querySelector('img');
-                                let dataUrl = '';
-                                if (canvas) {
-                                    dataUrl = canvas.toDataURL('image/png');
-                                } else if (img && img.src) {
-                                    dataUrl = img.src;
+                    // Defer QR generation outside React's execution context
+                    setTimeout(() => {
+                        try {
+                            // Create detached container
+                            const container = document.createElement('div');
+                            container.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
+                            document.body.appendChild(container);
+                            
+                            // Generate QR code
+                            new window.QRCode(container, {
+                                text: text,
+                                width: size,
+                                height: size,
+                                colorDark: "#000000",
+                                colorLight: "#ffffff"
+                            });
+                            
+                            // Extract data URL after render
+                            setTimeout(() => {
+                                try {
+                                    const canvas = container.querySelector('canvas');
+                                    const img = container.querySelector('img');
+                                    let dataUrl = '';
+                                    if (canvas) {
+                                        dataUrl = canvas.toDataURL('image/png');
+                                    } else if (img && img.src) {
+                                        dataUrl = img.src;
+                                    }
+                                    document.body.removeChild(container);
+                                    resolve(dataUrl);
+                                } catch (e) {
+                                    document.body.removeChild(container);
+                                    reject(e);
                                 }
-                                document.body.removeChild(container);
-                                resolve(dataUrl);
-                            } catch (e) {
-                                document.body.removeChild(container);
-                                reject(e);
-                            }
-                        }, 150);
-                    } catch (e) {
-                        reject(e);
-                    }
+                            }, 100);
+                        } catch (e) {
+                            reject(e);
+                        }
+                    }, 0);
                 });
             };
 
@@ -548,15 +551,20 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             
             // Load existing photo
             useEffect(() => {
+                let cancelled = false;
                 if (item?.id) {
                     getPhoto(item.id).then(blob => {
-                        if (blob) {
+                        // Prevent state update if component unmounted
+                        if (blob && !cancelled) {
                             setPhoto(blob);
                             setPhotoPreview(URL.createObjectURL(blob));
                         }
                     });
                 }
-                return () => { if (photoPreview) URL.revokeObjectURL(photoPreview); };
+                return () => { 
+                    cancelled = true;
+                    if (photoPreview) URL.revokeObjectURL(photoPreview); 
+                };
             }, [item]);
             
             const handlePhotoChange = (e) => {
@@ -564,7 +572,10 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                 if (file && validateImageFile(file)) {
                     // Resize image to max 800px
                     const img = new Image();
+                    const fileUrl = URL.createObjectURL(file);
                     img.onload = () => {
+                        // Revoke file URL to prevent memory leak
+                        URL.revokeObjectURL(fileUrl);
                         const canvas = document.createElement('canvas');
                         const maxSize = 800;
                         let { width, height } = img;
@@ -585,28 +596,41 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                             setPhotoPreview(URL.createObjectURL(blob));
                         }, 'image/jpeg', 0.8);
                     };
-                    img.src = URL.createObjectURL(file);
+                    img.onerror = () => {
+                        URL.revokeObjectURL(fileUrl);
+                        console.error('Failed to load image');
+                    };
+                    img.src = fileUrl;
                 }
             };
             
             const handleSave = async () => {
-                // Sanitize inputs before saving (OWASP recommendation)
-                const sanitizedForm = {
-                    ...form,
-                    name: sanitizeInput(form.name),
-                    subcategory: sanitizeInput(form.subcategory || ''),
-                };
-                const savedItem = await onSave(sanitizedForm);
-                const itemId = form.id || savedItem?.id;
-                if (itemId && photo) {
-                    await savePhoto(itemId, photo);
+                try {
+                    // Sanitize inputs before saving (OWASP recommendation)
+                    const sanitizedForm = {
+                        ...form,
+                        name: sanitizeInput(form.name),
+                        subcategory: sanitizeInput(form.subcategory || ''),
+                    };
+                    const savedItem = await onSave(sanitizedForm);
+                    const itemId = form.id || savedItem?.id;
+                    if (itemId && photo) {
+                        await savePhoto(itemId, photo);
+                    }
+                } catch (e) {
+                    console.error('Save error:', e);
+                    alert('Failed to save item. Please try again.');
                 }
             };
             
             const handleDeletePhoto = async () => {
-                if (item?.id) await deletePhoto(item.id);
-                setPhoto(null);
-                setPhotoPreview(null);
+                try {
+                    if (item?.id) await deletePhoto(item.id);
+                    setPhoto(null);
+                    setPhotoPreview(null);
+                } catch (e) {
+                    console.error('Delete photo error:', e);
+                }
             };
             
             return (
@@ -935,29 +959,32 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             const printSingleQR = useCallback((box) => {
                 const generateQRDataUrl = (text, size = 128) => {
                     return new Promise((resolve) => {
-                        const container = document.createElement('div');
-                        container.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
-                        document.body.appendChild(container);
-                        try {
-                            new window.QRCode(container, {
-                                text: text,
-                                width: size,
-                                height: size,
-                                colorDark: "#000000",
-                                colorLight: "#ffffff"
-                            });
-                        } catch(e) {
-                            console.error('QR generation error:', e);
-                        }
+                        // Defer QR generation outside React's execution context
                         setTimeout(() => {
-                            const canvas = container.querySelector('canvas');
-                            const img = container.querySelector('img');
-                            let dataUrl = '';
-                            if (canvas) dataUrl = canvas.toDataURL('image/png');
-                            else if (img && img.src) dataUrl = img.src;
-                            document.body.removeChild(container);
-                            resolve(dataUrl);
-                        }, 150);
+                            const container = document.createElement('div');
+                            container.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
+                            document.body.appendChild(container);
+                            try {
+                                new window.QRCode(container, {
+                                    text: text,
+                                    width: size,
+                                    height: size,
+                                    colorDark: "#000000",
+                                    colorLight: "#ffffff"
+                                });
+                            } catch(e) {
+                                console.error('QR generation error:', e);
+                            }
+                            setTimeout(() => {
+                                const canvas = container.querySelector('canvas');
+                                const img = container.querySelector('img');
+                                let dataUrl = '';
+                                if (canvas) dataUrl = canvas.toDataURL('image/png');
+                                else if (img && img.src) dataUrl = img.src;
+                                document.body.removeChild(container);
+                                resolve(dataUrl);
+                            }, 100);
+                        }, 0);
                     });
                 };
                 
@@ -1039,9 +1066,12 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                 // Generate and download ZIP
                 const zipBlob = await zip.generateAsync({ type: 'blob' });
                 const a = document.createElement('a');
-                a.href = URL.createObjectURL(zipBlob);
+                const zipUrl = URL.createObjectURL(zipBlob);
+                a.href = zipUrl;
                 a.download = `inventory_${new Date().toISOString().split('T')[0]}.zip`;
                 a.click();
+                // Revoke URL after download starts to prevent memory leak
+                setTimeout(() => URL.revokeObjectURL(zipUrl), 1000);
             };
             const importData = async (e) => {
                 const file = e.target.files[0];
