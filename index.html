@@ -1105,12 +1105,23 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                                                     img.src = url;
                                                 });
 
-                                                // Try CORS proxy as fallback
+                                                // Try multiple CORS proxies as fallback
                                                 const loadViaProxy = async () => {
-                                                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-                                                    const response = await fetch(proxyUrl);
-                                                    if (!response.ok) throw new Error('Proxy fetch failed');
-                                                    return await response.blob();
+                                                    const proxies = [
+                                                        (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+                                                        (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+                                                        (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
+                                                    ];
+                                                    for (const proxy of proxies) {
+                                                        try {
+                                                            const response = await fetch(proxy(url));
+                                                            if (response.ok) {
+                                                                const blob = await response.blob();
+                                                                if (blob.size > 0) return blob;
+                                                            }
+                                                        } catch (e) { console.log('Proxy failed:', e); }
+                                                    }
+                                                    throw new Error('All proxies failed');
                                                 };
 
                                                 try {
@@ -1558,12 +1569,23 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                     img.src = url;
                 });
 
-                // Helper to load via CORS proxy
+                // Helper to load via multiple CORS proxies
                 const loadViaProxy = async (url) => {
-                    const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(url)}`;
-                    const response = await fetch(proxyUrl);
-                    if (!response.ok) throw new Error('Proxy failed');
-                    return await response.blob();
+                    const proxies = [
+                        (u) => `https://api.allorigins.win/raw?url=${encodeURIComponent(u)}`,
+                        (u) => `https://corsproxy.io/?${encodeURIComponent(u)}`,
+                        (u) => `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(u)}`
+                    ];
+                    for (const proxy of proxies) {
+                        try {
+                            const response = await fetch(proxy(url));
+                            if (response.ok) {
+                                const blob = await response.blob();
+                                if (blob.size > 0) return blob;
+                            }
+                        } catch (e) { /* try next */ }
+                    }
+                    throw new Error('All proxies failed');
                 };
 
                 for (let i = 0; i < itemsWithImages.length; i++) {
