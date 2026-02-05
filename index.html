@@ -113,6 +113,36 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
         .dark .divide-y > * { border-color: #4b5563 !important; }
         .dark .shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.5) !important; }
         .dark .rounded-xl, .dark .rounded-lg { border: 1px solid #374151; }
+
+        /* Label Maker Styles */
+        .label-maker-container { max-width: 1200px; margin: 0 auto; }
+        .label-maker-main { display: flex; gap: 20px; flex-wrap: wrap; }
+        .label-maker-controls { width: 280px; flex-shrink: 0; }
+        .label-maker-canvas-area { flex: 1; min-width: 300px; }
+        .label-canvas-wrapper { background: #e0e0e0; padding: 20px; border-radius: 8px; display: flex; justify-content: center; align-items: center; }
+        .label-canvas { background: white; border: 1px solid #999; position: relative; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+        .label-canvas-element { position: absolute; cursor: move; user-select: none; border: 2px solid transparent; transition: border-color 0.2s; }
+        .label-canvas-element:hover { border-color: rgba(59, 130, 246, 0.5); }
+        .label-canvas-element.selected { border-color: #3b82f6; }
+        .label-canvas-element .resize-handle { position: absolute; width: 10px; height: 10px; background: #3b82f6; border: 1px solid white; display: none; }
+        .label-canvas-element.selected .resize-handle { display: block; }
+        .resize-handle.se { bottom: -5px; right: -5px; cursor: se-resize; }
+        .resize-handle.sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+        .resize-handle.ne { top: -5px; right: -5px; cursor: ne-resize; }
+        .resize-handle.nw { top: -5px; left: -5px; cursor: nw-resize; }
+        .label-text-element { padding: 5px; min-width: 50px; min-height: 20px; word-wrap: break-word; white-space: pre-wrap; }
+        .label-barcode-element { padding: 5px; background: white; }
+        .label-barcode-element svg { display: block; }
+        .label-element-controls { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); background: white; padding: 10px 20px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); display: flex; gap: 8px; align-items: center; z-index: 100; }
+        .dark .label-canvas-wrapper { background: #374151; }
+        .dark .label-canvas { background: white; }
+        .dark .label-element-controls { background: #1f2937; }
+        @media (max-width: 768px) { .label-maker-main { flex-direction: column; } .label-maker-controls { width: 100%; } }
+        @media print {
+            .label-maker-print-container, .label-maker-print-container * { visibility: visible; }
+            .label-maker-print-container { position: absolute; left: 0; top: 0; }
+            .label-maker-print-container .label-canvas { border: none; box-shadow: none; }
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen safe-bottom">
@@ -692,6 +722,544 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                         </div>
                         {error ? <p className="text-red-500 text-center">{error}</p> : <div id="barcode-reader"></div>}
                     </div>
+                </div>
+            );
+        };
+
+
+        // LabelMaker - Easy label maker with text and barcode support
+        const LabelMaker = () => {
+            const DPI = 96;
+            const [canvasWidth, setCanvasWidth] = useState(3);
+            const [canvasHeight, setCanvasHeight] = useState(2);
+            const [sizePreset, setSizePreset] = useState('3x2');
+            const [elements, setElements] = useState([]);
+            const [selectedElementId, setSelectedElementId] = useState(null);
+            const [elementCounter, setElementCounter] = useState(0);
+            const [zIndexCounter, setZIndexCounter] = useState(1);
+
+            // Text controls
+            const [textContent, setTextContent] = useState('');
+            const [fontFamily, setFontFamily] = useState('Arial, sans-serif');
+            const [fontSize, setFontSize] = useState(12);
+            const [textAlign, setTextAlign] = useState('left');
+            const [textColor, setTextColor] = useState('#000000');
+            const [textBold, setTextBold] = useState(false);
+            const [textItalic, setTextItalic] = useState(false);
+            const [textUnderline, setTextUnderline] = useState(false);
+
+            // Barcode controls
+            const [barcodeType, setBarcodeType] = useState('CODE128');
+            const [barcodeValue, setBarcodeValue] = useState('');
+            const [showBarcodeText, setShowBarcodeText] = useState(true);
+            const [barcodeHeight, setBarcodeHeight] = useState(50);
+
+            // Drag state
+            const [isDragging, setIsDragging] = useState(false);
+            const [isResizing, setIsResizing] = useState(false);
+            const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+            const [resizeData, setResizeData] = useState(null);
+
+            const canvasRef = useRef(null);
+            const printContainerRef = useRef(null);
+
+            const widthPx = Math.round(canvasWidth * DPI);
+            const heightPx = Math.round(canvasHeight * DPI);
+
+            const presets = {
+                '2x1': { width: 2, height: 1 },
+                '3x2': { width: 3, height: 2 },
+                '4x2': { width: 4, height: 2 },
+                '4x3': { width: 4, height: 3 },
+                '4x6': { width: 4, height: 6 }
+            };
+
+            const handlePresetChange = (preset) => {
+                setSizePreset(preset);
+                if (presets[preset]) {
+                    setCanvasWidth(presets[preset].width);
+                    setCanvasHeight(presets[preset].height);
+                }
+            };
+
+            const applyCanvasSize = () => {
+                // Update preset selector if it matches
+                let matched = false;
+                for (const [key, size] of Object.entries(presets)) {
+                    if (size.width === canvasWidth && size.height === canvasHeight) {
+                        setSizePreset(key);
+                        matched = true;
+                        break;
+                    }
+                }
+                if (!matched) setSizePreset('custom');
+            };
+
+            const addTextElement = () => {
+                if (!textContent.trim()) {
+                    alert('Please enter some text');
+                    return;
+                }
+
+                const newId = elementCounter + 1;
+                setElementCounter(newId);
+                const newZIndex = zIndexCounter + 1;
+                setZIndexCounter(newZIndex);
+
+                const newElement = {
+                    id: newId,
+                    type: 'text',
+                    content: textContent,
+                    x: 10,
+                    y: 10,
+                    zIndex: newZIndex,
+                    fontFamily,
+                    fontSize,
+                    textAlign,
+                    color: textColor,
+                    bold: textBold,
+                    italic: textItalic,
+                    underline: textUnderline
+                };
+
+                setElements(prev => [...prev, newElement]);
+                setSelectedElementId(newId);
+                setTextContent('');
+            };
+
+            const validateBarcode = (type, value) => {
+                switch (type) {
+                    case 'UPC':
+                        if (!/^\d{11,12}$/.test(value)) return { valid: false, message: 'UPC-A requires 11-12 digits' };
+                        break;
+                    case 'EAN13':
+                        if (!/^\d{12,13}$/.test(value)) return { valid: false, message: 'EAN-13 requires 12-13 digits' };
+                        break;
+                    case 'CODE39':
+                        if (!/^[A-Z0-9\-\.\ \$\/\+\%]+$/i.test(value)) return { valid: false, message: 'Code 39 only supports A-Z, 0-9, and - . $ / + % space' };
+                        break;
+                    case 'CODE128':
+                        if (value.length === 0) return { valid: false, message: 'Please enter a barcode value' };
+                        break;
+                }
+                return { valid: true };
+            };
+
+            const addBarcodeElement = () => {
+                if (!barcodeValue.trim()) {
+                    alert('Please enter a barcode value');
+                    return;
+                }
+
+                const validation = validateBarcode(barcodeType, barcodeValue);
+                if (!validation.valid) {
+                    alert(validation.message);
+                    return;
+                }
+
+                const newId = elementCounter + 1;
+                setElementCounter(newId);
+                const newZIndex = zIndexCounter + 1;
+                setZIndexCounter(newZIndex);
+
+                const newElement = {
+                    id: newId,
+                    type: 'barcode',
+                    value: barcodeValue,
+                    barcodeType,
+                    x: 10,
+                    y: 10,
+                    zIndex: newZIndex,
+                    height: barcodeHeight,
+                    showText: showBarcodeText
+                };
+
+                setElements(prev => [...prev, newElement]);
+                setSelectedElementId(newId);
+                setBarcodeValue('');
+            };
+
+            const deleteSelectedElement = () => {
+                if (selectedElementId) {
+                    setElements(prev => prev.filter(el => el.id !== selectedElementId));
+                    setSelectedElementId(null);
+                }
+            };
+
+            const bringToFront = () => {
+                if (selectedElementId) {
+                    const newZIndex = zIndexCounter + 1;
+                    setZIndexCounter(newZIndex);
+                    setElements(prev => prev.map(el =>
+                        el.id === selectedElementId ? { ...el, zIndex: newZIndex } : el
+                    ));
+                }
+            };
+
+            const sendToBack = () => {
+                if (selectedElementId) {
+                    setElements(prev => prev.map(el =>
+                        el.id === selectedElementId ? { ...el, zIndex: 0 } : el
+                    ));
+                }
+            };
+
+            const clearCanvas = () => {
+                if (confirm('Clear all elements from the canvas?')) {
+                    setElements([]);
+                    setSelectedElementId(null);
+                    setElementCounter(0);
+                    setZIndexCounter(1);
+                }
+            };
+
+            const handleElementMouseDown = (e, element) => {
+                e.stopPropagation();
+
+                if (e.target.classList.contains('resize-handle')) {
+                    setIsResizing(true);
+                    setIsDragging(false);
+                    setSelectedElementId(element.id);
+                    const handle = e.target.dataset.handle;
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setResizeData({
+                        handle,
+                        startX: e.clientX,
+                        startY: e.clientY,
+                        startWidth: rect.width,
+                        startHeight: rect.height,
+                        startLeft: element.x,
+                        startTop: element.y
+                    });
+                } else {
+                    setIsDragging(true);
+                    setIsResizing(false);
+                    setSelectedElementId(element.id);
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    setDragOffset({
+                        x: e.clientX - rect.left,
+                        y: e.clientY - rect.top
+                    });
+                }
+            };
+
+            const handleMouseMove = useCallback((e) => {
+                if (!selectedElementId) return;
+
+                if (isDragging && canvasRef.current) {
+                    const canvasRect = canvasRef.current.getBoundingClientRect();
+                    let newX = e.clientX - canvasRect.left - dragOffset.x;
+                    let newY = e.clientY - canvasRect.top - dragOffset.y;
+
+                    newX = Math.max(0, Math.min(newX, widthPx - 50));
+                    newY = Math.max(0, Math.min(newY, heightPx - 20));
+
+                    setElements(prev => prev.map(el =>
+                        el.id === selectedElementId ? { ...el, x: newX, y: newY } : el
+                    ));
+                } else if (isResizing && resizeData) {
+                    const deltaX = e.clientX - resizeData.startX;
+                    const deltaY = e.clientY - resizeData.startY;
+
+                    let newWidth = resizeData.startWidth;
+                    let newHeight = resizeData.startHeight;
+                    let newLeft = resizeData.startLeft;
+                    let newTop = resizeData.startTop;
+
+                    switch (resizeData.handle) {
+                        case 'se':
+                            newWidth = Math.max(50, resizeData.startWidth + deltaX);
+                            newHeight = Math.max(20, resizeData.startHeight + deltaY);
+                            break;
+                        case 'sw':
+                            newWidth = Math.max(50, resizeData.startWidth - deltaX);
+                            newHeight = Math.max(20, resizeData.startHeight + deltaY);
+                            newLeft = resizeData.startLeft + (resizeData.startWidth - newWidth);
+                            break;
+                        case 'ne':
+                            newWidth = Math.max(50, resizeData.startWidth + deltaX);
+                            newHeight = Math.max(20, resizeData.startHeight - deltaY);
+                            newTop = resizeData.startTop + (resizeData.startHeight - newHeight);
+                            break;
+                        case 'nw':
+                            newWidth = Math.max(50, resizeData.startWidth - deltaX);
+                            newHeight = Math.max(20, resizeData.startHeight - deltaY);
+                            newLeft = resizeData.startLeft + (resizeData.startWidth - newWidth);
+                            newTop = resizeData.startTop + (resizeData.startHeight - newHeight);
+                            break;
+                    }
+
+                    setElements(prev => prev.map(el =>
+                        el.id === selectedElementId ? { ...el, x: newLeft, y: newTop, width: newWidth, height: newHeight } : el
+                    ));
+                }
+            }, [isDragging, isResizing, selectedElementId, dragOffset, resizeData, widthPx, heightPx]);
+
+            const handleMouseUp = useCallback(() => {
+                setIsDragging(false);
+                setIsResizing(false);
+                setResizeData(null);
+            }, []);
+
+            useEffect(() => {
+                document.addEventListener('mousemove', handleMouseMove);
+                document.addEventListener('mouseup', handleMouseUp);
+                return () => {
+                    document.removeEventListener('mousemove', handleMouseMove);
+                    document.removeEventListener('mouseup', handleMouseUp);
+                };
+            }, [handleMouseMove, handleMouseUp]);
+
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    if ((e.key === 'Delete' || e.key === 'Backspace') && selectedElementId &&
+                        document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA') {
+                        deleteSelectedElement();
+                        e.preventDefault();
+                    } else if (e.key === 'Escape') {
+                        setSelectedElementId(null);
+                    }
+                };
+                document.addEventListener('keydown', handleKeyDown);
+                return () => document.removeEventListener('keydown', handleKeyDown);
+            }, [selectedElementId]);
+
+            const printLabel = () => {
+                const printWindow = window.open('', '_blank', 'width=500,height=400');
+                if (!printWindow) {
+                    alert('Popup blocked! Please allow popups to print labels.');
+                    return;
+                }
+
+                const elementsHtml = elements.map(el => {
+                    if (el.type === 'text') {
+                        return `<div style="position:absolute;left:${el.x}px;top:${el.y}px;z-index:${el.zIndex};font-family:${el.fontFamily};font-size:${el.fontSize}pt;text-align:${el.textAlign};color:${el.color};font-weight:${el.bold ? 'bold' : 'normal'};font-style:${el.italic ? 'italic' : 'normal'};text-decoration:${el.underline ? 'underline' : 'none'};white-space:pre-wrap;${el.width ? `width:${el.width}px;` : ''}${el.height ? `height:${el.height}px;` : ''}">${escapeHtml(el.content)}</div>`;
+                    } else if (el.type === 'barcode') {
+                        return `<div id="barcode-${el.id}" style="position:absolute;left:${el.x}px;top:${el.y}px;z-index:${el.zIndex};background:white;padding:5px;"></div>`;
+                    }
+                    return '';
+                }).join('');
+
+                const barcodeElements = elements.filter(el => el.type === 'barcode');
+                const barcodeScript = barcodeElements.length > 0 ? `
+                    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"><\/script>
+                    <script>
+                        window.onload = function() {
+                            ${barcodeElements.map(el => `
+                                try {
+                                    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                                    document.getElementById('barcode-${el.id}').appendChild(svg);
+                                    JsBarcode(svg, "${escapeHtml(el.value)}", {
+                                        format: "${el.barcodeType}",
+                                        width: 2,
+                                        height: ${el.height},
+                                        displayValue: ${el.showText},
+                                        fontSize: 12,
+                                        margin: 5
+                                    });
+                                } catch(e) { console.error(e); }
+                            `).join('')}
+                            setTimeout(function() { window.print(); }, 500);
+                        };
+                    <\/script>
+                ` : `<script>window.onload = function() { setTimeout(function() { window.print(); }, 300); };<\/script>`;
+
+                printWindow.document.write(`
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Print Label</title>
+                        <style>
+                            @page { size: ${canvasWidth}in ${canvasHeight}in; margin: 0; }
+                            * { margin: 0; padding: 0; box-sizing: border-box; }
+                            body { width: ${widthPx}px; height: ${heightPx}px; }
+                            .label-canvas { width: ${widthPx}px; height: ${heightPx}px; position: relative; background: white; }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="label-canvas">${elementsHtml}</div>
+                        ${barcodeScript}
+                    </body>
+                    </html>
+                `);
+                printWindow.document.close();
+            };
+
+            // Barcode rendering component
+            const BarcodeElement = ({ element }) => {
+                const svgRef = useRef(null);
+
+                useEffect(() => {
+                    if (svgRef.current && typeof JsBarcode !== 'undefined') {
+                        try {
+                            JsBarcode(svgRef.current, element.value, {
+                                format: element.barcodeType,
+                                width: 2,
+                                height: element.height,
+                                displayValue: element.showText,
+                                fontSize: 12,
+                                margin: 5,
+                                background: '#ffffff',
+                                lineColor: '#000000'
+                            });
+                        } catch (error) {
+                            console.error('Barcode error:', error);
+                        }
+                    }
+                }, [element.value, element.barcodeType, element.height, element.showText]);
+
+                return <svg ref={svgRef}></svg>;
+            };
+
+            return (
+                <div className="label-maker-container space-y-4">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
+                        <h2 className="text-xl font-bold mb-4 text-center">Easy Label Maker</h2>
+
+                        <div className="label-maker-main">
+                            {/* Controls Panel */}
+                            <div className="label-maker-controls space-y-4">
+                                {/* Canvas Size */}
+                                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                                    <h3 className="font-bold text-sm mb-2">Canvas Size</h3>
+                                    <select
+                                        value={sizePreset}
+                                        onChange={(e) => handlePresetChange(e.target.value)}
+                                        className="w-full px-2 py-1 border rounded text-sm mb-2"
+                                    >
+                                        <option value="custom">Custom</option>
+                                        <option value="2x1">2" x 1" (Small)</option>
+                                        <option value="3x2">3" x 2" (Medium)</option>
+                                        <option value="4x2">4" x 2" (Large)</option>
+                                        <option value="4x3">4" x 3" (Shipping)</option>
+                                        <option value="4x6">4" x 6" (Large Shipping)</option>
+                                    </select>
+                                    <div className="flex gap-2 mb-2">
+                                        <div className="flex-1">
+                                            <label className="text-xs">Width (in)</label>
+                                            <input type="number" value={canvasWidth} onChange={(e) => setCanvasWidth(parseFloat(e.target.value) || 3)} min="1" max="12" step="0.25" className="w-full px-2 py-1 border rounded text-sm" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <label className="text-xs">Height (in)</label>
+                                            <input type="number" value={canvasHeight} onChange={(e) => setCanvasHeight(parseFloat(e.target.value) || 2)} min="1" max="12" step="0.25" className="w-full px-2 py-1 border rounded text-sm" />
+                                        </div>
+                                    </div>
+                                    <button onClick={applyCanvasSize} className="w-full py-1 bg-blue-500 text-white rounded text-sm">Apply Size</button>
+                                </div>
+
+                                {/* Text Box */}
+                                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                                    <h3 className="font-bold text-sm mb-2">Text Box</h3>
+                                    <textarea value={textContent} onChange={(e) => setTextContent(e.target.value)} placeholder="Enter label text..." rows="2" className="w-full px-2 py-1 border rounded text-sm mb-2" />
+                                    <select value={fontFamily} onChange={(e) => setFontFamily(e.target.value)} className="w-full px-2 py-1 border rounded text-sm mb-2">
+                                        <option value="Arial, sans-serif">Arial</option>
+                                        <option value="'Times New Roman', serif">Times New Roman</option>
+                                        <option value="'Courier New', monospace">Courier New</option>
+                                        <option value="Georgia, serif">Georgia</option>
+                                        <option value="Verdana, sans-serif">Verdana</option>
+                                    </select>
+                                    <div className="flex gap-2 mb-2">
+                                        <input type="number" value={fontSize} onChange={(e) => setFontSize(parseInt(e.target.value) || 12)} min="6" max="72" className="w-16 px-2 py-1 border rounded text-sm" title="Font size (pt)" />
+                                        <select value={textAlign} onChange={(e) => setTextAlign(e.target.value)} className="flex-1 px-2 py-1 border rounded text-sm">
+                                            <option value="left">Left</option>
+                                            <option value="center">Center</option>
+                                            <option value="right">Right</option>
+                                        </select>
+                                        <input type="color" value={textColor} onChange={(e) => setTextColor(e.target.value)} className="w-8 h-8 border rounded cursor-pointer" />
+                                    </div>
+                                    <div className="flex gap-1 mb-2">
+                                        <button onClick={() => setTextBold(!textBold)} className={`w-8 h-8 border rounded font-bold ${textBold ? 'bg-blue-500 text-white' : ''}`}>B</button>
+                                        <button onClick={() => setTextItalic(!textItalic)} className={`w-8 h-8 border rounded italic ${textItalic ? 'bg-blue-500 text-white' : ''}`}>I</button>
+                                        <button onClick={() => setTextUnderline(!textUnderline)} className={`w-8 h-8 border rounded underline ${textUnderline ? 'bg-blue-500 text-white' : ''}`}>U</button>
+                                    </div>
+                                    <button onClick={addTextElement} className="w-full py-1 bg-blue-500 text-white rounded text-sm">Add Text Box</button>
+                                </div>
+
+                                {/* Barcode */}
+                                <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3">
+                                    <h3 className="font-bold text-sm mb-2">Barcode</h3>
+                                    <select value={barcodeType} onChange={(e) => setBarcodeType(e.target.value)} className="w-full px-2 py-1 border rounded text-sm mb-2">
+                                        <option value="UPC">UPC-A (12 digits)</option>
+                                        <option value="EAN13">EAN-13 (13 digits)</option>
+                                        <option value="CODE128">Code 128 (any)</option>
+                                        <option value="CODE39">Code 39 (alphanumeric)</option>
+                                    </select>
+                                    <input type="text" value={barcodeValue} onChange={(e) => setBarcodeValue(e.target.value)} placeholder="Enter barcode value" className="w-full px-2 py-1 border rounded text-sm mb-2" />
+                                    <div className="flex gap-2 mb-2 items-center">
+                                        <input type="number" value={barcodeHeight} onChange={(e) => setBarcodeHeight(parseInt(e.target.value) || 50)} min="20" max="150" className="w-16 px-2 py-1 border rounded text-sm" title="Height (px)" />
+                                        <label className="flex items-center text-xs">
+                                            <input type="checkbox" checked={showBarcodeText} onChange={(e) => setShowBarcodeText(e.target.checked)} className="mr-1" />
+                                            Show text
+                                        </label>
+                                    </div>
+                                    <button onClick={addBarcodeElement} className="w-full py-1 bg-blue-500 text-white rounded text-sm">Add Barcode</button>
+                                </div>
+
+                                {/* Actions */}
+                                <div className="space-y-2">
+                                    <button onClick={clearCanvas} className="w-full py-2 bg-gray-500 text-white rounded text-sm">Clear Canvas</button>
+                                    <button onClick={printLabel} className="w-full py-2 bg-green-500 text-white rounded text-sm">Print Label</button>
+                                </div>
+                            </div>
+
+                            {/* Canvas Area */}
+                            <div className="label-maker-canvas-area">
+                                <div className="label-canvas-wrapper">
+                                    <div
+                                        ref={canvasRef}
+                                        className="label-canvas"
+                                        style={{ width: widthPx + 'px', height: heightPx + 'px' }}
+                                        onClick={() => setSelectedElementId(null)}
+                                    >
+                                        {elements.map(el => (
+                                            <div
+                                                key={el.id}
+                                                className={`label-canvas-element ${el.type === 'text' ? 'label-text-element' : 'label-barcode-element'} ${selectedElementId === el.id ? 'selected' : ''}`}
+                                                style={{
+                                                    left: el.x + 'px',
+                                                    top: el.y + 'px',
+                                                    zIndex: el.zIndex,
+                                                    ...(el.type === 'text' ? {
+                                                        fontFamily: el.fontFamily,
+                                                        fontSize: el.fontSize + 'pt',
+                                                        textAlign: el.textAlign,
+                                                        color: el.color,
+                                                        fontWeight: el.bold ? 'bold' : 'normal',
+                                                        fontStyle: el.italic ? 'italic' : 'normal',
+                                                        textDecoration: el.underline ? 'underline' : 'none'
+                                                    } : {}),
+                                                    ...(el.width ? { width: el.width + 'px' } : {}),
+                                                    ...(el.height ? { height: el.height + 'px' } : {})
+                                                }}
+                                                onMouseDown={(e) => handleElementMouseDown(e, el)}
+                                                onClick={(e) => { e.stopPropagation(); setSelectedElementId(el.id); }}
+                                            >
+                                                {el.type === 'text' ? el.content : <BarcodeElement element={el} />}
+                                                <div className="resize-handle se" data-handle="se"></div>
+                                                <div className="resize-handle sw" data-handle="sw"></div>
+                                                <div className="resize-handle ne" data-handle="ne"></div>
+                                                <div className="resize-handle nw" data-handle="nw"></div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="text-center text-sm text-gray-500 mt-2">
+                                    <span className="font-medium">{canvasWidth}" x {canvasHeight}"</span>
+                                    <span className="ml-2">• Click to select • Drag to move</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Element Controls */}
+                    {selectedElementId && (
+                        <div className="label-element-controls">
+                            <span className="text-sm text-gray-600 dark:text-gray-300 mr-2">Selected Element</span>
+                            <button onClick={deleteSelectedElement} className="px-3 py-1 bg-red-500 text-white rounded text-sm">Delete</button>
+                            <button onClick={bringToFront} className="px-3 py-1 bg-gray-500 text-white rounded text-sm">Front</button>
+                            <button onClick={sendToBack} className="px-3 py-1 bg-gray-500 text-white rounded text-sm">Back</button>
+                        </div>
+                    )}
                 </div>
             );
         };
@@ -1936,6 +2504,7 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                             <button onClick={() => setView('items')} className={`flex-1 py-2 ${view === 'items' ? 'bg-blue-500 text-white' : ''}`}>📋 Items</button>
                             <button onClick={() => setView('projects')} className={`flex-1 py-2 ${view === 'projects' ? 'bg-blue-500 text-white' : ''}`}>🔧 BoM</button>
                             <button onClick={() => setView('map')} className={`flex-1 py-2 ${view === 'map' ? 'bg-blue-500 text-white' : ''}`}>🗺️</button>
+                            <button onClick={() => setView('labelmaker')} className={`flex-1 py-2 ${view === 'labelmaker' ? 'bg-blue-500 text-white' : ''}`}>🏷️</button>
                         </div>
                     </div>
 
@@ -2142,6 +2711,8 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                             </div>
                         );
                     })()}
+
+                    {view === 'labelmaker' && <LabelMaker />}
 
                     <div className="mt-3 flex gap-2">
                         <button onClick={exportData} className="flex-1 py-2 bg-green-500 text-white rounded-lg text-sm"><span class="material-icons text-sm align-middle">download</span> Export</button>
