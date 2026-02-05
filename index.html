@@ -594,11 +594,10 @@
       const [error, setError] = useState(null);
       const [searchTerm, setSearchTerm] = useState('');
       const [selectedLanguage, setSelectedLanguage] = useState('all');
-      const [forkFilter, setForkFilter] = useState('all');
       const [sortBy, setSortBy] = useState('updated');
       const [selectedRepo, setSelectedRepo] = useState(null);
       const [username, setUsername] = useState(CONFIG.GITHUB_USERNAME);
-      const [activeView, setActiveView] = useState('projects'); // 'projects' or app id
+      const [activeView, setActiveView] = useState('projects'); // 'projects', 'forked-projects', or app id
 
       // Fetch repos
       useEffect(() => {
@@ -664,9 +663,9 @@
           filtered = filtered.filter(r => r.language === selectedLanguage);
         }
 
-        if (forkFilter === 'forks') {
+        if (activeView === 'forked-projects') {
           filtered = filtered.filter(r => r.fork);
-        } else if (forkFilter === 'original') {
+        } else {
           filtered = filtered.filter(r => !r.fork);
         }
 
@@ -677,7 +676,7 @@
             default: return new Date(b.updated_at) - new Date(a.updated_at);
           }
         });
-      }, [repos, searchTerm, selectedLanguage, forkFilter, sortBy]);
+      }, [repos, searchTerm, selectedLanguage, activeView, sortBy]);
 
       return (
         <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -708,6 +707,8 @@
                 <div className="flex items-center gap-2">
                   <NavTab active={activeView === 'projects'} icon="FolderGit2" label="Projects"
                           onClick={() => setActiveView('projects')} />
+                  <NavTab active={activeView === 'forked-projects'} icon="GitFork" label="Forked Projects"
+                          onClick={() => setActiveView('forked-projects')} />
                   {CONFIG.INTEGRATED_APPS.map(app => (
                     <NavTab key={app.id} active={activeView === app.id} icon={app.icon} label={app.name}
                             onClick={() => setActiveView(app.id)} />
@@ -723,8 +724,8 @@
             </div>
           </header>
 
-          {/* Filters - only show in projects view */}
-          {activeView === 'projects' && !loading && !error && (
+          {/* Filters - show in projects and forked-projects views */}
+          {(activeView === 'projects' || activeView === 'forked-projects') && !loading && !error && (
             <div className="border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-sm sticky top-[72px] z-30">
               <div className="max-w-7xl mx-auto px-4 py-4">
                 <div className="flex flex-col sm:flex-row gap-4">
@@ -746,16 +747,6 @@
                     <Icon name="ChevronDown" size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
                   </div>
                   <div className="relative">
-                    <select value={forkFilter} onChange={(e) => setForkFilter(e.target.value)}
-                            className="appearance-none bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 pr-10 font-mono text-sm
-                                     focus:border-amber-500 focus:outline-none cursor-pointer min-w-[140px]">
-                      <option value="all">All Repos</option>
-                      <option value="original">Original Only</option>
-                      <option value="forks">Forks Only</option>
-                    </select>
-                    <Icon name="ChevronDown" size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
-                  </div>
-                  <div className="relative">
                     <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
                             className="appearance-none bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 pr-10 font-mono text-sm
                                      focus:border-amber-500 focus:outline-none cursor-pointer min-w-[160px]">
@@ -773,12 +764,12 @@
           {/* Main */}
           <main className="max-w-7xl mx-auto px-4 py-6 relative">
             {/* Embedded App View */}
-            {activeView !== 'projects' && CONFIG.INTEGRATED_APPS.find(a => a.id === activeView) && (
+            {activeView !== 'projects' && activeView !== 'forked-projects' && CONFIG.INTEGRATED_APPS.find(a => a.id === activeView) && (
               <EmbeddedApp app={CONFIG.INTEGRATED_APPS.find(a => a.id === activeView)} />
             )}
 
             {/* Projects View */}
-            {activeView === 'projects' && (
+            {(activeView === 'projects' || activeView === 'forked-projects') && (
               <>
                 {loading ? (
                   <div className="flex flex-col items-center justify-center py-20">
