@@ -727,6 +727,34 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
         };
 
 
+        // BarcodeElement - Renders a barcode SVG using JsBarcode (defined outside LabelMaker to prevent re-creation on every render)
+        const BarcodeElement = ({ element }) => {
+            const svgRef = useRef(null);
+
+            useEffect(() => {
+                if (svgRef.current && typeof JsBarcode !== 'undefined') {
+                    try {
+                        svgRef.current.innerHTML = '';
+                        JsBarcode(svgRef.current, element.value, {
+                            format: element.barcodeType,
+                            width: 2,
+                            height: element.height,
+                            displayValue: element.showText,
+                            fontSize: 12,
+                            margin: 5,
+                            background: '#ffffff',
+                            lineColor: '#000000'
+                        });
+                    } catch (error) {
+                        console.error('Barcode error:', error);
+                        svgRef.current.innerHTML = '<text x="10" y="20" fill="red" font-size="10">Invalid barcode</text>';
+                    }
+                }
+            }, [element.value, element.barcodeType, element.height, element.showText]);
+
+            return <svg ref={svgRef} style={{ minWidth: '50px', minHeight: '30px' }}></svg>;
+        };
+
         // LabelMaker - Easy label maker with text and barcode support
         const LabelMaker = ({ items = [] }) => {
             const DPI = 96;
@@ -1104,32 +1132,6 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                 printWindow.document.close();
             };
 
-            // Barcode rendering component
-            const BarcodeElement = ({ element }) => {
-                const svgRef = useRef(null);
-
-                useEffect(() => {
-                    if (svgRef.current && typeof JsBarcode !== 'undefined') {
-                        try {
-                            JsBarcode(svgRef.current, element.value, {
-                                format: element.barcodeType,
-                                width: 2,
-                                height: element.height,
-                                displayValue: element.showText,
-                                fontSize: 12,
-                                margin: 5,
-                                background: '#ffffff',
-                                lineColor: '#000000'
-                            });
-                        } catch (error) {
-                            console.error('Barcode error:', error);
-                        }
-                    }
-                }, [element.value, element.barcodeType, element.height, element.showText]);
-
-                return <svg ref={svgRef}></svg>;
-            };
-
             return (
                 <div className="label-maker-container space-y-4">
                     <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-4">
@@ -1283,7 +1285,7 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                                                         textDecoration: el.underline ? 'underline' : 'none'
                                                     } : {}),
                                                     ...(el.width ? { width: el.width + 'px' } : {}),
-                                                    ...(el.height ? { height: el.height + 'px' } : {})
+                                                    ...(el.type === 'text' && el.height ? { height: el.height + 'px' } : {})
                                                 }}
                                                 onMouseDown={(e) => handleElementMouseDown(e, el)}
                                                 onClick={(e) => { e.stopPropagation(); setSelectedElementId(el.id); }}
