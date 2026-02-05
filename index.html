@@ -291,11 +291,14 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
         // IndexedDB Helper for persistent storage with photo support
 
         // App version info
-        const GIT_HASH = '836a1d2';
-        const BUILD_DATE = '2026-02-01';
+        const GIT_HASH = '77c9f26';
+        const BUILD_DATE = '2026-02-05';
 
         // Version history (git commits)
         const VERSION_HISTORY = [
+            { hash: '77c9f26', date: '2026-02-05', changes: 'Fix barcode rendering in Label Maker' },
+            { hash: '717ed6b', date: '2026-02-05', changes: 'Add inventory item selector to Label Maker' },
+            { hash: 'c2d0016', date: '2026-02-05', changes: 'Add Easy Label Maker as a new page' },
             { hash: '836a1d2', date: '2026-02-01', changes: 'Replace low stock warnings with project overallocation warnings' },
             { hash: 'bcb1994', date: '2026-02-01', changes: 'Add automatic version check with update banner' },
             { hash: 'd8c5138', date: '2026-02-01', changes: 'Update scanner for CODE128 barcode support' },
