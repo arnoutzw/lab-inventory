@@ -282,6 +282,15 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
         };
         const STORAGE_KEY = 'arnout-lab-inventory-v2';
         const SETTINGS_KEY = 'arnout-lab-settings';
+        const AUTH_KEY = 'arnout-lab-auth';
+
+        // Simple hash function for password storage (client-side only)
+        const hashPassword = async (password) => {
+            const encoder = new TextEncoder();
+            const data = encoder.encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+            return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+        };
         // IndexedDB Helper for persistent storage with photo support
 
         // App version info
@@ -1419,6 +1428,34 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             const [form, setForm] = useState(settings);
             const [showAbout, setShowAbout] = useState(false);
             const [syncStatus, setSyncStatus] = useState(null);
+            const [showChangePassword, setShowChangePassword] = useState(false);
+            const [currentPw, setCurrentPw] = useState('');
+            const [newPw, setNewPw] = useState('');
+            const [confirmPw, setConfirmPw] = useState('');
+            const [pwMessage, setPwMessage] = useState(null);
+
+            const handleChangePassword = async () => {
+                setPwMessage(null);
+                const stored = localStorage.getItem(AUTH_KEY);
+                const currentHash = await hashPassword(currentPw);
+                if (currentHash !== stored) {
+                    setPwMessage({ type: 'error', text: 'Current password is incorrect' });
+                    return;
+                }
+                if (newPw.length < 4) {
+                    setPwMessage({ type: 'error', text: 'New password must be at least 4 characters' });
+                    return;
+                }
+                if (newPw !== confirmPw) {
+                    setPwMessage({ type: 'error', text: 'New passwords do not match' });
+                    return;
+                }
+                const newHash = await hashPassword(newPw);
+                localStorage.setItem(AUTH_KEY, newHash);
+                setPwMessage({ type: 'success', text: 'Password changed successfully' });
+                setCurrentPw(''); setNewPw(''); setConfirmPw('');
+                setTimeout(() => setShowChangePassword(false), 1500);
+            };
 
             const handleSyncPhotos = async () => {
                 if (!onSyncPhotos) return;
@@ -1454,7 +1491,20 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                                     </div>
                                 )}
                             </div>
-                            <hr className="my-2"/>
+                            <hr className="my-2 border-zinc-700"/>
+                            <button onClick={() => setShowChangePassword(!showChangePassword)} className="flex items-center gap-2 text-zinc-400 hover:text-amber-500">
+                                <span class="material-icons text-sm">lock</span> Change Password
+                            </button>
+                            {showChangePassword && (
+                                <div className="bg-zinc-800 p-3 rounded space-y-2">
+                                    <input type="password" value={currentPw} onChange={e => setCurrentPw(e.target.value)} placeholder="Current password" className="w-full px-2 py-1.5 rounded text-sm border border-zinc-700" />
+                                    <input type="password" value={newPw} onChange={e => setNewPw(e.target.value)} placeholder="New password" className="w-full px-2 py-1.5 rounded text-sm border border-zinc-700" />
+                                    <input type="password" value={confirmPw} onChange={e => setConfirmPw(e.target.value)} placeholder="Confirm new password" className="w-full px-2 py-1.5 rounded text-sm border border-zinc-700" />
+                                    {pwMessage && <p className={`text-xs ${pwMessage.type === 'error' ? 'text-red-400' : 'text-green-400'}`}>{pwMessage.text}</p>}
+                                    <button onClick={handleChangePassword} className="w-full px-3 py-1.5 bg-amber-500 text-white rounded text-sm hover:bg-amber-600">Update Password</button>
+                                </div>
+                            )}
+                            <hr className="my-2 border-zinc-700"/>
                             <button onClick={() => setShowAbout(!showAbout)} className="flex items-center gap-2 text-zinc-400 hover:text-amber-500">
                                 <span class="material-icons text-sm">info</span> About
                             </button>
@@ -1979,7 +2029,98 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             );
         };
 
+        const LoginScreen = ({ onLogin }) => {
+            const [password, setPassword] = useState('');
+            const [error, setError] = useState('');
+            const [isSettingUp, setIsSettingUp] = useState(false);
+            const [confirmPassword, setConfirmPassword] = useState('');
+
+            useEffect(() => {
+                const stored = localStorage.getItem(AUTH_KEY);
+                setIsSettingUp(!stored);
+            }, []);
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setError('');
+                const stored = localStorage.getItem(AUTH_KEY);
+
+                if (isSettingUp) {
+                    if (password.length < 4) {
+                        setError('Password must be at least 4 characters');
+                        return;
+                    }
+                    if (password !== confirmPassword) {
+                        setError('Passwords do not match');
+                        return;
+                    }
+                    const hash = await hashPassword(password);
+                    localStorage.setItem(AUTH_KEY, hash);
+                    onLogin();
+                } else {
+                    const hash = await hashPassword(password);
+                    if (hash === stored) {
+                        onLogin();
+                    } else {
+                        setError('Incorrect password');
+                        setPassword('');
+                    }
+                }
+            };
+
+            return (
+                <div className="min-h-screen flex items-center justify-center p-4">
+                    <div className="bg-zinc-900 border border-zinc-700 rounded-xl shadow-lg p-8 w-full max-w-sm">
+                        <div className="text-center mb-6">
+                            <span className="material-icons text-amber-500" style={{fontSize: '48px'}}>inventory_2</span>
+                            <h1 className="text-xl font-mono font-bold text-zinc-100 mt-3">
+                                <span className="text-amber-500">$</span> lab_inventory
+                            </h1>
+                            <p className="text-xs text-zinc-500 font-mono mt-1">
+                                {isSettingUp ? 'Set up a password to protect your inventory' : 'Enter password to continue'}
+                            </p>
+                        </div>
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                                <label className="block text-xs text-zinc-400 mb-1 font-mono">Password</label>
+                                <input
+                                    type="password"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-100 focus:outline-none focus:border-amber-500 font-mono"
+                                    placeholder="••••••••"
+                                    autoFocus
+                                />
+                            </div>
+                            {isSettingUp && (
+                                <div>
+                                    <label className="block text-xs text-zinc-400 mb-1 font-mono">Confirm password</label>
+                                    <input
+                                        type="password"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        className="w-full px-3 py-2 rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-100 focus:outline-none focus:border-amber-500 font-mono"
+                                        placeholder="••••••••"
+                                    />
+                                </div>
+                            )}
+                            {error && (
+                                <p className="text-red-400 text-xs font-mono">{error}</p>
+                            )}
+                            <button
+                                type="submit"
+                                className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-zinc-900 font-bold rounded-lg transition font-mono"
+                            >
+                                {isSettingUp ? 'Set Password & Enter' : 'Unlock'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            );
+        };
+
         const App = () => {
+            const [isAuthenticated, setIsAuthenticated] = useState(false);
             const [loading, setLoading] = useState(true);
             const [boxes, setBoxes] = useState([]);
             const [items, setItems] = useState([]);
@@ -2497,6 +2638,7 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             // Calculate total inventory value
             const totalInventoryValue = useMemo(() => items.reduce((sum, item) => sum + (item.value || 0) * item.quantity, 0), [items]);
 
+            if (!isAuthenticated) return <LoginScreen onLogin={() => setIsAuthenticated(true)} />;
             if (loading) return <div className="flex items-center justify-center h-screen"><div className="text-xl">Loading...</div></div>;
 
             return (
@@ -2522,6 +2664,7 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                                 <button onClick={() => setShowPrintQR(true)} className="p-2 bg-indigo-500 text-white rounded-lg text-lg" title="Print labels"><span class="material-icons">print</span></button>
                                 <button onClick={() => setShowAddItem(true)} className="p-2 bg-green-500 text-white rounded-lg text-lg" title="Nieuw item"><span class="material-icons">add_circle</span></button>
                                 <button onClick={() => setShowSettings(true)} className="p-2 bg-zinc-700 rounded-lg text-lg" title="Instellingen"><span class="material-icons">settings</span></button>
+                                <button onClick={() => setIsAuthenticated(false)} className="p-2 bg-zinc-700 rounded-lg text-lg" title="Uitloggen"><span class="material-icons">logout</span></button>
                             </div>
                         </div>
                     </div>
