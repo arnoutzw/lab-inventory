@@ -100,6 +100,9 @@
     .code-block-header + pre { margin-top: 0; border-radius: 0 0 0.5rem 0.5rem; }
     .copy-btn { background: #3f3f46; border: none; color: #a1a1aa; padding: 0.25rem 0.5rem; border-radius: 0.25rem; cursor: pointer; font-size: 0.75rem; transition: all 0.2s; }
     .copy-btn:hover { background: #52525b; color: #e4e4e7; }
+
+    /* Inline emoji */
+    .inline-emoji { display: inline; height: 1.2em; width: 1.2em; vertical-align: text-bottom; margin: 0 0.05em; }
   </style>
 </head>
 <body class="bg-zinc-950">
@@ -153,7 +156,7 @@
     // ============================================
     // BUILD INFO - AUTO-UPDATED BY PRE-COMMIT HOOK
     // ============================================
-    const BUILD_COMMIT = '35ebc6d77e39709bda39c3741b6a3d48c19f4a42';
+    const BUILD_COMMIT = '5ac68101b1922c02708a281d879074b1e2d73d01';
     const BUILD_DATE = '2026-02-06';
     // ============================================
 
@@ -259,11 +262,26 @@
     // Initialize marked configuration
     configureMarked();
 
+    // GitHub emoji support
+    let emojiMap = {};
+    fetch('https://api.github.com/emojis')
+      .then(r => r.ok ? r.json() : {})
+      .then(data => { emojiMap = data; })
+      .catch(() => {});
+
+    const replaceEmojis = (text) =>
+      text.replace(/:([a-z0-9_+\-]+):/g, (match, name) => {
+        const url = emojiMap[name];
+        if (!url) return match;
+        return `<img src="${url}" alt="${name}" class="inline-emoji" />`;
+      });
+
     // Markdown renderer using marked.js
     const renderMarkdown = (text) => {
       if (!text) return '';
       try {
-        return marked.parse(text);
+        const html = marked.parse(text);
+        return replaceEmojis(html);
       } catch (e) {
         console.error('Markdown parsing error:', e);
         return `<pre>${text}</pre>`;
