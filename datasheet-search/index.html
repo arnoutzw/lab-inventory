@@ -51,9 +51,78 @@ body {
   color: var(--tx-3);
 }
 
+/* Mode toggle row */
+.mode-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+.mode-label {
+  font-size: 12px;
+  color: var(--tx-3);
+  font-weight: 500;
+  transition: color .15s;
+}
+.mode-label.active { color: var(--accent); }
+.toggle {
+  position: relative;
+  width: 40px;
+  height: 22px;
+  flex-shrink: 0;
+}
+.toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggle-track {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: var(--bg-3);
+  border-radius: 11px;
+  transition: background .2s;
+}
+.toggle-track::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  left: 3px;
+  top: 3px;
+  background: var(--tx-2);
+  border-radius: 50%;
+  transition: transform .2s, background .2s;
+}
+.toggle input:checked + .toggle-track {
+  background: var(--accent);
+}
+.toggle input:checked + .toggle-track::after {
+  transform: translateX(18px);
+  background: var(--bg-0);
+}
+.api-settings-btn {
+  background: none;
+  border: 1px solid var(--bg-3);
+  border-radius: 6px;
+  color: var(--tx-3);
+  font-size: 14px;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+}
+.api-settings-btn:hover { border-color: var(--accent); color: var(--accent); }
+.api-settings-btn.configured { color: var(--success); border-color: var(--success); }
+
 /* Search */
 .search-wrap {
-  max-width: 640px;
+  max-width: 720px;
   margin: 24px auto 0;
   padding: 0 16px;
 }
@@ -87,6 +156,7 @@ body {
   transition: background .15s;
 }
 .search-box button:hover { background: var(--accent-h); }
+.search-box button:disabled { opacity: .5; cursor: not-allowed; }
 .search-hint {
   font-size: 11px;
   color: var(--tx-3);
@@ -96,7 +166,7 @@ body {
 
 /* Tabs */
 .tabs {
-  max-width: 640px;
+  max-width: 720px;
   margin: 20px auto 0;
   padding: 0 16px;
   display: flex;
@@ -119,7 +189,7 @@ body {
 
 /* Content */
 .content {
-  max-width: 640px;
+  max-width: 720px;
   margin: 0 auto;
   padding: 16px;
 }
@@ -237,13 +307,12 @@ body {
   align-items: center;
   justify-content: center;
   background: var(--bg-2);
-  border: 1px solid var(--border);
+  border: none;
   border-radius: 6px;
   color: var(--tx-3);
   cursor: pointer;
   font-size: 14px;
   transition: all .12s;
-  border: none;
 }
 .icon-btn:hover { background: var(--bg-3); color: var(--tx-1); }
 .icon-btn.bookmarked { color: var(--accent); }
@@ -261,7 +330,7 @@ body {
 }
 .clear-btn:hover { border-color: var(--danger); color: var(--danger); }
 
-/* Results status */
+/* Results status (link mode) */
 .search-status {
   text-align: center;
   padding: 20px;
@@ -299,6 +368,229 @@ body {
 .source-link:hover { border-color: var(--accent); color: var(--accent); }
 .source-link .arrow { font-size: 11px; opacity: .6; }
 
+/* ── NEXAR API results ── */
+.api-results-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.api-results-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--tx-2);
+}
+.api-results-header .hits {
+  font-size: 12px;
+  color: var(--tx-3);
+}
+.api-loading {
+  text-align: center;
+  padding: 40px 16px;
+  color: var(--tx-3);
+}
+.api-loading .spinner {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid var(--bg-3);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  margin-bottom: 10px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.api-error {
+  text-align: center;
+  padding: 24px 16px;
+  color: var(--danger);
+  font-size: 13px;
+  background: rgba(239,68,68,.08);
+  border: 1px solid rgba(239,68,68,.2);
+  border-radius: var(--radius);
+}
+.api-error code {
+  display: block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--tx-3);
+  word-break: break-all;
+}
+
+/* Part card */
+.part-card {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 10px;
+  transition: border-color .15s;
+}
+.part-card:hover { border-color: var(--bg-3); }
+.part-card-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+.part-card-info { flex: 1; min-width: 0; }
+.part-card-mpn {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+  font-family: 'Courier New', monospace;
+}
+.part-card-mfr {
+  font-size: 12px;
+  color: var(--tx-3);
+  margin-top: 2px;
+}
+.part-card-desc {
+  font-size: 13px;
+  color: var(--tx-2);
+  margin-top: 6px;
+  line-height: 1.4;
+}
+.part-card-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 6px;
+  background: var(--bg-2);
+  object-fit: contain;
+  flex-shrink: 0;
+}
+.part-card-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.ds-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
+  background: var(--accent);
+  color: var(--bg-0);
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background .15s;
+}
+.ds-btn:hover { background: var(--accent-h); }
+.ds-btn svg { width: 14px; height: 14px; }
+.ds-btn-outline {
+  background: transparent;
+  color: var(--tx-2);
+  border: 1px solid var(--bg-3);
+}
+.ds-btn-outline:hover { border-color: var(--accent); color: var(--accent); background: transparent; }
+.part-specs {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.spec-tag {
+  font-size: 11px;
+  padding: 3px 8px;
+  background: var(--bg-2);
+  border-radius: 4px;
+  color: var(--tx-3);
+}
+.spec-tag b { color: var(--tx-2); font-weight: 600; }
+.part-card-cat {
+  font-size: 11px;
+  color: var(--tx-3);
+  margin-top: 6px;
+}
+
+/* Modal */
+.modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+}
+.modal-bg.active { display: flex; }
+.modal {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 420px;
+}
+.modal h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--tx-1);
+  margin-bottom: 4px;
+}
+.modal .modal-desc {
+  font-size: 12px;
+  color: var(--tx-3);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+.modal label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--tx-2);
+  margin-bottom: 4px;
+  margin-top: 12px;
+}
+.modal label:first-of-type { margin-top: 0; }
+.modal input {
+  width: 100%;
+  padding: 8px 12px;
+  background: var(--bg-2);
+  border: 1px solid var(--bg-3);
+  border-radius: 6px;
+  color: var(--tx-1);
+  font-size: 13px;
+  font-family: 'Courier New', monospace;
+  outline: none;
+}
+.modal input:focus { border-color: var(--accent); }
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+.modal-actions button {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+}
+.modal-actions .btn-save { background: var(--accent); color: var(--bg-0); }
+.modal-actions .btn-save:hover { background: var(--accent-h); }
+.modal-actions .btn-cancel { background: var(--bg-2); color: var(--tx-2); }
+.modal-actions .btn-cancel:hover { background: var(--bg-3); color: var(--tx-1); }
+.modal-actions .btn-clear { background: none; color: var(--danger); border: 1px solid var(--danger); }
+.modal-actions .btn-clear:hover { background: var(--danger); color: var(--tx-1); }
+.modal-status {
+  font-size: 11px;
+  margin-top: 12px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  display: none;
+}
+.modal-status.ok { display: block; background: rgba(34,197,94,.1); color: var(--success); border: 1px solid rgba(34,197,94,.2); }
+.modal-status.err { display: block; background: rgba(239,68,68,.1); color: var(--danger); border: 1px solid rgba(239,68,68,.2); }
+
 @media (max-width: 480px) {
   .cat-grid { grid-template-columns: 1fr 1fr; }
   .search-box { flex-direction: column; }
@@ -315,6 +607,17 @@ body {
     Datasheet Search
   </h1>
   <p>Search electronic component datasheets across multiple sources</p>
+  <div class="mode-row">
+    <span class="mode-label" id="label-link">Link Mode</span>
+    <label class="toggle">
+      <input type="checkbox" id="mode-toggle">
+      <span class="toggle-track"></span>
+    </label>
+    <span class="mode-label" id="label-api">NEXAR API</span>
+    <button class="api-settings-btn" id="btn-api-settings" title="API Settings">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
+  </div>
 </div>
 
 <div class="search-wrap">
@@ -322,7 +625,7 @@ body {
     <input type="text" id="search-input" placeholder="Enter part number (e.g. LM7805, ATmega328P, NE555)..." autofocus>
     <button id="btn-search">Search</button>
   </div>
-  <div class="search-hint">Press Enter to search &bull; Results open on datasheet provider sites</div>
+  <div class="search-hint" id="search-hint">Press Enter to search &bull; Results open on datasheet provider sites</div>
 </div>
 
 <div class="tabs">
@@ -363,21 +666,74 @@ body {
 
 </div>
 
+<!-- API Settings Modal -->
+<div class="modal-bg" id="settings-modal">
+  <div class="modal">
+    <h3>NEXAR API Settings</h3>
+    <p class="modal-desc">
+      Enter your NEXAR API credentials to search parts directly.
+      Get free API keys at <a href="https://nexar.com/api" target="_blank" rel="noopener" style="color:var(--accent)">nexar.com/api</a>.
+      Credentials are stored locally in your browser.
+    </p>
+    <label for="cfg-client-id">Client ID</label>
+    <input type="text" id="cfg-client-id" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" autocomplete="off">
+    <label for="cfg-client-secret">Client Secret</label>
+    <input type="password" id="cfg-client-secret" placeholder="Client secret" autocomplete="off">
+    <div class="modal-status" id="settings-status"></div>
+    <div class="modal-actions">
+      <button class="btn-clear" id="btn-cfg-clear">Clear</button>
+      <button class="btn-cancel" id="btn-cfg-cancel">Cancel</button>
+      <button class="btn-save" id="btn-cfg-save">Save &amp; Test</button>
+    </div>
+  </div>
+</div>
+
 <script>
 // ===================================================================
-// DATASHEET SEARCH APP
+// DATASHEET SEARCH APP — Link Mode + NEXAR API Mode
 // ===================================================================
 
-const STORAGE_KEYS = { history: 'ds-search-history', bookmarks: 'ds-search-bookmarks' };
+const STORAGE_KEYS = {
+  history: 'ds-search-history',
+  bookmarks: 'ds-search-bookmarks',
+  mode: 'ds-search-mode',
+  nexarId: 'ds-nexar-client-id',
+  nexarSecret: 'ds-nexar-client-secret',
+};
 
-// Datasheet sources — search URL templates
+// ── NEXAR API Config ──
+const NEXAR_TOKEN_URL = 'https://identity.nexar.com/connect/token';
+const NEXAR_GQL_URL   = 'https://api.nexar.com/graphql';
+
+const NEXAR_QUERY = `
+query SearchParts($q: String!) {
+  supSearchMpn(q: $q, limit: 10) {
+    hits
+    results {
+      part {
+        mpn
+        manufacturer { name }
+        shortDescription
+        category { name path }
+        bestDatasheet { url name }
+        specs {
+          attribute { name shortname }
+          displayValue
+        }
+        images { url }
+      }
+    }
+  }
+}`;
+
+// ── Link-mode Sources ──
 const SOURCES = [
-  { name: 'AllDatasheet',    url: 'https://www.alldatasheet.com/view.jsp?Searchword={q}',              icon: '📄' },
-  { name: 'Datasheet Archive', url: 'https://www.datasheetarchive.com/search?q={q}',                     icon: '🗄️' },
-  { name: 'Octopart',        url: 'https://octopart.com/search?q={q}',                                 icon: '🔍' },
-  { name: 'DigiKey',         url: 'https://www.digikey.com/en/products/result?keywords={q}',            icon: '🛒' },
-  { name: 'Mouser',          url: 'https://www.mouser.com/c/?q={q}',                                   icon: '🛒' },
-  { name: 'LCSC',            url: 'https://www.lcsc.com/search?q={q}',                                 icon: '🛒' },
+  { name: 'AllDatasheet',    url: 'https://www.alldatasheet.com/view.jsp?Searchword={q}',   icon: '📄' },
+  { name: 'Datasheet Archive', url: 'https://www.datasheetarchive.com/search?q={q}',          icon: '🗄️' },
+  { name: 'Octopart',        url: 'https://octopart.com/search?q={q}',                      icon: '🔍' },
+  { name: 'DigiKey',         url: 'https://www.digikey.com/en/products/result?keywords={q}', icon: '🛒' },
+  { name: 'Mouser',          url: 'https://www.mouser.com/c/?q={q}',                        icon: '🛒' },
+  { name: 'LCSC',            url: 'https://www.lcsc.com/search?q={q}',                      icon: '🛒' },
 ];
 
 const POPULAR = [
@@ -400,41 +756,189 @@ const CATEGORIES = [
   { icon: '🔋', title: 'Power Management', desc: 'Battery chargers, converters', parts: ['TP4056','BQ24195','TPS54331','INA219','MAX17048','LTC3780'] },
 ];
 
-// --- State ---
+// ── State ──
 let searchHistory = JSON.parse(localStorage.getItem(STORAGE_KEYS.history) || '[]');
 let bookmarks = JSON.parse(localStorage.getItem(STORAGE_KEYS.bookmarks) || '[]');
+let useApi = localStorage.getItem(STORAGE_KEYS.mode) === 'api';
+let nexarToken = null;
+let nexarTokenExp = 0;
+let searching = false;
 
 function saveHistory() { localStorage.setItem(STORAGE_KEYS.history, JSON.stringify(searchHistory)); }
 function saveBookmarks() { localStorage.setItem(STORAGE_KEYS.bookmarks, JSON.stringify(bookmarks)); }
 
-// --- Search ---
-function doSearch(query) {
-  query = query.trim();
-  if (!query) return;
+// ── DOM refs ──
+const modeToggle  = document.getElementById('mode-toggle');
+const labelLink   = document.getElementById('label-link');
+const labelApi    = document.getElementById('label-api');
+const searchHint  = document.getElementById('search-hint');
+const btnSettings = document.getElementById('btn-api-settings');
+const settingsModal = document.getElementById('settings-modal');
+const btnSearch   = document.getElementById('btn-search');
 
-  // Update input
+// ── Mode Toggle ──
+function updateModeUI() {
+  modeToggle.checked = useApi;
+  labelLink.classList.toggle('active', !useApi);
+  labelApi.classList.toggle('active', useApi);
+  searchHint.textContent = useApi
+    ? 'Press Enter to search via NEXAR API'
+    : 'Press Enter to search \u2022 Results open on datasheet provider sites';
+  const hasKeys = !!(localStorage.getItem(STORAGE_KEYS.nexarId));
+  btnSettings.classList.toggle('configured', hasKeys);
+}
+
+modeToggle.addEventListener('change', () => {
+  useApi = modeToggle.checked;
+  localStorage.setItem(STORAGE_KEYS.mode, useApi ? 'api' : 'link');
+  updateModeUI();
+  // If switching to API and no credentials, open settings
+  if (useApi && !localStorage.getItem(STORAGE_KEYS.nexarId)) {
+    openSettings();
+  }
+});
+
+// ── Settings Modal ──
+function openSettings() {
+  document.getElementById('cfg-client-id').value = localStorage.getItem(STORAGE_KEYS.nexarId) || '';
+  document.getElementById('cfg-client-secret').value = localStorage.getItem(STORAGE_KEYS.nexarSecret) || '';
+  const st = document.getElementById('settings-status');
+  st.className = 'modal-status';
+  st.style.display = 'none';
+  settingsModal.classList.add('active');
+}
+
+btnSettings.addEventListener('click', openSettings);
+document.getElementById('btn-cfg-cancel').addEventListener('click', () => settingsModal.classList.remove('active'));
+document.getElementById('btn-cfg-clear').addEventListener('click', () => {
+  localStorage.removeItem(STORAGE_KEYS.nexarId);
+  localStorage.removeItem(STORAGE_KEYS.nexarSecret);
+  nexarToken = null;
+  nexarTokenExp = 0;
+  document.getElementById('cfg-client-id').value = '';
+  document.getElementById('cfg-client-secret').value = '';
+  const st = document.getElementById('settings-status');
+  st.textContent = 'Credentials cleared.';
+  st.className = 'modal-status ok';
+  updateModeUI();
+});
+
+document.getElementById('btn-cfg-save').addEventListener('click', async () => {
+  const id = document.getElementById('cfg-client-id').value.trim();
+  const secret = document.getElementById('cfg-client-secret').value.trim();
+  const st = document.getElementById('settings-status');
+  if (!id || !secret) {
+    st.textContent = 'Both Client ID and Client Secret are required.';
+    st.className = 'modal-status err';
+    return;
+  }
+  st.textContent = 'Testing connection...';
+  st.className = 'modal-status ok';
+
+  try {
+    const token = await fetchNexarToken(id, secret);
+    if (token) {
+      localStorage.setItem(STORAGE_KEYS.nexarId, id);
+      localStorage.setItem(STORAGE_KEYS.nexarSecret, secret);
+      st.textContent = 'Connected successfully! Token valid for 24h.';
+      st.className = 'modal-status ok';
+      updateModeUI();
+      setTimeout(() => settingsModal.classList.remove('active'), 1200);
+    }
+  } catch (e) {
+    st.textContent = 'Connection failed: ' + e.message;
+    st.className = 'modal-status err';
+  }
+});
+
+// Close modal on Escape
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && settingsModal.classList.contains('active')) {
+    settingsModal.classList.remove('active');
+  }
+});
+
+// ── NEXAR API ──
+async function fetchNexarToken(clientId, clientSecret) {
+  const body = new URLSearchParams({
+    grant_type: 'client_credentials',
+    client_id: clientId,
+    client_secret: clientSecret,
+  });
+  const res = await fetch(NEXAR_TOKEN_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body,
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Token request failed (${res.status})`);
+  }
+  const data = await res.json();
+  nexarToken = data.access_token;
+  nexarTokenExp = Date.now() + (data.expires_in - 60) * 1000; // 1min buffer
+  return nexarToken;
+}
+
+async function getToken() {
+  if (nexarToken && Date.now() < nexarTokenExp) return nexarToken;
+  const id = localStorage.getItem(STORAGE_KEYS.nexarId);
+  const secret = localStorage.getItem(STORAGE_KEYS.nexarSecret);
+  if (!id || !secret) throw new Error('NEXAR API credentials not configured');
+  return fetchNexarToken(id, secret);
+}
+
+async function nexarSearch(query) {
+  const token = await getToken();
+  const res = await fetch(NEXAR_GQL_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + token,
+    },
+    body: JSON.stringify({ query: NEXAR_QUERY, variables: { q: query } }),
+  });
+  if (!res.ok) {
+    throw new Error(`API request failed (${res.status})`);
+  }
+  const data = await res.json();
+  if (data.errors) {
+    throw new Error(data.errors.map(e => e.message).join('; '));
+  }
+  return data.data.supSearchMpn;
+}
+
+// ── Search Dispatcher ──
+async function doSearch(query) {
+  query = query.trim();
+  if (!query || searching) return;
+
   document.getElementById('search-input').value = query;
 
-  // Add to history (dedup, most recent first)
+  // Add to history
   searchHistory = searchHistory.filter(h => h.query.toLowerCase() !== query.toLowerCase());
   searchHistory.unshift({ query, timestamp: Date.now() });
   if (searchHistory.length > 50) searchHistory.length = 50;
   saveHistory();
 
-  // Show results
-  showSearchResults(query);
-
-  // Switch to browse tab
   switchTab('browse');
 
-  // Open AllDatasheet in new tab (primary source)
+  if (useApi) {
+    await doApiSearch(query);
+  } else {
+    doLinkSearch(query);
+  }
+}
+
+// ── Link Mode Search ──
+function doLinkSearch(query) {
+  showLinkResults(query);
   window.open(SOURCES[0].url.replace('{q}', encodeURIComponent(query)), '_blank');
 }
 
-function showSearchResults(query) {
+function showLinkResults(query) {
   const resultsEl = document.getElementById('search-results');
   const browseEl = document.getElementById('browse-content');
-
   const isBookmarked = bookmarks.some(b => b.query.toLowerCase() === query.toLowerCase());
 
   let html = `<div class="search-status">
@@ -455,38 +959,146 @@ function showSearchResults(query) {
   browseEl.style.display = 'none';
 }
 
+// ── API Mode Search ──
+async function doApiSearch(query) {
+  const resultsEl = document.getElementById('search-results');
+  const browseEl = document.getElementById('browse-content');
+  searching = true;
+  btnSearch.disabled = true;
+
+  resultsEl.innerHTML = `<div class="api-loading"><div class="spinner"></div><div>Searching NEXAR for <strong style="color:var(--accent);font-family:'Courier New',monospace">${escHtml(query)}</strong>...</div></div>`;
+  resultsEl.style.display = 'block';
+  browseEl.style.display = 'none';
+
+  try {
+    const data = await nexarSearch(query);
+    renderApiResults(query, data);
+  } catch (e) {
+    resultsEl.innerHTML = `<div class="api-error">Search failed: ${escHtml(e.message)}<code>Check your API credentials in Settings, or switch to Link Mode.</code></div>`;
+  } finally {
+    searching = false;
+    btnSearch.disabled = false;
+  }
+}
+
+function renderApiResults(query, data) {
+  const resultsEl = document.getElementById('search-results');
+  const results = data.results || [];
+  const isBookmarked = bookmarks.some(b => b.query.toLowerCase() === query.toLowerCase());
+
+  let html = `<div class="api-results-header">
+    <h3>Results for <span style="color:var(--accent);font-family:'Courier New',monospace">${escHtml(query)}</span>
+      <button class="icon-btn${isBookmarked ? ' bookmarked' : ''}" onclick="toggleBookmark('${escAttr(query)}')" title="Bookmark" style="display:inline-flex;vertical-align:middle;margin-left:4px;width:24px;height:24px;font-size:13px">${isBookmarked ? '★' : '☆'}</button>
+    </h3>
+    <span class="hits">${data.hits || 0} total hits</span>
+  </div>`;
+
+  if (results.length === 0) {
+    html += `<div class="list-empty">No parts found for "${escHtml(query)}".<br>Try a different part number or switch to Link Mode.</div>`;
+    // Show link fallback
+    html += '<div class="source-row" style="margin-top:16px">';
+    for (const src of SOURCES) {
+      html += `<a href="${src.url.replace('{q}', encodeURIComponent(query))}" target="_blank" rel="noopener" class="source-link">${src.icon} ${src.name} <span class="arrow">↗</span></a>`;
+    }
+    html += '</div>';
+  } else {
+    for (const r of results) {
+      const p = r.part;
+      html += renderPartCard(p, query);
+    }
+    // Also show link sources at bottom
+    html += '<div style="margin-top:16px"><div class="parts-title">Also search on</div><div class="source-row" style="justify-content:flex-start">';
+    for (const src of SOURCES) {
+      html += `<a href="${src.url.replace('{q}', encodeURIComponent(query))}" target="_blank" rel="noopener" class="source-link">${src.icon} ${src.name} <span class="arrow">↗</span></a>`;
+    }
+    html += '</div></div>';
+  }
+
+  resultsEl.innerHTML = html;
+}
+
+function renderPartCard(p, query) {
+  const mfr = p.manufacturer?.name || 'Unknown';
+  const desc = p.shortDescription || '';
+  const ds = p.bestDatasheet;
+  const img = p.images?.[0]?.url;
+  const cat = p.category?.name || '';
+  const catPath = p.category?.path || '';
+  const specs = (p.specs || []).slice(0, 8);
+
+  let html = `<div class="part-card">
+    <div class="part-card-head">
+      <div class="part-card-info">
+        <div class="part-card-mpn">${escHtml(p.mpn || '')}</div>
+        <div class="part-card-mfr">${escHtml(mfr)}</div>
+        ${desc ? `<div class="part-card-desc">${escHtml(desc)}</div>` : ''}
+        ${cat ? `<div class="part-card-cat">${escHtml(catPath || cat)}</div>` : ''}
+      </div>
+      ${img ? `<img class="part-card-img" src="${escHtml(img)}" alt="${escHtml(p.mpn)}" onerror="this.style.display='none'">` : ''}
+    </div>`;
+
+  if (specs.length) {
+    html += '<div class="part-specs">';
+    for (const s of specs) {
+      const name = s.attribute?.shortname || s.attribute?.name || '';
+      html += `<span class="spec-tag"><b>${escHtml(name)}</b> ${escHtml(s.displayValue || '')}</span>`;
+    }
+    html += '</div>';
+  }
+
+  html += '<div class="part-card-actions">';
+  if (ds?.url) {
+    html += `<a href="${escHtml(ds.url)}" target="_blank" rel="noopener" class="ds-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Datasheet${ds.name ? ' (' + escHtml(ds.name) + ')' : ''}
+    </a>`;
+  }
+  html += `<a href="https://octopart.com/search?q=${encodeURIComponent(p.mpn || query)}" target="_blank" rel="noopener" class="ds-btn ds-btn-outline">Octopart ↗</a>`;
+  html += `<a href="https://www.digikey.com/en/products/result?keywords=${encodeURIComponent(p.mpn || query)}" target="_blank" rel="noopener" class="ds-btn ds-btn-outline">DigiKey ↗</a>`;
+  html += '</div></div>';
+  return html;
+}
+
 function clearSearchResults() {
   document.getElementById('search-results').style.display = 'none';
   document.getElementById('browse-content').style.display = '';
 }
 
-// --- Bookmarks ---
+// ── Bookmarks ──
 function toggleBookmark(query) {
   const idx = bookmarks.findIndex(b => b.query.toLowerCase() === query.toLowerCase());
-  if (idx >= 0) {
-    bookmarks.splice(idx, 1);
-  } else {
-    bookmarks.unshift({ query, timestamp: Date.now() });
-  }
+  if (idx >= 0) bookmarks.splice(idx, 1);
+  else bookmarks.unshift({ query, timestamp: Date.now() });
   saveBookmarks();
-  // Re-render if results are showing
   if (document.getElementById('search-results').style.display !== 'none') {
-    showSearchResults(query);
+    const input = document.getElementById('search-input').value.trim();
+    if (input) {
+      if (useApi) {
+        // Just update the bookmark icon without re-fetching
+        document.querySelectorAll('#search-results .icon-btn').forEach(btn => {
+          if (btn.onclick?.toString().includes(query.replace(/'/g, "\\'"))) {
+            const isBm = bookmarks.some(b => b.query.toLowerCase() === query.toLowerCase());
+            btn.className = 'icon-btn' + (isBm ? ' bookmarked' : '');
+            btn.innerHTML = isBm ? '★' : '☆';
+          }
+        });
+      } else {
+        showLinkResults(input);
+      }
+    }
   }
   renderBookmarks();
 }
 
-// --- Render ---
+// ── Render ──
 function renderPopular() {
-  const el = document.getElementById('popular-chips');
-  el.innerHTML = POPULAR.map(p =>
+  document.getElementById('popular-chips').innerHTML = POPULAR.map(p =>
     `<div class="part-chip" onclick="doSearch('${p}')">${p}</div>`
   ).join('');
 }
 
 function renderCategories() {
-  const el = document.getElementById('cat-grid');
-  el.innerHTML = CATEGORIES.map((cat, i) =>
+  document.getElementById('cat-grid').innerHTML = CATEGORIES.map((cat, i) =>
     `<div class="cat-card" onclick="showCategory(${i})">
       <div class="cat-icon">${cat.icon}</div>
       <h3>${cat.title}</h3>
@@ -498,13 +1110,10 @@ function renderCategories() {
 function showCategory(idx) {
   const cat = CATEGORIES[idx];
   const el = document.getElementById('popular-chips');
-  // Replace popular with category parts
   el.innerHTML = cat.parts.map(p =>
     `<div class="part-chip" onclick="doSearch('${p}')">${p}</div>`
   ).join('');
-  // Update title
   el.previousElementSibling.innerHTML = cat.icon + ' ' + cat.title;
-  // Scroll to top
   el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -515,8 +1124,7 @@ function renderHistory() {
     return;
   }
   let html = searchHistory.map(h => {
-    const date = new Date(h.timestamp);
-    const ago = timeAgo(date);
+    const ago = timeAgo(new Date(h.timestamp));
     const isBookmarked = bookmarks.some(b => b.query.toLowerCase() === h.query.toLowerCase());
     return `<div class="list-item">
       <div class="list-item-text" onclick="doSearch('${escAttr(h.query)}')" style="cursor:pointer">
@@ -524,9 +1132,7 @@ function renderHistory() {
         <div class="list-item-meta">${ago}</div>
       </div>
       <div class="list-item-actions">
-        <button class="icon-btn${isBookmarked ? ' bookmarked' : ''}" onclick="toggleBookmark('${escAttr(h.query)}')" title="Bookmark">
-          ${isBookmarked ? '★' : '☆'}
-        </button>
+        <button class="icon-btn${isBookmarked ? ' bookmarked' : ''}" onclick="toggleBookmark('${escAttr(h.query)}')" title="Bookmark">${isBookmarked ? '★' : '☆'}</button>
         <button class="icon-btn danger" onclick="removeHistory('${escAttr(h.query)}')" title="Remove">✕</button>
       </div>
     </div>`;
@@ -541,18 +1147,17 @@ function renderBookmarks() {
     el.innerHTML = '<div class="list-empty">No bookmarks yet.<br>Star a search to save it here.</div>';
     return;
   }
-  el.innerHTML = bookmarks.map(b => {
-    const date = new Date(b.timestamp);
-    return `<div class="list-item">
+  el.innerHTML = bookmarks.map(b =>
+    `<div class="list-item">
       <div class="list-item-text" onclick="doSearch('${escAttr(b.query)}')" style="cursor:pointer">
         <div class="list-item-query">${escHtml(b.query)}</div>
-        <div class="list-item-meta">Saved ${timeAgo(date)}</div>
+        <div class="list-item-meta">Saved ${timeAgo(new Date(b.timestamp))}</div>
       </div>
       <div class="list-item-actions">
         <button class="icon-btn danger" onclick="removeBookmark('${escAttr(b.query)}')" title="Remove">✕</button>
       </div>
-    </div>`;
-  }).join('');
+    </div>`
+  ).join('');
 }
 
 function removeHistory(query) {
@@ -571,14 +1176,13 @@ function removeBookmark(query) {
   bookmarks = bookmarks.filter(b => b.query !== query);
   saveBookmarks();
   renderBookmarks();
-  // Update results view if showing
   if (document.getElementById('search-results').style.display !== 'none') {
     const input = document.getElementById('search-input').value.trim();
-    if (input) showSearchResults(input);
+    if (input && !useApi) showLinkResults(input);
   }
 }
 
-// --- Tabs ---
+// ── Tabs ──
 function switchTab(name) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
@@ -590,7 +1194,7 @@ function switchTab(name) {
   }
 }
 
-// --- Helpers ---
+// ── Helpers ──
 function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function escAttr(s) { return s.replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
 
@@ -603,12 +1207,13 @@ function timeAgo(date) {
   return date.toLocaleDateString();
 }
 
-// --- Init ---
+// ── Init ──
 document.getElementById('btn-search').addEventListener('click', () => doSearch(document.getElementById('search-input').value));
 document.getElementById('search-input').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(e.target.value); });
 document.getElementById('search-input').addEventListener('input', e => { if (!e.target.value.trim()) clearSearchResults(); });
 document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
 
+updateModeUI();
 renderPopular();
 renderCategories();
 renderHistory();
