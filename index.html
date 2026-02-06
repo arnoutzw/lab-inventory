@@ -128,7 +128,7 @@
       TAGLINE: 'Building things that work (mostly)',
 
       // Repos to exclude (by name)
-      EXCLUDE_REPOS: ['lab-inventory', 'label-designer', 'resistor-colorcode-gen', 'datasheet-search', 'model-library', 'pages'], // Exclude embedded apps and the pages repo itself
+      EXCLUDE_REPOS: ['lab-inventory', 'label-designer', 'resistor-colorcode-gen', 'datasheet-search', 'model-library', 'rlc-calculator', 'pages'], // Exclude embedded apps and the pages repo itself
 
       // Only show repos with these topics (leave empty to show all)
       FILTER_TOPICS: [],
@@ -202,6 +202,15 @@
           icon: 'Box',
           url: './model-library/index.html',
           description: 'STL/3MF model library and viewer',
+          isLocal: true,
+          fullscreen: true
+        },
+        {
+          id: 'rlc-calculator',
+          name: 'RLC Calculator',
+          icon: 'Activity',
+          url: './rlc-calculator/rlc-calculator.html',
+          description: 'RLC circuit analysis and filter design',
           isLocal: true,
           fullscreen: true
         }
