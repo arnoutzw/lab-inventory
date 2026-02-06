@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" font-family="'JetBrains Mono',-apple-system,BlinkMacSystemFont,'Segoe UI',monospace">
+  <!-- Background -->
+  <rect width="960" height="540" fill="#09090b"/>
+
+  <!-- Nav bar -->
+  <rect y="0" width="960" height="48" fill="#09090b"/>
+  <rect y="48" width="960" height="1" fill="#3f3f46"/>
+  <text x="20" y="30" fill="#f59e0b" font-size="15" font-weight="700">RLC Circuit Calculator</text>
+
+  <!-- Nav tabs -->
+  <rect x="620" y="10" width="90" height="28" rx="6" fill="rgba(245,158,11,0.15)" stroke="rgba(245,158,11,0.4)"/>
+  <text x="636" y="29" fill="#f59e0b" font-size="10" font-weight="500">Series RLC</text>
+  <rect x="718" y="10" width="100" height="28" rx="6" fill="none" stroke="#3f3f46"/>
+  <text x="730" y="29" fill="#a1a1aa" font-size="10" font-weight="500">Parallel RLC</text>
+  <rect x="826" y="10" width="70" height="28" rx="6" fill="none" stroke="#3f3f46"/>
+  <text x="843" y="29" fill="#a1a1aa" font-size="10" font-weight="500">Filters</text>
+
+  <!-- Left panel -->
+  <rect x="16" y="60" width="280" height="464" rx="8" fill="#18181b" stroke="#3f3f46"/>
+  <text x="32" y="88" fill="#fbbf24" font-size="11" font-weight="600">Circuit Parameters</text>
+
+  <!-- Resistance -->
+  <text x="32" y="116" fill="#d4d4d8" font-size="10" font-weight="600">Resistance (R)</text>
+  <rect x="32" y="124" width="180" height="28" rx="6" fill="#27272a" stroke="#3f3f46"/>
+  <text x="44" y="142" fill="#e4e4e7" font-size="11">1000</text>
+  <rect x="220" y="124" width="48" height="28" rx="6" fill="#27272a" stroke="#3f3f46"/>
+  <text x="232" y="142" fill="#e4e4e7" font-size="10">Ω</text>
+  <rect x="32" y="160" width="236" height="4" rx="2" fill="#27272a"/>
+  <rect x="32" y="160" width="120" height="4" rx="2" fill="#f59e0b"/>
+
+  <!-- Inductance -->
+  <text x="32" y="188" fill="#d4d4d8" font-size="10" font-weight="600">Inductance (L)</text>
+  <rect x="32" y="196" width="180" height="28" rx="6" fill="#27272a" stroke="#3f3f46"/>
+  <text x="44" y="214" fill="#e4e4e7" font-size="11">0.001</text>
+  <rect x="220" y="196" width="48" height="28" rx="6" fill="#27272a" stroke="#3f3f46"/>
+  <text x="232" y="214" fill="#e4e4e7" font-size="10">H</text>
+  <rect x="32" y="232" width="236" height="4" rx="2" fill="#27272a"/>
+  <rect x="32" y="232" width="80" height="4" rx="2" fill="#f59e0b"/>
+
+  <!-- Capacitance -->
+  <text x="32" y="260" fill="#d4d4d8" font-size="10" font-weight="600">Capacitance (C)</text>
+  <rect x="32" y="268" width="180" height="28" rx="6" fill="#27272a" stroke="#3f3f46"/>
+  <text x="44" y="286" fill="#e4e4e7" font-size="11">0.000001</text>
+  <rect x="220" y="268" width="48" height="28" rx="6" fill="#27272a" stroke="#3f3f46"/>
+  <text x="232" y="286" fill="#e4e4e7" font-size="10">µF</text>
+  <rect x="32" y="304" width="236" height="4" rx="2" fill="#27272a"/>
+  <rect x="32" y="304" width="60" height="4" rx="2" fill="#f59e0b"/>
+
+  <!-- Voltage -->
+  <text x="32" y="332" fill="#d4d4d8" font-size="10" font-weight="600">Input Voltage (Vin)</text>
+  <rect x="32" y="340" width="220" height="28" rx="6" fill="#27272a" stroke="#3f3f46"/>
+  <text x="44" y="358" fill="#e4e4e7" font-size="11">5</text>
+  <text x="260" y="358" fill="#d4d4d8" font-size="11">V</text>
+
+  <!-- Frequency -->
+  <text x="32" y="390" fill="#d4d4d8" font-size="10" font-weight="600">Frequency (f)</text>
+  <rect x="32" y="398" width="180" height="28" rx="6" fill="#27272a" stroke="#3f3f46"/>
+  <text x="44" y="416" fill="#e4e4e7" font-size="11">1000</text>
+  <rect x="220" y="398" width="48" height="28" rx="6" fill="#27272a" stroke="#3f3f46"/>
+  <text x="232" y="416" fill="#e4e4e7" font-size="10">Hz</text>
+
+  <!-- Right panel -->
+  <rect x="308" y="60" width="636" height="464" rx="8" fill="#18181b" stroke="#3f3f46"/>
+
+  <!-- Circuit diagram area -->
+  <rect x="324" y="72" width="604" height="80" rx="8" fill="#27272a" stroke="#3f3f46"/>
+  <!-- Series circuit schematic -->
+  <text x="370" y="105" fill="#fbbf24" font-size="10">Vin</text>
+  <line x1="395" y1="110" x2="440" y2="110" stroke="#f59e0b" stroke-width="2"/>
+  <rect x="440" y="98" width="40" height="24" rx="0" fill="none" stroke="#f59e0b" stroke-width="2"/>
+  <text x="448" y="132" fill="#a1a1aa" font-size="8">1kΩ</text>
+  <line x1="480" y1="110" x2="510" y2="110" stroke="#f59e0b" stroke-width="2"/>
+  <!-- Inductor coils -->
+  <circle cx="525" cy="110" r="10" fill="none" stroke="#f59e0b" stroke-width="2"/>
+  <circle cx="545" cy="110" r="10" fill="none" stroke="#f59e0b" stroke-width="2"/>
+  <circle cx="565" cy="110" r="10" fill="none" stroke="#f59e0b" stroke-width="2"/>
+  <text x="530" y="132" fill="#a1a1aa" font-size="8">1mH</text>
+  <line x1="575" y1="110" x2="610" y2="110" stroke="#f59e0b" stroke-width="2"/>
+  <!-- Capacitor -->
+  <line x1="620" y1="96" x2="620" y2="124" stroke="#f59e0b" stroke-width="2"/>
+  <line x1="628" y1="96" x2="628" y2="124" stroke="#f59e0b" stroke-width="2"/>
+  <text x="614" y="140" fill="#a1a1aa" font-size="8">1µF</text>
+  <line x1="628" y1="110" x2="660" y2="110" stroke="#f59e0b" stroke-width="2"/>
+
+  <!-- Results section -->
+  <text x="324" y="174" fill="#fbbf24" font-size="11" font-weight="600">Analysis Results</text>
+
+  <!-- Results grid -->
+  <rect x="324" y="184" width="144" height="48" rx="6" fill="#27272a" stroke="#3f3f46"/>
+  <text x="336" y="200" fill="#71717a" font-size="8" font-weight="600">IMPEDANCE (Z)</text>
+  <text x="336" y="220" fill="#f59e0b" font-size="12">1.000kΩ ∠ -0.02°</text>
+
+  <rect x="476" y="184" width="144" height="48" rx="6" fill="#27272a" stroke="#3f3f46"/>
+  <text x="488" y="200" fill="#71717a" font-size="8" font-weight="600">RESONANT FREQ</text>
+  <text x="488" y="220" fill="#f59e0b" font-size="12">5.033kHz</text>
+
+  <rect x="628" y="184" width="144" height="48" rx="6" fill="#27272a" stroke="#3f3f46"/>
+  <text x="640" y="200" fill="#71717a" font-size="8" font-weight="600">Q FACTOR</text>
+  <text x="640" y="220" fill="#f59e0b" font-size="12">0.032</text>
+
+  <rect x="780" y="184" width="144" height="48" rx="6" fill="#27272a" stroke="#3f3f46"/>
+  <text x="792" y="200" fill="#71717a" font-size="8" font-weight="600">BANDWIDTH</text>
+  <text x="792" y="220" fill="#f59e0b" font-size="12">159.2kHz</text>
+
+  <rect x="324" y="240" width="144" height="48" rx="6" fill="#27272a" stroke="#3f3f46"/>
+  <text x="336" y="256" fill="#71717a" font-size="8" font-weight="600">DAMPING RATIO (ζ)</text>
+  <text x="336" y="276" fill="#f59e0b" font-size="12">15.811</text>
+
+  <rect x="476" y="240" width="144" height="48" rx="6" fill="#27272a" stroke="#3f3f46"/>
+  <text x="488" y="256" fill="#71717a" font-size="8" font-weight="600">DAMPING TYPE</text>
+  <text x="488" y="276" fill="#f59e0b" font-size="12">Overdamped</text>
+
+  <!-- Plot section -->
+  <rect x="324" y="300" width="604" height="1" fill="#3f3f46"/>
+  <text x="324" y="324" fill="#fbbf24" font-size="11" font-weight="600">Frequency Response</text>
+
+  <!-- Plot tabs -->
+  <rect x="324" y="334" width="100" height="24" rx="6" fill="rgba(245,158,11,0.15)" stroke="rgba(245,158,11,0.4)"/>
+  <text x="336" y="350" fill="#f59e0b" font-size="9" font-weight="500">Magnitude (dB)</text>
+  <rect x="432" y="334" width="80" height="24" rx="6" fill="none" stroke="#3f3f46"/>
+  <text x="444" y="350" fill="#a1a1aa" font-size="9" font-weight="500">Phase (deg)</text>
+  <rect x="520" y="334" width="94" height="24" rx="6" fill="none" stroke="#3f3f46"/>
+  <text x="532" y="350" fill="#a1a1aa" font-size="9" font-weight="500">Step Response</text>
+
+  <!-- Plot area -->
+  <rect x="324" y="366" width="604" height="146" rx="6" fill="#18181b" stroke="#3f3f46"/>
+
+  <!-- Grid lines -->
+  <line x1="380" y1="376" x2="380" y2="502" stroke="rgba(63,63,70,0.5)" stroke-width="1"/>
+  <line x1="480" y1="376" x2="480" y2="502" stroke="rgba(63,63,70,0.5)" stroke-width="1"/>
+  <line x1="580" y1="376" x2="580" y2="502" stroke="rgba(63,63,70,0.5)" stroke-width="1"/>
+  <line x1="680" y1="376" x2="680" y2="502" stroke="rgba(63,63,70,0.5)" stroke-width="1"/>
+  <line x1="780" y1="376" x2="780" y2="502" stroke="rgba(63,63,70,0.5)" stroke-width="1"/>
+  <line x1="380" y1="410" x2="912" y2="410" stroke="rgba(63,63,70,0.5)" stroke-width="1"/>
+  <line x1="380" y1="445" x2="912" y2="445" stroke="rgba(63,63,70,0.5)" stroke-width="1"/>
+  <line x1="380" y1="480" x2="912" y2="480" stroke="rgba(63,63,70,0.5)" stroke-width="1"/>
+
+  <!-- Magnitude plot curve (low-pass shape) -->
+  <polyline fill="none" stroke="#f59e0b" stroke-width="2"
+    points="380,400 430,400 480,400 530,400 560,400 580,402 600,410 620,430 640,460 660,480 700,492 750,496 800,498 850,500 912,502"/>
+
+  <!-- Axis labels -->
+  <text x="380" y="500" fill="#71717a" font-size="8">10Hz</text>
+  <text x="480" y="500" fill="#71717a" font-size="8">100Hz</text>
+  <text x="580" y="500" fill="#71717a" font-size="8">1kHz</text>
+  <text x="680" y="500" fill="#71717a" font-size="8">10kHz</text>
+  <text x="780" y="500" fill="#71717a" font-size="8">100kHz</text>
+  <text x="340" y="404" fill="#71717a" font-size="8">0dB</text>
+  <text x="336" y="445" fill="#71717a" font-size="8">-20</text>
+  <text x="336" y="480" fill="#71717a" font-size="8">-40</text>
+
+  <!-- -3dB dashed line -->
+  <line x1="380" y1="408" x2="912" y2="408" stroke="rgba(245,158,11,0.3)" stroke-width="1" stroke-dasharray="5,5"/>
+</svg>

@@ -1,6 +1,6 @@
 # Maker Portfolio
 
-A GitHub-powered portfolio site for showcasing maker and tinkerer projects, with eight integrated tools for electronics, design, and 3D modeling.
+A GitHub-powered portfolio site for showcasing maker and tinkerer projects, with ten integrated tools for electronics, design, and 3D modeling.
 
 Built as a single-page application using React 18, Tailwind CSS, and a dark zinc/amber terminal-inspired theme.
 
@@ -87,6 +87,35 @@ Upload and view STL, 3MF, AMF, OBJ, and G-code files in the browser.
 - **Rename & delete** from library or viewer
 - Auto-scaled grid floor and camera fitting
 
+### RLC Circuit Calculator
+
+Series, parallel, and filter analysis for RLC circuits.
+
+![RLC Calculator](screenshots/rlc-calculator.svg)
+
+- **Three modes** — Series RLC, Parallel RLC, and Filters (LP/HP/BP/BS in RC, RL, RLC variants)
+- **Circuit parameters** — Resistance, Inductance, Capacitance with unit selectors and sliders
+- **Input voltage** and **frequency** controls
+- **Analysis results** — Impedance (magnitude + phase), resonant frequency, Q factor, bandwidth, damping ratio, damping type, component voltages/currents
+- **Four plots** — Magnitude (dB), Phase (degrees), Step Response, Impulse Response
+- **Circuit diagram** — SVG schematic updates per mode
+- Engineering notation throughout (e.g. 5.033kHz, 1.000kΩ)
+
+### Discrete Filter Designer
+
+An interactive biquad IIR filter designer with real-time frequency response.
+
+![Filter Designer](screenshots/filter-designer.svg)
+
+- **Eight filter types** — Low-Pass, High-Pass, Band-Pass, Notch, Peaking EQ, Low Shelf, High Shelf, All-Pass
+- **Parameters** — Sample rate (1–384kHz), cutoff/center frequency (log-mapped slider), Q factor (log-mapped), gain (dB, for peaking/shelf types)
+- **Coefficient display** — Normalized Direct Form I biquad coefficients (b0, b1, b2, a1, a2)
+- **Four plot views** — Magnitude (dB), Phase, Group Delay (ms), Impulse Response (stem plot)
+- **Pole-zero diagram** — Unit circle with zero markers (circles) and pole markers (crosses)
+- **C code generation** — Ready-to-use `Biquad` struct with `biquad_init`/`biquad_process` functions
+- **Copy button** — One-click copy of generated implementation code
+- Uses Robert Bristow-Johnson's Audio EQ Cookbook formulas
+
 ### External Tools
 
 Two third-party simulators are embedded as fullscreen tabs:
@@ -104,6 +133,8 @@ Two third-party simulators are embedded as fullscreen tabs:
 | Resistor Colors | Vanilla JS (CIE LAB color space) |
 | Datasheet Search | Vanilla JS, localStorage |
 | 3D Model Library | Three.js (r160), IndexedDB |
+| RLC Calculator | Vanilla JS, Canvas API, SVG circuit diagrams |
+| Filter Designer | Vanilla JS, Canvas API (Audio EQ Cookbook biquad formulas) |
 
 All local apps are self-contained single HTML files with inline CSS/JS. Lab Inventory and Label Designer include PWA manifests and service workers for offline support.
 
@@ -138,6 +169,10 @@ pages/
 │   └── styles.css                 # Styling
 ├── datasheet-search/
 │   └── index.html                 # Datasheet search tool
-└── model-library/
-    └── index.html                 # 3D model viewer/library
+├── model-library/
+│   └── index.html                 # 3D model viewer/library
+├── rlc-calculator/
+│   └── rlc-calculator.html        # RLC circuit analysis tool
+└── biquad-pwa/
+    └── index.html                 # Discrete biquad filter designer
 ```
