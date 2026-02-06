@@ -1,0 +1,22 @@
+{
+  "name": "Biquad Filter Designer",
+  "short_name": "Biquad",
+  "description": "Second-order IIR biquad filter calculator with interactive frequency response plots",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0f1923",
+  "theme_color": "#0f1923",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='192' height='192' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='32' fill='%230f1923'/%3E%3Crect x='8' y='8' width='176' height='176' rx='28' fill='none' stroke='%2300b4d8' stroke-width='3'/%3E%3Cpath d='M24 120 Q48 40, 72 96 T120 80 T168 88' stroke='%2300b4d8' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3Cpath d='M24 140 Q56 150, 88 130 T152 140' stroke='%23ff6b6b' stroke-width='2.5' fill='none' stroke-linecap='round' opacity='0.6'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='512' height='512' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%230f1923'/%3E%3Crect x='16' y='16' width='480' height='480' rx='68' fill='none' stroke='%2300b4d8' stroke-width='6'/%3E%3Cpath d='M64 320 Q128 100, 192 256 T320 210 T448 230' stroke='%2300b4d8' stroke-width='10' fill='none' stroke-linecap='round'/%3E%3Cpath d='M64 370 Q150 400, 236 340 T408 370' stroke='%23ff6b6b' stroke-width='5' fill='none' stroke-linecap='round' opacity='0.6'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
