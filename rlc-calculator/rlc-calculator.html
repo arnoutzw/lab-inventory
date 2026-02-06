@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="RLC Circuit Calculator - Comprehensive analysis for series, parallel, and filter configurations">
+    <meta name="theme-color" content="#0a0a0f">
+    <title>RLC Circuit Calculator</title>
+
+    <link rel="manifest" href="data:application/manifest+json,{
+        %22name%22:%22RLC%20Circuit%20Calculator%22,
+        %22short_name%22:%22RLC%20Calc%22,
+        %22description%22:%22Advanced%20RLC%20circuit%20analysis%20tool%22,
+        %22start_url%22:%22./rlc-calculator.html%22,
+        %22display%22:%22standalone%22,
+        %22scope%22:%22./%22,
+        %22theme_color%22:%22%230a0a0f%22,
+        %22background_color%22:%22%230a0a0f%22,
+        %22icons%22:[{%22src%22:%22data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20viewBox=%270%200%20192%20192%27%3E%3Crect%20fill=%27%2300ff88%27%20width=%27192%27%20height=%27192%27/%3E%3Ctext%20x=%2796%27%20y=%27140%27%20font-size=%27120%27%20fill=%27%230a0a0f%27%20text-anchor=%27middle%27%20font-weight=%27bold%27%3ERπC%3C/text%3E%3C/svg%3E%22,%22sizes%22:%22192x192%22,%22type%22:%22image/svg+xml%22,%22purpose%22:%22any%22}]
+    }">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect fill=%2700ff88%27 width=%2732%27 height=%2732%27/%3E%3Ctext x=%2716%27 y=%2724%27 font-size=%2720%27 fill=%270a0a0f%27 text-anchor=%27middle%27 font-weight=%27bold%27%3ERπC%3C/text%3E%3C/svg%3E">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0a0f;
+            color: #00ff88;
+            overflow: hidden;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            width: 100%;
+        }
+
+        .nav-bar {
+            background: rgba(10, 10, 15, 0.95);
+            border-bottom: 2px solid #00ff88;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+            z-index: 100;
+        }
+
+        .nav-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #00ff88;
+            text-shadow: 0 0 10px #00ff88;
+            font-family: 'Courier New', monospace;
+        }
+
+        .tabs-container {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .tab-button {
+            padding: 0.5rem 1rem;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid #00ff88;
+            color: #00ff88;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        .tab-button:hover {
+            background: rgba(0, 255, 136, 0.2);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+            transform: scale(1.05);
+        }
+
+        .tab-button.active {
+            background: rgba(0, 255, 136, 0.3);
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.7), inset 0 0 10px rgba(0, 255, 136, 0.3);
+        }
+
+        .main-content {
+            display: flex;
+            flex: 1;
+            gap: 1rem;
+            padding: 1rem;
+            overflow: hidden;
+        }
+
+        .section {
+            background: rgba(0, 20, 40, 0.5);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 4px;
+            padding: 1rem;
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.1), inset 0 0 10px rgba(0, 0, 0, 0.3);
+            overflow-y: auto;
+        }
+
+        .left-panel {
+            flex: 0 0 300px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .right-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .input-group:last-child {
+            border-bottom: none;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #00ff88;
+        }
+
+        .input-wrapper {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        select {
+            flex: 1;
+            padding: 0.6rem;
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid rgba(0, 255, 136, 0.5);
+            color: #00ff88;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            border-radius: 2px;
+            transition: all 0.2s ease;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus,
+        select:focus {
+            outline: none;
+            background: rgba(0, 255, 136, 0.1);
+            border-color: #00ff88;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+        }
+
+        select {
+            cursor: pointer;
+            padding: 0.6rem 0.4rem;
+        }
+
+        select option {
+            background: #0a0a0f;
+            color: #00ff88;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            cursor: pointer;
+            accent-color: #00ff88;
+            height: 6px;
+        }
+
+        .value-display {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #00ffff;
+            min-width: 60px;
+            text-align: right;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .result-item {
+            background: rgba(0, 255, 136, 0.05);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            padding: 0.8rem;
+            border-radius: 2px;
+        }
+
+        .result-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #00ccff;
+            margin-bottom: 0.3rem;
+            font-weight: bold;
+        }
+
+        .result-value {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1rem;
+            color: #00ff88;
+            text-shadow: 0 0 5px rgba(0, 255, 136, 0.5);
+            word-break: break-all;
+        }
+
+        .equation {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8rem;
+            color: #ffff00;
+            margin-top: 0.2rem;
+            opacity: 0.8;
+        }
+
+        .plot-section {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(0, 255, 136, 0.2);
+        }
+
+        .plot-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .plot-tab {
+            padding: 0.4rem 0.8rem;
+            background: rgba(0, 255, 136, 0.1);
+            border: 1px solid rgba(0, 255, 136, 0.4);
+            color: #00ff88;
+            cursor: pointer;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            transition: all 0.2s ease;
+            border-radius: 2px;
+        }
+
+        .plot-tab:hover {
+            background: rgba(0, 255, 136, 0.15);
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+        }
+
+        .plot-tab.active {
+            background: rgba(0, 255, 136, 0.25);
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.5);
+        }
+
+        canvas {
+            width: 100%;
+            height: 300px;
+            background: rgba(0, 20, 40, 0.7);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 2px;
+            display: block;
+        }
+
+        .circuit-diagram {
+            background: rgba(0, 20, 40, 0.5);
+            border: 1px solid rgba(0, 255, 136, 0.3);
+            border-radius: 2px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        svg {
+            max-width: 100%;
+            height: auto;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                flex-direction: column;
+            }
+
+            .left-panel {
+                flex: 0 0 auto;
+            }
+
+            .right-panel {
+                flex: 1;
+                min-height: 400px;
+            }
+
+            .results-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-bar {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .section {
+                padding: 0.75rem;
+            }
+
+            .input-group {
+                margin-bottom: 1rem;
+            }
+
+            .input-wrapper {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .value-display {
+                min-width: auto;
+                text-align: left;
+            }
+
+            canvas {
+                height: 250px;
+            }
+        }
+
+        .info-text {
+            font-size: 0.8rem;
+            color: rgba(0, 255, 136, 0.6);
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+
+        .warning-text {
+            font-size: 0.8rem;
+            color: #ffff00;
+            margin-top: 0.5rem;
+        }
+
+        .error-text {
+            font-size: 0.8rem;
+            color: #ff6666;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-bar">
+            <div class="nav-title">RLC Circuit Calculator</div>
+            <div class="tabs-container">
+                <button class="tab-button active" data-config="series">Series RLC</button>
+                <button class="tab-button" data-config="parallel">Parallel RLC</button>
+                <button class="tab-button" data-config="filters">Filters</button>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel section">
+                <h3 style="margin-bottom: 1rem; color: #00ffff;">Circuit Parameters</h3>
+
+                <!-- Filter Type Selector -->
+                <div id="filterTypeGroup" class="input-group" style="display: none;">
+                    <label for="filterType">Filter Type</label>
+                    <select id="filterType">
+                        <option value="lp-rc">Low-Pass RC</option>
+                        <option value="lp-rl">Low-Pass RL</option>
+                        <option value="lp-rlc">Low-Pass RLC</option>
+                        <option value="hp-rc">High-Pass RC</option>
+                        <option value="hp-rl">High-Pass RL</option>
+                        <option value="hp-rlc">High-Pass RLC</option>
+                        <option value="bp-rlc">Band-Pass RLC</option>
+                        <option value="bs-rlc">Band-Stop RLC</option>
+                    </select>
+                </div>
+
+                <!-- Resistance Input -->
+                <div class="input-group">
+                    <label for="resistance">Resistance (R)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="resistance" min="0.1" max="1000000" value="1000" step="any">
+                        <select id="resistanceUnit">
+                            <option value="1">Ω</option>
+                            <option value="1000">kΩ</option>
+                            <option value="1000000">MΩ</option>
+                        </select>
+                    </div>
+                    <input type="range" id="resistanceSlider" min="0.1" max="1000000" value="1000" style="margin-top: 0.5rem;">
+                </div>
+
+                <!-- Inductance Input -->
+                <div class="input-group">
+                    <label for="inductance">Inductance (L)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="inductance" min="0.000001" max="100" value="0.001" step="any">
+                        <select id="inductanceUnit">
+                            <option value="1">H</option>
+                            <option value="0.001">mH</option>
+                            <option value="0.000001">µH</option>
+                            <option value="0.000000001">nH</option>
+                        </select>
+                    </div>
+                    <input type="range" id="inductanceSlider" min="0.000001" max="100" value="0.001" style="margin-top: 0.5rem;">
+                </div>
+
+                <!-- Capacitance Input -->
+                <div class="input-group">
+                    <label for="capacitance">Capacitance (C)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="capacitance" min="0.000000000001" max="0.1" value="0.000001" step="any">
+                        <select id="capacitanceUnit">
+                            <option value="1">F</option>
+                            <option value="0.000001">µF</option>
+                            <option value="0.000000001">nF</option>
+                            <option value="0.000000000001">pF</option>
+                        </select>
+                    </div>
+                    <input type="range" id="capacitanceSlider" min="0.000000000001" max="0.1" value="0.000001" style="margin-top: 0.5rem;">
+                </div>
+
+                <!-- Input Voltage -->
+                <div class="input-group">
+                    <label for="voltage">Input Voltage (Vin)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="voltage" min="0.001" max="1000" value="5" step="any">
+                        <span style="color: #00ff88;">V</span>
+                    </div>
+                </div>
+
+                <!-- Frequency Input -->
+                <div class="input-group">
+                    <label for="frequency">Frequency (f)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="frequency" min="0.1" max="1000000000" value="1000" step="any">
+                        <select id="frequencyUnit">
+                            <option value="1">Hz</option>
+                            <option value="1000">kHz</option>
+                            <option value="1000000">MHz</option>
+                        </select>
+                    </div>
+                    <input type="range" id="frequencySlider" min="0.1" max="1000000" value="1000" style="margin-top: 0.5rem;">
+                </div>
+            </div>
+
+            <div class="right-panel section">
+                <div id="circuitDiagram" class="circuit-diagram">
+                    <svg id="circuitSVG" viewBox="0 0 400 200" width="400" height="150"></svg>
+                </div>
+
+                <h3 style="margin-bottom: 1rem; color: #00ffff;">Analysis Results</h3>
+
+                <div class="results-grid" id="resultsGrid">
+                    <!-- Results populated by JavaScript -->
+                </div>
+
+                <div class="plot-section">
+                    <h3 style="margin-bottom: 1rem; color: #00ffff;">Frequency Response</h3>
+                    <div class="plot-tabs">
+                        <button class="plot-tab active" data-plot="magnitude">Magnitude (dB)</button>
+                        <button class="plot-tab" data-plot="phase">Phase (deg)</button>
+                        <button class="plot-tab" data-plot="step">Step Response</button>
+                        <button class="plot-tab" data-plot="impulse">Impulse Response</button>
+                    </div>
+                    <canvas id="plotCanvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================================
+        // UTILITY FUNCTIONS
+        // ============================================================================
+
+        // Complex number arithmetic
+        class Complex {
+            constructor(real, imag = 0) {
+                this.real = real;
+                this.imag = imag;
+            }
+
+            static from(real, imag = 0) {
+                return new Complex(real, imag);
+            }
+
+            add(other) {
+                return new Complex(this.real + other.real, this.imag + other.imag);
+            }
+
+            sub(other) {
+                return new Complex(this.real - other.real, this.imag - other.imag);
+            }
+
+            mul(other) {
+                const real = this.real * other.real - this.imag * other.imag;
+                const imag = this.real * other.imag + this.imag * other.real;
+                return new Complex(real, imag);
+            }
+
+            div(other) {
+                const denom = other.real ** 2 + other.imag ** 2;
+                const real = (this.real * other.real + this.imag * other.imag) / denom;
+                const imag = (this.imag * other.real - this.real * other.imag) / denom;
+                return new Complex(real, imag);
+            }
+
+            mag() {
+                return Math.sqrt(this.real ** 2 + this.imag ** 2);
+            }
+
+            phase() {
+                return Math.atan2(this.imag, this.real);
+            }
+
+            conj() {
+                return new Complex(this.real, -this.imag);
+            }
+
+            inv() {
+                return new Complex(1, 0).div(this);
+            }
+        }
+
+        // Format numbers with engineering notation
+        function formatEngineering(value, unit = '') {
+            const abs = Math.abs(value);
+            let multiplier = 1;
+            let prefix = '';
+
+            if (abs >= 1e9) {
+                multiplier = 1e9;
+                prefix = 'G';
+            } else if (abs >= 1e6) {
+                multiplier = 1e6;
+                prefix = 'M';
+            } else if (abs >= 1e3) {
+                multiplier = 1e3;
+                prefix = 'k';
+            } else if (abs >= 1) {
+                multiplier = 1;
+                prefix = '';
+            } else if (abs >= 1e-3) {
+                multiplier = 1e-3;
+                prefix = 'm';
+            } else if (abs >= 1e-6) {
+                multiplier = 1e-6;
+                prefix = 'µ';
+            } else if (abs >= 1e-9) {
+                multiplier = 1e-9;
+                prefix = 'n';
+            } else if (abs >= 1e-12) {
+                multiplier = 1e-12;
+                prefix = 'p';
+            }
+
+            const formatted = (value / multiplier).toPrecision(4);
+            return `${formatted}${prefix}${unit}`;
+        }
+
+        function formatComplex(c) {
+            const mag = c.mag();
+            const phase = c.phase() * 180 / Math.PI;
+            return `${formatEngineering(mag)} ∠ ${phase.toFixed(2)}°`;
+        }
+
+        // Parse input value with unit multiplier
+        function parseInputValue(inputId, unitId) {
+            const value = parseFloat(document.getElementById(inputId).value) || 0;
+            const unit = parseFloat(document.getElementById(unitId).value) || 1;
+            return value * unit;
+        }
+
+        // ============================================================================
+        // RLC CIRCUIT CALCULATIONS
+        // ============================================================================
+
+        class RLCCircuit {
+            constructor(R, L, C, Vin, f) {
+                this.R = R;
+                this.L = L;
+                this.C = C;
+                this.Vin = Vin;
+                this.f = f;
+                this.omega = 2 * Math.PI * f;
+            }
+
+            // Resonant frequency
+            resonantFrequency() {
+                if (this.L === 0 || this.C === 0) return 0;
+                return 1 / (2 * Math.PI * Math.sqrt(this.L * this.C));
+            }
+
+            // Natural frequency
+            naturalFrequency() {
+                if (this.L === 0 || this.C === 0) return 0;
+                return 1 / Math.sqrt(this.L * this.C);
+            }
+
+            // Damping ratio (series)
+            dampingRatioSeries() {
+                if (this.L === 0 || this.C === 0) return 0;
+                return (this.R / 2) * Math.sqrt(this.C / this.L);
+            }
+
+            // Damping ratio (parallel)
+            dampingRatioParallel() {
+                if (this.L === 0 || this.C === 0) return 0;
+                return 1 / (2 * this.R) * Math.sqrt(this.L / this.C);
+            }
+
+            // Series RLC impedance
+            impedanceSeries() {
+                const XL = this.omega * this.L;
+                const XC = 1 / (this.omega * this.C);
+                return new Complex(this.R, XL - XC);
+            }
+
+            // Parallel RLC admittance
+            admittanceParallel() {
+                const XL = this.omega * this.L;
+                const XC = 1 / (this.omega * this.C);
+                const BL = -1 / XL;
+                const BC = this.omega * this.C;
+                return new Complex(1 / this.R, BC + BL);
+            }
+
+            // Quality factor (series)
+            QFactorSeries() {
+                if (this.L === 0 || this.C === 0) return 0;
+                return (1 / this.R) * Math.sqrt(this.L / this.C);
+            }
+
+            // Quality factor (parallel)
+            QFactorParallel() {
+                if (this.L === 0 || this.C === 0) return 0;
+                return this.R * Math.sqrt(this.C / this.L);
+            }
+
+            // Bandwidth
+            bandwidth() {
+                const f0 = this.resonantFrequency();
+                const Q = Math.abs(this.QFactorSeries());
+                return f0 / Q;
+            }
+
+            // Damping classification
+            dampingType() {
+                const zeta = this.dampingRatioSeries();
+                if (zeta < 1) return 'Underdamped';
+                if (zeta === 1) return 'Critically damped';
+                return 'Overdamped';
+            }
+        }
+
+        // ============================================================================
+        // FILTER TRANSFER FUNCTIONS
+        // ============================================================================
+
+        class FilterTransferFunction {
+            constructor(R, L, C, filterType) {
+                this.R = R;
+                this.L = L;
+                this.C = C;
+                this.filterType = filterType;
+            }
+
+            // Evaluate transfer function at complex frequency s
+            evaluate(s) {
+                switch(this.filterType) {
+                    case 'lp-rc': return this.lpRC(s);
+                    case 'lp-rl': return this.lpRL(s);
+                    case 'lp-rlc': return this.lpRLC(s);
+                    case 'hp-rc': return this.hpRC(s);
+                    case 'hp-rl': return this.hpRL(s);
+                    case 'hp-rlc': return this.hpRLC(s);
+                    case 'bp-rlc': return this.bpRLC(s);
+                    case 'bs-rlc': return this.bsRLC(s);
+                    default: return new Complex(1, 0);
+                }
+            }
+
+            lpRC(s) {
+                const wc = 1 / (this.R * this.C);
+                return new Complex(wc, 0).div(s.add(new Complex(wc, 0)));
+            }
+
+            lpRL(s) {
+                const wc = this.R / this.L;
+                return new Complex(wc, 0).div(s.add(new Complex(wc, 0)));
+            }
+
+            lpRLC(s) {
+                const wn = 1 / Math.sqrt(this.L * this.C);
+                const Q = wn * this.L / this.R;
+                const num = new Complex(wn * wn, 0);
+                const den = s.mul(s).add(s.mul(new Complex(wn / Q, 0))).add(new Complex(wn * wn, 0));
+                return num.div(den);
+            }
+
+            hpRC(s) {
+                const wc = 1 / (this.R * this.C);
+                const num = s;
+                const den = s.add(new Complex(wc, 0));
+                return num.div(den);
+            }
+
+            hpRL(s) {
+                const wc = this.R / this.L;
+                const num = s;
+                const den = s.add(new Complex(wc, 0));
+                return num.div(den);
+            }
+
+            hpRLC(s) {
+                const wn = 1 / Math.sqrt(this.L * this.C);
+                const Q = wn * this.L / this.R;
+                const num = s.mul(s);
+                const den = s.mul(s).add(s.mul(new Complex(wn / Q, 0))).add(new Complex(wn * wn, 0));
+                return num.div(den);
+            }
+
+            bpRLC(s) {
+                const wn = 1 / Math.sqrt(this.L * this.C);
+                const Q = wn * this.L / this.R;
+                const num = s.mul(new Complex(wn / Q, 0));
+                const den = s.mul(s).add(s.mul(new Complex(wn / Q, 0))).add(new Complex(wn * wn, 0));
+                return num.div(den);
+            }
+
+            bsRLC(s) {
+                const wn = 1 / Math.sqrt(this.L * this.C);
+                const Q = wn * this.L / this.R;
+                const num = s.mul(s).add(new Complex(wn * wn, 0));
+                const den = s.mul(s).add(s.mul(new Complex(wn / Q, 0))).add(new Complex(wn * wn, 0));
+                return num.div(den);
+            }
+        }
+
+        // ============================================================================
+        // STEP & IMPULSE RESPONSE CALCULATION
+        // ============================================================================
+
+        class TransientResponse {
+            constructor(R, L, C, filterType = null) {
+                this.R = R;
+                this.L = L;
+                this.C = C;
+                this.filterType = filterType;
+            }
+
+            // Step response for series RLC (unit step)
+            stepResponseSeries(t) {
+                const wn = 1 / Math.sqrt(this.L * this.C);
+                const zeta = (this.R / 2) * Math.sqrt(this.C / this.L);
+
+                if (zeta > 1) {
+                    // Overdamped
+                    const p1 = -zeta * wn + Math.sqrt(zeta * zeta - 1) * wn;
+                    const p2 = -zeta * wn - Math.sqrt(zeta * zeta - 1) * wn;
+                    const A = 1 / (2 * Math.sqrt(zeta * zeta - 1));
+                    return 1 - A * (Math.exp(p1 * t) - Math.exp(p2 * t)) / (p1 - p2);
+                } else if (Math.abs(zeta - 1) < 1e-6) {
+                    // Critically damped
+                    return 1 - (1 + wn * t) * Math.exp(-wn * t);
+                } else {
+                    // Underdamped
+                    const wd = wn * Math.sqrt(1 - zeta * zeta);
+                    const phase = Math.atan2(wd, -zeta * wn);
+                    const envelope = Math.exp(-zeta * wn * t);
+                    return 1 - envelope * Math.cos(wd * t + phase) / Math.cos(phase);
+                }
+            }
+
+            // Impulse response for series RLC
+            impulseResponseSeries(t) {
+                if (t < 0) return 0;
+                const wn = 1 / Math.sqrt(this.L * this.C);
+                const zeta = (this.R / 2) * Math.sqrt(this.C / this.L);
+
+                if (zeta > 1) {
+                    // Overdamped
+                    const p1 = -zeta * wn + Math.sqrt(zeta * zeta - 1) * wn;
+                    const p2 = -zeta * wn - Math.sqrt(zeta * zeta - 1) * wn;
+                    return (Math.exp(p1 * t) - Math.exp(p2 * t)) / (2 * this.L * Math.sqrt(zeta * zeta - 1) * wn);
+                } else if (Math.abs(zeta - 1) < 1e-6) {
+                    // Critically damped
+                    return (wn * wn * t * Math.exp(-wn * t)) / this.L;
+                } else {
+                    // Underdamped
+                    const wd = wn * Math.sqrt(1 - zeta * zeta);
+                    return (wn / this.L) * Math.exp(-zeta * wn * t) * Math.sin(wd * t) / Math.sqrt(1 - zeta * zeta);
+                }
+            }
+        }
+
+        // ============================================================================
+        // CIRCUIT DIAGRAM DRAWING
+        // ============================================================================
+
+        function drawCircuitDiagram(config, R, L, C) {
+            const svg = document.getElementById('circuitSVG');
+            svg.innerHTML = '';
+
+            const text = (x, y, content, size = 12, color = '#00ff88') => {
+                const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                t.setAttribute('x', x);
+                t.setAttribute('y', y);
+                t.setAttribute('font-size', size);
+                t.setAttribute('fill', color);
+                t.setAttribute('font-family', 'Courier New, monospace');
+                t.setAttribute('text-anchor', 'middle');
+                t.textContent = content;
+                svg.appendChild(t);
+            };
+
+            const line = (x1, y1, x2, y2, color = '#00ff88', width = 2) => {
+                const l = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+                l.setAttribute('x1', x1);
+                l.setAttribute('y1', y1);
+                l.setAttribute('x2', x2);
+                l.setAttribute('y2', y2);
+                l.setAttribute('stroke', color);
+                l.setAttribute('stroke-width', width);
+                svg.appendChild(l);
+            };
+
+            const rect = (x, y, w, h, color = '#00ff88', width = 2) => {
+                const r = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                r.setAttribute('x', x);
+                r.setAttribute('y', y);
+                r.setAttribute('width', w);
+                r.setAttribute('height', h);
+                r.setAttribute('fill', 'none');
+                r.setAttribute('stroke', color);
+                r.setAttribute('stroke-width', width);
+                svg.appendChild(r);
+            };
+
+            const circle = (cx, cy, r, color = '#00ff88', width = 2) => {
+                const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                c.setAttribute('cx', cx);
+                c.setAttribute('cy', cy);
+                c.setAttribute('r', r);
+                c.setAttribute('fill', 'none');
+                c.setAttribute('stroke', color);
+                c.setAttribute('stroke-width', width);
+                svg.appendChild(c);
+            };
+
+            if (config === 'series') {
+                // Series circuit: [Vin] - [R] - [L] - [C] - [Gnd]
+                line(30, 100, 60, 100);
+                text(45, 90, 'Vin', 11, '#00ffff');
+
+                // Resistor
+                rect(70, 85, 30, 30);
+                text(85, 130, `${formatEngineering(R, 'Ω')}`, 10);
+                line(60, 100, 70, 100);
+                line(100, 100, 120, 100);
+
+                // Inductor (coil)
+                for (let i = 0; i < 3; i++) {
+                    circle(130 + i * 20, 100, 10);
+                }
+                text(150, 130, `${formatEngineering(L, 'H')}`, 10);
+                line(120, 100, 120, 100);
+                line(170, 100, 190, 100);
+
+                // Capacitor (two lines)
+                line(190, 100, 210, 100);
+                line(210, 85, 210, 115);
+                line(220, 85, 220, 115);
+                text(215, 130, `${formatEngineering(C, 'F')}`, 10);
+                line(220, 100, 240, 100);
+
+                // Ground
+                line(240, 100, 240, 120);
+                line(230, 120, 250, 120);
+                line(235, 125, 245, 125);
+                line(240, 130, 240, 130);
+            } else if (config === 'parallel') {
+                // Parallel circuit branches
+                text(40, 85, 'Vin', 11, '#00ffff');
+                line(40, 100, 70, 100);
+
+                // Top rail
+                line(70, 70, 280, 70);
+
+                // R branch
+                line(100, 70, 100, 85);
+                rect(85, 85, 30, 30);
+                text(100, 130, `${formatEngineering(R, 'Ω')}`, 10);
+                line(100, 115, 100, 130);
+
+                // L branch
+                line(170, 70, 170, 80);
+                circle(170, 90, 10);
+                text(170, 130, `${formatEngineering(L, 'H')}`, 10);
+                line(170, 110, 170, 130);
+
+                // C branch
+                line(240, 70, 240, 85);
+                line(230, 85, 250, 85);
+                line(230, 95, 250, 95);
+                text(240, 130, `${formatEngineering(C, 'F')}`, 10);
+                line(240, 95, 240, 130);
+
+                // Bottom rail
+                line(70, 130, 280, 130);
+
+                // Ground
+                line(280, 130, 280, 150);
+                line(270, 150, 290, 150);
+                line(275, 155, 285, 155);
+            } else if (config === 'filters') {
+                // Simple filter representation
+                line(30, 100, 60, 100);
+                text(45, 85, 'Vin', 11, '#00ffff');
+
+                // Filter box
+                rect(70, 70, 100, 60);
+                text(120, 105, 'FILTER', 12, '#00ffff');
+
+                // Output
+                line(170, 100, 210, 100);
+                text(220, 85, 'Vout', 11, '#00ffff');
+            }
+        }
+
+        // ============================================================================
+        // BODE PLOT CANVAS RENDERER
+        // ============================================================================
+
+        class BodePlotter {
+            constructor(canvasId, minFreq = 10, maxFreq = 10e6) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.minFreq = minFreq;
+                this.maxFreq = maxFreq;
+                this.width = this.canvas.offsetWidth;
+                this.height = this.canvas.offsetHeight;
+                this.dpr = window.devicePixelRatio || 1;
+                this.setupCanvas();
+            }
+
+            setupCanvas() {
+                this.canvas.width = this.width * this.dpr;
+                this.canvas.height = this.height * this.dpr;
+                this.ctx.scale(this.dpr, this.dpr);
+            }
+
+            drawMagnitudePlot(transferFn) {
+                this.ctx.fillStyle = '#0a0a0f';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+
+                const margin = { top: 30, right: 20, bottom: 50, left: 60 };
+                const plotW = this.width - margin.left - margin.right;
+                const plotH = this.height - margin.top - margin.bottom;
+
+                // Logarithmic frequency scale
+                const freqs = [];
+                const mags = [];
+                const numPoints = 200;
+
+                for (let i = 0; i < numPoints; i++) {
+                    const logFreq = Math.log10(this.minFreq) + (Math.log10(this.maxFreq) - Math.log10(this.minFreq)) * (i / numPoints);
+                    const f = Math.pow(10, logFreq);
+                    const s = new Complex(0, 2 * Math.PI * f);
+                    const H = transferFn.evaluate(s);
+                    freqs.push(f);
+                    mags.push(20 * Math.log10(H.mag() + 1e-10));
+                }
+
+                const minMag = Math.min(...mags) - 5;
+                const maxMag = Math.max(...mags) + 5;
+
+                // Draw grid
+                this.drawGrid(margin, plotW, plotH, minMag, maxMag);
+
+                // Draw magnitude curve
+                this.ctx.strokeStyle = '#00ff88';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+
+                for (let i = 0; i < freqs.length; i++) {
+                    const x = margin.left + (Math.log10(freqs[i]) - Math.log10(this.minFreq)) / (Math.log10(this.maxFreq) - Math.log10(this.minFreq)) * plotW;
+                    const y = margin.top + plotH * (1 - (mags[i] - minMag) / (maxMag - minMag));
+                    if (i === 0) {
+                        this.ctx.moveTo(x, y);
+                    } else {
+                        this.ctx.lineTo(x, y);
+                    }
+                }
+                this.ctx.stroke();
+
+                // Draw -3dB line
+                this.ctx.strokeStyle = 'rgba(0, 255, 136, 0.3)';
+                this.ctx.setLineDash([5, 5]);
+                const maxMagValue = Math.max(...mags);
+                const yMag3dB = margin.top + plotH * (1 - (maxMagValue - 3 - minMag) / (maxMag - minMag));
+                this.ctx.beginPath();
+                this.ctx.moveTo(margin.left, yMag3dB);
+                this.ctx.lineTo(margin.left + plotW, yMag3dB);
+                this.ctx.stroke();
+                this.ctx.setLineDash([]);
+
+                // Axes labels
+                this.ctx.fillStyle = '#00ff88';
+                this.ctx.font = '12px Courier New';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('Frequency (Hz)', this.width / 2, this.height - 10);
+                this.ctx.save();
+                this.ctx.translate(15, this.height / 2);
+                this.ctx.rotate(-Math.PI / 2);
+                this.ctx.fillText('Magnitude (dB)', 0, 0);
+                this.ctx.restore();
+            }
+
+            drawPhasePlot(transferFn) {
+                this.ctx.fillStyle = '#0a0a0f';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+
+                const margin = { top: 30, right: 20, bottom: 50, left: 60 };
+                const plotW = this.width - margin.left - margin.right;
+                const plotH = this.height - margin.top - margin.bottom;
+
+                const freqs = [];
+                const phases = [];
+                const numPoints = 200;
+
+                for (let i = 0; i < numPoints; i++) {
+                    const logFreq = Math.log10(this.minFreq) + (Math.log10(this.maxFreq) - Math.log10(this.minFreq)) * (i / numPoints);
+                    const f = Math.pow(10, logFreq);
+                    const s = new Complex(0, 2 * Math.PI * f);
+                    const H = transferFn.evaluate(s);
+                    freqs.push(f);
+                    phases.push(H.phase() * 180 / Math.PI);
+                }
+
+                const minPhase = -180;
+                const maxPhase = 180;
+
+                this.drawGrid(margin, plotW, plotH, minPhase, maxPhase, true);
+
+                // Draw phase curve
+                this.ctx.strokeStyle = '#00ccff';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+
+                for (let i = 0; i < freqs.length; i++) {
+                    const x = margin.left + (Math.log10(freqs[i]) - Math.log10(this.minFreq)) / (Math.log10(this.maxFreq) - Math.log10(this.minFreq)) * plotW;
+                    const y = margin.top + plotH * (1 - (phases[i] - minPhase) / (maxPhase - minPhase));
+                    if (i === 0) {
+                        this.ctx.moveTo(x, y);
+                    } else {
+                        this.ctx.lineTo(x, y);
+                    }
+                }
+                this.ctx.stroke();
+
+                // Axes labels
+                this.ctx.fillStyle = '#00ff88';
+                this.ctx.font = '12px Courier New';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('Frequency (Hz)', this.width / 2, this.height - 10);
+                this.ctx.save();
+                this.ctx.translate(15, this.height / 2);
+                this.ctx.rotate(-Math.PI / 2);
+                this.ctx.fillText('Phase (degrees)', 0, 0);
+                this.ctx.restore();
+            }
+
+            drawStepResponse(circuit) {
+                this.ctx.fillStyle = '#0a0a0f';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+
+                const margin = { top: 30, right: 20, bottom: 50, left: 60 };
+                const plotW = this.width - margin.left - margin.right;
+                const plotH = this.height - margin.top - margin.bottom;
+
+                const tr = new TransientResponse(circuit.R, circuit.L, circuit.C);
+                const response = [];
+                const times = [];
+
+                const maxTime = 10 / (circuit.omega + 1e-6);
+                const numPoints = 150;
+
+                for (let i = 0; i < numPoints; i++) {
+                    const t = i * maxTime / numPoints;
+                    times.push(t);
+                    response.push(circuit.Vin * tr.stepResponseSeries(t));
+                }
+
+                const minResp = Math.min(...response) * 1.1;
+                const maxResp = Math.max(...response) * 1.1;
+
+                // Draw grid
+                this.ctx.strokeStyle = 'rgba(0, 255, 136, 0.2)';
+                this.ctx.fillStyle = 'rgba(0, 255, 136, 0.1)';
+                this.ctx.font = '10px Courier New';
+                this.ctx.textAlign = 'right';
+                this.ctx.fillStyle = '#00ff88';
+
+                // Time axis label
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('Time (s)', this.width / 2, this.height - 10);
+                this.ctx.save();
+                this.ctx.translate(15, this.height / 2);
+                this.ctx.rotate(-Math.PI / 2);
+                this.ctx.fillText('Voltage (V)', 0, 0);
+                this.ctx.restore();
+
+                // Draw step response curve
+                this.ctx.strokeStyle = '#ffff00';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+
+                for (let i = 0; i < times.length; i++) {
+                    const x = margin.left + (times[i] / maxTime) * plotW;
+                    const y = margin.top + plotH * (1 - (response[i] - minResp) / (maxResp - minResp));
+                    if (i === 0) {
+                        this.ctx.moveTo(x, y);
+                    } else {
+                        this.ctx.lineTo(x, y);
+                    }
+                }
+                this.ctx.stroke();
+            }
+
+            drawImpulseResponse(circuit) {
+                this.ctx.fillStyle = '#0a0a0f';
+                this.ctx.fillRect(0, 0, this.width, this.height);
+
+                const margin = { top: 30, right: 20, bottom: 50, left: 60 };
+                const plotW = this.width - margin.left - margin.right;
+                const plotH = this.height - margin.top - margin.bottom;
+
+                const tr = new TransientResponse(circuit.R, circuit.L, circuit.C);
+                const response = [];
+                const times = [];
+
+                const maxTime = 10 / (circuit.omega + 1e-6);
+                const numPoints = 150;
+
+                for (let i = 0; i < numPoints; i++) {
+                    const t = i * maxTime / numPoints;
+                    times.push(t);
+                    response.push(tr.impulseResponseSeries(t));
+                }
+
+                const minResp = Math.min(...response) * 1.1;
+                const maxResp = Math.max(...response) * 1.1;
+
+                // Time axis label
+                this.ctx.fillStyle = '#00ff88';
+                this.ctx.font = '10px Courier New';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText('Time (s)', this.width / 2, this.height - 10);
+                this.ctx.save();
+                this.ctx.translate(15, this.height / 2);
+                this.ctx.rotate(-Math.PI / 2);
+                this.ctx.fillText('Current (A)', 0, 0);
+                this.ctx.restore();
+
+                // Draw impulse response curve
+                this.ctx.strokeStyle = '#ff88ff';
+                this.ctx.lineWidth = 2;
+                this.ctx.beginPath();
+
+                for (let i = 0; i < times.length; i++) {
+                    const x = margin.left + (times[i] / maxTime) * plotW;
+                    const y = margin.top + plotH * (1 - (response[i] - minResp) / (maxResp - minResp));
+                    if (i === 0) {
+                        this.ctx.moveTo(x, y);
+                    } else {
+                        this.ctx.lineTo(x, y);
+                    }
+                }
+                this.ctx.stroke();
+            }
+
+            drawGrid(margin, plotW, plotH, minVal, maxVal, isPhase = false) {
+                this.ctx.strokeStyle = 'rgba(0, 255, 136, 0.15)';
+                this.ctx.fillStyle = '#00ff88';
+                this.ctx.font = '10px Courier New';
+
+                // Vertical grid lines (logarithmic frequency)
+                for (let logF = Math.ceil(Math.log10(this.minFreq)); logF <= Math.floor(Math.log10(this.maxFreq)); logF++) {
+                    const f = Math.pow(10, logF);
+                    const x = margin.left + (logF - Math.log10(this.minFreq)) / (Math.log10(this.maxFreq) - Math.log10(this.minFreq)) * plotW;
+
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(x, margin.top);
+                    this.ctx.lineTo(x, margin.top + plotH);
+                    this.ctx.stroke();
+
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText(formatEngineering(f) + 'Hz', x, margin.top + plotH + 20);
+                }
+
+                // Horizontal grid lines
+                const steps = 4;
+                for (let i = 0; i <= steps; i++) {
+                    const val = minVal + (maxVal - minVal) * (i / steps);
+                    const y = margin.top + plotH * (1 - i / steps);
+
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(margin.left, y);
+                    this.ctx.lineTo(margin.left + plotW, y);
+                    this.ctx.stroke();
+
+                    this.ctx.textAlign = 'right';
+                    this.ctx.fillText(val.toFixed(1), margin.left - 5, y + 3);
+                }
+            }
+        }
+
+        // ============================================================================
+        // UI STATE MANAGEMENT
+        // ============================================================================
+
+        let currentConfig = 'series';
+        let currentPlotType = 'magnitude';
+
+        function updateCircuitDisplay() {
+            const R = parseInputValue('resistance', 'resistanceUnit');
+            const L = parseInputValue('inductance', 'inductanceUnit');
+            const C = parseInputValue('capacitance', 'capacitanceUnit');
+            const Vin = parseFloat(document.getElementById('voltage').value) || 1;
+            const f = parseInputValue('frequency', 'frequencyUnit');
+
+            // Draw circuit diagram
+            drawCircuitDiagram(currentConfig, R, L, C);
+
+            // Calculate results
+            if (currentConfig === 'series' || currentConfig === 'parallel') {
+                updateSeriesParallelResults(R, L, C, Vin, f);
+            } else {
+                updateFilterResults(R, L, C, Vin, f);
+            }
+
+            // Update plots
+            updatePlots(R, L, C, Vin, f);
+        }
+
+        function updateSeriesParallelResults(R, L, C, Vin, f) {
+            const circuit = new RLCCircuit(R, L, C, Vin, f);
+            const grid = document.getElementById('resultsGrid');
+            grid.innerHTML = '';
+
+            let results = [];
+
+            if (currentConfig === 'series') {
+                const Z = circuit.impedanceSeries();
+                const I = Vin / Z.mag();
+                const f0 = circuit.resonantFrequency();
+                const Q = circuit.QFactorSeries();
+                const BW = circuit.bandwidth();
+                const zeta = circuit.dampingRatioSeries();
+                const wn = circuit.naturalFrequency();
+
+                results = [
+                    { label: 'Impedance (Z)', value: formatComplex(Z) },
+                    { label: 'Magnitude |Z|', value: formatEngineering(Z.mag(), 'Ω') },
+                    { label: 'Phase ∠Z', value: `${(Z.phase() * 180 / Math.PI).toFixed(2)}°` },
+                    { label: 'Current (I)', value: formatEngineering(I, 'A') },
+                    { label: 'Resonant Freq', value: formatEngineering(f0, 'Hz') },
+                    { label: 'Q Factor', value: Math.abs(Q).toFixed(3) },
+                    { label: 'Bandwidth', value: formatEngineering(BW, 'Hz') },
+                    { label: 'Damping Ratio (ζ)', value: zeta.toFixed(3) },
+                    { label: 'Natural Freq (ωn)', value: formatEngineering(wn, 'rad/s') },
+                    { label: 'Damping Type', value: circuit.dampingType() },
+                    { label: 'VR', value: formatEngineering(I * R, 'V'), eq: `I × R` },
+                    { label: 'VL', value: formatEngineering(I * circuit.omega * L, 'V'), eq: `I × ωL` },
+                    { label: 'VC', value: formatEngineering(I / (circuit.omega * C), 'V'), eq: `I / ωC` }
+                ];
+            } else {
+                const Y = circuit.admittanceParallel();
+                const Z = Y.inv();
+                const I = Vin * Y.mag();
+                const f0 = circuit.resonantFrequency();
+                const Q = circuit.QFactorParallel();
+                const BW = circuit.bandwidth();
+                const zeta = circuit.dampingRatioParallel();
+                const wn = circuit.naturalFrequency();
+
+                results = [
+                    { label: 'Admittance (Y)', value: formatComplex(Y) },
+                    { label: 'Magnitude |Y|', value: formatEngineering(Y.mag(), 'S') },
+                    { label: 'Phase ∠Y', value: `${(Y.phase() * 180 / Math.PI).toFixed(2)}°` },
+                    { label: 'Impedance (Z)', value: formatEngineering(Z.mag(), 'Ω') },
+                    { label: 'Total Current', value: formatEngineering(I, 'A') },
+                    { label: 'Resonant Freq', value: formatEngineering(f0, 'Hz') },
+                    { label: 'Q Factor', value: Math.abs(Q).toFixed(3) },
+                    { label: 'Bandwidth', value: formatEngineering(BW, 'Hz') },
+                    { label: 'Damping Ratio (ζ)', value: zeta.toFixed(3) },
+                    { label: 'Natural Freq (ωn)', value: formatEngineering(wn, 'rad/s') },
+                    { label: 'Damping Type', value: circuit.dampingType() },
+                    { label: 'IR', value: formatEngineering(Vin / R, 'A'), eq: `Vin / R` },
+                    { label: 'IL', value: formatEngineering(Vin / (circuit.omega * L), 'A'), eq: `Vin / ωL` },
+                    { label: 'IC', value: formatEngineering(Vin * circuit.omega * C, 'A'), eq: `Vin × ωC` }
+                ];
+            }
+
+            results.forEach(r => {
+                const div = document.createElement('div');
+                div.className = 'result-item';
+                div.innerHTML = `
+                    <div class="result-label">${r.label}</div>
+                    <div class="result-value">${r.value}</div>
+                    ${r.eq ? `<div class="equation">${r.eq}</div>` : ''}
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        function updateFilterResults(R, L, C, Vin, f) {
+            const filterType = document.getElementById('filterType').value;
+            const grid = document.getElementById('resultsGrid');
+            grid.innerHTML = '';
+
+            const omega = 2 * Math.PI * f;
+            const tf = new FilterTransferFunction(R, L, C, filterType);
+            const s = new Complex(0, omega);
+            const H = tf.evaluate(s);
+
+            let filterName = filterType.toUpperCase();
+            let results = [];
+
+            results = [
+                { label: 'Filter Type', value: filterName },
+                { label: 'Transfer Function H(jω)', value: formatComplex(H) },
+                { label: '|H(jω)| (Magnitude)', value: H.mag().toFixed(4) },
+                { label: '|H(jω)| (dB)', value: `${(20 * Math.log10(H.mag() + 1e-10)).toFixed(2)} dB` },
+                { label: '∠H(jω) (Phase)', value: `${(H.phase() * 180 / Math.PI).toFixed(2)}°` },
+            ];
+
+            if (filterType.includes('rlc')) {
+                const circuit = new RLCCircuit(R, L, C, Vin, f);
+                const f0 = circuit.resonantFrequency();
+                const Q = circuit.QFactorSeries();
+                const BW = circuit.bandwidth();
+
+                results.push(
+                    { label: 'Center/Resonant Freq', value: formatEngineering(f0, 'Hz') },
+                    { label: 'Q Factor', value: Math.abs(Q).toFixed(3) },
+                    { label: 'Bandwidth', value: formatEngineering(BW, 'Hz') }
+                );
+            }
+
+            results.forEach(r => {
+                const div = document.createElement('div');
+                div.className = 'result-item';
+                div.innerHTML = `
+                    <div class="result-label">${r.label}</div>
+                    <div class="result-value">${r.value}</div>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        function updatePlots(R, L, C, Vin, f) {
+            const circuit = new RLCCircuit(R, L, C, Vin, f);
+            const plotter = new BodePlotter('plotCanvas');
+
+            if (currentConfig === 'filters') {
+                const filterType = document.getElementById('filterType').value;
+                const tf = new FilterTransferFunction(R, L, C, filterType);
+
+                if (currentPlotType === 'magnitude') {
+                    plotter.drawMagnitudePlot(tf);
+                } else if (currentPlotType === 'phase') {
+                    plotter.drawPhasePlot(tf);
+                } else if (currentPlotType === 'step') {
+                    plotter.drawStepResponse(circuit);
+                } else if (currentPlotType === 'impulse') {
+                    plotter.drawImpulseResponse(circuit);
+                }
+            } else {
+                // Create a simple transfer function for series/parallel RLC
+                const tf = new FilterTransferFunction(R, L, C, 'lp-rlc');
+
+                if (currentPlotType === 'magnitude') {
+                    plotter.drawMagnitudePlot(tf);
+                } else if (currentPlotType === 'phase') {
+                    plotter.drawPhasePlot(tf);
+                } else if (currentPlotType === 'step') {
+                    plotter.drawStepResponse(circuit);
+                } else if (currentPlotType === 'impulse') {
+                    plotter.drawImpulseResponse(circuit);
+                }
+            }
+        }
+
+        // ============================================================================
+        // EVENT LISTENERS
+        // ============================================================================
+
+        document.querySelectorAll('.tab-button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentConfig = btn.dataset.config;
+
+                // Show/hide filter type selector
+                document.getElementById('filterTypeGroup').style.display =
+                    currentConfig === 'filters' ? 'block' : 'none';
+
+                updateCircuitDisplay();
+            });
+        });
+
+        document.querySelectorAll('.plot-tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.plot-tab').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentPlotType = btn.dataset.plot;
+
+                const R = parseInputValue('resistance', 'resistanceUnit');
+                const L = parseInputValue('inductance', 'inductanceUnit');
+                const C = parseInputValue('capacitance', 'capacitanceUnit');
+                const Vin = parseFloat(document.getElementById('voltage').value) || 1;
+                const f = parseInputValue('frequency', 'frequencyUnit');
+
+                updatePlots(R, L, C, Vin, f);
+            });
+        });
+
+        // Input synchronization
+        const syncInputs = [
+            { input: 'resistance', slider: 'resistanceSlider', unit: 'resistanceUnit' },
+            { input: 'inductance', slider: 'inductanceSlider', unit: 'inductanceUnit' },
+            { input: 'capacitance', slider: 'capacitanceSlider', unit: 'capacitanceUnit' },
+            { input: 'frequency', slider: 'frequencySlider', unit: 'frequencyUnit' }
+        ];
+
+        syncInputs.forEach(({ input, slider, unit }) => {
+            document.getElementById(input).addEventListener('input', () => {
+                const val = parseFloat(document.getElementById(input).value) || 0;
+                const unitVal = parseFloat(document.getElementById(unit).value) || 1;
+                document.getElementById(slider).value = val * unitVal;
+                updateCircuitDisplay();
+            });
+
+            document.getElementById(slider).addEventListener('input', () => {
+                const val = parseFloat(document.getElementById(slider).value) || 0;
+                const unitVal = parseFloat(document.getElementById(unit).value) || 1;
+                document.getElementById(input).value = (val / unitVal).toPrecision(4);
+                updateCircuitDisplay();
+            });
+
+            document.getElementById(unit).addEventListener('change', updateCircuitDisplay);
+        });
+
+        document.getElementById('voltage').addEventListener('input', updateCircuitDisplay);
+        document.getElementById('filterType').addEventListener('change', updateCircuitDisplay);
+
+        // ============================================================================
+        // SERVICE WORKER REGISTRATION
+        // ============================================================================
+
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                const CACHE_NAME = 'rlc-calculator-v1';
+                const urlsToCache = [
+                    './',
+                    './rlc-calculator.html'
+                ];
+
+                self.addEventListener('install', event => {
+                    event.waitUntil(
+                        caches.open(CACHE_NAME).then(cache => {
+                            return cache.addAll(urlsToCache);
+                        })
+                    );
+                    self.skipWaiting();
+                });
+
+                self.addEventListener('activate', event => {
+                    event.waitUntil(
+                        caches.keys().then(cacheNames => {
+                            return Promise.all(
+                                cacheNames.map(cacheName => {
+                                    if (cacheName !== CACHE_NAME) {
+                                        return caches.delete(cacheName);
+                                    }
+                                })
+                            );
+                        })
+                    );
+                    self.clients.claim();
+                });
+
+                self.addEventListener('fetch', event => {
+                    event.respondWith(
+                        caches.match(event.request).then(response => {
+                            return response || fetch(event.request).catch(() => {
+                                return caches.match('./rlc-calculator.html');
+                            });
+                        })
+                    );
+                });
+            `;
+
+            const swBlob = new Blob([swCode], { type: 'application/javascript' });
+            const swUrl = URL.createObjectURL(swBlob);
+
+            navigator.serviceWorker.register(swUrl, { scope: './' })
+                .then(reg => console.log('Service Worker registered'))
+                .catch(err => console.log('Service Worker registration failed:', err));
+        }
+
+        // ============================================================================
+        // INITIALIZATION
+        // ============================================================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateCircuitDisplay();
+
+            // Make tab-button responsive
+            window.addEventListener('resize', () => {
+                updateCircuitDisplay();
+            });
+        });
+    </script>
+</body>
+</html>
