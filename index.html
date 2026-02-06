@@ -128,7 +128,7 @@
       TAGLINE: 'Building things that work (mostly)',
 
       // Repos to exclude (by name)
-      EXCLUDE_REPOS: ['lab-inventory', 'pages'], // Exclude embedded apps and the pages repo itself
+      EXCLUDE_REPOS: ['lab-inventory', 'label-designer', 'pages'], // Exclude embedded apps and the pages repo itself
 
       // Only show repos with these topics (leave empty to show all)
       FILTER_TOPICS: [],
@@ -147,6 +147,14 @@
           icon: 'Package',
           url: './lab-inventory-app/index.html',
           description: 'Electronics component manager',
+          isLocal: true
+        },
+        {
+          id: 'label-designer',
+          name: 'Label Designer',
+          icon: 'PenTool',
+          url: './label-designer/index.html',
+          description: 'Design and print custom labels',
           isLocal: true
         }
       ],
