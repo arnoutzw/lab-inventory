@@ -155,7 +155,8 @@
           icon: 'PenTool',
           url: './label-designer/index.html',
           description: 'Design and print custom labels',
-          isLocal: true
+          isLocal: true,
+          fullscreen: true
         },
         {
           id: 'ray-optics',
@@ -852,37 +853,46 @@
     };
 
     // Embedded App View - iframe for local apps
-    const EmbeddedApp = ({ app }) => (
-      <div className="relative w-full h-[calc(100vh-160px)] min-h-[600px] bg-zinc-900 rounded-xl overflow-hidden border border-zinc-700 shadow-2xl">
-        {/* App header bar */}
-        <div className="bg-zinc-800 border-b border-zinc-700 px-4 py-2 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
+    const EmbeddedApp = ({ app }) => {
+      const isFullscreen = app.fullscreen;
+      return (
+        <div className={`relative w-full bg-zinc-900 overflow-hidden shadow-2xl ${
+          isFullscreen
+            ? 'h-[calc(100vh-64px)] border-t border-zinc-700'
+            : 'h-[calc(100vh-160px)] min-h-[600px] rounded-xl border border-zinc-700'
+        }`}>
+          {/* App header bar */}
+          {!isFullscreen && (
+            <div className="bg-zinc-800 border-b border-zinc-700 px-4 py-2 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
+                  <div className="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Icon name={app.icon} size={16} className="text-amber-500" />
+                  <span className="font-mono text-zinc-300 text-sm font-medium">{app.name}</span>
+                  {app.isLocal && (
+                    <span className="text-xs bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded font-mono">local</span>
+                  )}
+                </div>
+              </div>
+              <a href={app.url} target="_blank" rel="noopener noreferrer"
+                 className="flex items-center gap-1.5 bg-zinc-700 hover:bg-zinc-600 text-zinc-300 text-xs font-mono px-3 py-1.5 rounded-lg transition-colors">
+                <Icon name="ExternalLink" size={12} />
+                Open in new tab
+              </a>
             </div>
-            <div className="flex items-center gap-2">
-              <Icon name={app.icon} size={16} className="text-amber-500" />
-              <span className="font-mono text-zinc-300 text-sm font-medium">{app.name}</span>
-              {app.isLocal && (
-                <span className="text-xs bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded font-mono">local</span>
-              )}
-            </div>
-          </div>
-          <a href={app.url} target="_blank" rel="noopener noreferrer"
-             className="flex items-center gap-1.5 bg-zinc-700 hover:bg-zinc-600 text-zinc-300 text-xs font-mono px-3 py-1.5 rounded-lg transition-colors">
-            <Icon name="ExternalLink" size={12} />
-            Open in new tab
-          </a>
+          )}
+          {/* iframe - works with local files */}
+          <iframe src={app.url}
+                  className={`w-full border-0 ${isFullscreen ? 'h-full' : 'h-[calc(100%-44px)]'}`}
+                  title={app.name}
+                  allow="camera; microphone; clipboard-read; clipboard-write" />
         </div>
-        {/* iframe - works with local files */}
-        <iframe src={app.url}
-                className="w-full h-[calc(100%-44px)] border-0"
-                title={app.name}
-                allow="camera; microphone; clipboard-read; clipboard-write" />
-      </div>
-    );
+      );
+    };
 
     // Main App
     function App() {
@@ -1094,12 +1104,19 @@
             </div>
           )}
 
+          {/* Fullscreen App View - rendered outside main container */}
+          {activeView !== 'projects' && activeView !== 'forked-projects' && (() => {
+            const app = CONFIG.INTEGRATED_APPS.find(a => a.id === activeView);
+            return app && app.fullscreen ? <EmbeddedApp app={app} /> : null;
+          })()}
+
           {/* Main */}
           <main className="max-w-7xl mx-auto px-4 py-6 relative">
-            {/* Embedded App View */}
-            {activeView !== 'projects' && activeView !== 'forked-projects' && CONFIG.INTEGRATED_APPS.find(a => a.id === activeView) && (
-              <EmbeddedApp app={CONFIG.INTEGRATED_APPS.find(a => a.id === activeView)} />
-            )}
+            {/* Embedded App View (non-fullscreen) */}
+            {activeView !== 'projects' && activeView !== 'forked-projects' && (() => {
+              const app = CONFIG.INTEGRATED_APPS.find(a => a.id === activeView);
+              return app && !app.fullscreen ? <EmbeddedApp app={app} /> : null;
+            })()}
 
             {/* Projects View */}
             {(activeView === 'projects' || activeView === 'forked-projects') && (
