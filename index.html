@@ -156,7 +156,7 @@
     // ============================================
     // BUILD INFO - AUTO-UPDATED BY PRE-COMMIT HOOK
     // ============================================
-    const BUILD_COMMIT = '7b48e67c244adf48ab609e19b88092a80b9df859';
+    const BUILD_COMMIT = '18c665ca7b560b8b10dc5bcf983b59e32c3a538e';
     const BUILD_DATE = '2026-02-06';
     // ============================================
 
@@ -382,6 +382,12 @@
       const [docsLoading, setDocsLoading] = useState(true);
       const [sidebarOpen, setSidebarOpen] = useState(true);
       const [expandedFolders, setExpandedFolders] = useState({});
+      const [viewMode, setViewMode] = useState('docs'); // 'docs' or 'code'
+      const [codeFiles, setCodeFiles] = useState([]);
+      const [codeLoading, setCodeLoading] = useState(false);
+      const [selectedCodeFile, setSelectedCodeFile] = useState(null);
+      const [codeContent, setCodeContent] = useState('');
+      const [codeContentLoading, setCodeContentLoading] = useState(false);
 
       const toggleFolder = (folderPath) => {
         setExpandedFolders(prev => ({ ...prev, [folderPath]: !prev[folderPath] }));
@@ -405,37 +411,51 @@
         return root;
       };
 
+      // Get language from file extension for syntax highlighting
+      const getLangFromPath = (path) => {
+        const ext = path.split('.').pop().toLowerCase();
+        const map = {
+          js: 'javascript', jsx: 'javascript', ts: 'typescript', tsx: 'typescript',
+          py: 'python', rb: 'ruby', rs: 'rust', go: 'go', java: 'java',
+          c: 'c', h: 'c', cpp: 'cpp', hpp: 'cpp', cs: 'csharp',
+          html: 'xml', htm: 'xml', xml: 'xml', svg: 'xml',
+          css: 'css', scss: 'scss', less: 'less',
+          json: 'json', yaml: 'yaml', yml: 'yaml', toml: 'ini',
+          md: 'markdown', sh: 'bash', bash: 'bash', zsh: 'bash',
+          sql: 'sql', php: 'php', swift: 'swift', kt: 'kotlin',
+          dockerfile: 'dockerfile', makefile: 'makefile',
+          lua: 'lua', r: 'r', dart: 'dart', vue: 'xml', svelte: 'xml',
+        };
+        return map[ext] || 'plaintext';
+      };
+
       // Fetch list of markdown files in the repo
       useEffect(() => {
         const fetchDocs = async () => {
           setDocsLoading(true);
           try {
-            // Get repo tree to find all .md files
             const response = await fetch(
               `https://api.github.com/repos/${username}/${repo.name}/git/trees/HEAD?recursive=1`
             );
             if (response.ok) {
               const data = await response.json();
-              const mdFiles = data.tree
-                .filter(f => f.type === 'blob' && /\.(md|markdown)$/i.test(f.path))
+              const allBlobs = data.tree.filter(f => f.type === 'blob');
+              const mdFiles = allBlobs
+                .filter(f => /\.(md|markdown)$/i.test(f.path))
                 .map(f => f.path)
                 .sort((a, b) => {
-                  // README first, then alphabetical
                   if (a.toLowerCase().includes('readme')) return -1;
                   if (b.toLowerCase().includes('readme')) return 1;
                   return a.localeCompare(b);
                 });
               setDocs(mdFiles.length > 0 ? mdFiles : ['README.md']);
               if (mdFiles.length > 0) setSelectedDoc(mdFiles[0]);
-              // Auto-expand all folders that contain files
-              const folders = {};
-              mdFiles.forEach(p => {
-                const parts = p.split('/');
-                for (let i = 1; i < parts.length; i++) {
-                  folders[parts.slice(0, i).join('/')] = true;
-                }
-              });
-              setExpandedFolders(folders);
+              // Store all code files (non-markdown blobs)
+              const allCodeFiles = allBlobs
+                .filter(f => !/\.(md|markdown)$/i.test(f.path))
+                .map(f => f.path)
+                .sort();
+              setCodeFiles(allCodeFiles);
             } else {
               setDocs(['README.md']);
             }
@@ -450,6 +470,7 @@
 
       // Fetch selected document content
       useEffect(() => {
+        if (viewMode !== 'docs') return;
         const fetchContent = async () => {
           setLoading(true);
           try {
@@ -469,7 +490,31 @@
           }
         };
         if (selectedDoc) fetchContent();
-      }, [selectedDoc, repo.name, username]);
+      }, [selectedDoc, repo.name, username, viewMode]);
+
+      // Fetch selected code file content
+      useEffect(() => {
+        if (viewMode !== 'code' || !selectedCodeFile) return;
+        const fetchCode = async () => {
+          setCodeContentLoading(true);
+          try {
+            const response = await fetch(
+              `https://api.github.com/repos/${username}/${repo.name}/contents/${selectedCodeFile}`
+            );
+            if (response.ok) {
+              const data = await response.json();
+              setCodeContent(atob(data.content));
+            } else {
+              setCodeContent('');
+            }
+          } catch {
+            setCodeContent('');
+          } finally {
+            setCodeContentLoading(false);
+          }
+        };
+        fetchCode();
+      }, [selectedCodeFile, repo.name, username, viewMode]);
 
       useEffect(() => {
         const handleEsc = (e) => e.key === 'Escape' && onClose();
@@ -482,6 +527,68 @@
       }, [onClose]);
 
       const getFileName = (path) => path.split('/').pop();
+
+      const currentFiles = viewMode === 'docs' ? docs : codeFiles;
+      const currentSelected = viewMode === 'docs' ? selectedDoc : selectedCodeFile;
+      const setCurrentSelected = viewMode === 'docs' ? setSelectedDoc : setSelectedCodeFile;
+      const isTreeLoading = viewMode === 'docs' ? docsLoading : docsLoading; // both come from same fetch
+
+      // Render highlighted code
+      const renderCodeContent = (code, filePath) => {
+        const lang = getLangFromPath(filePath);
+        const validLang = hljs.getLanguage(lang) ? lang : 'plaintext';
+        try {
+          return hljs.highlight(code, { language: validLang, ignoreIllegals: true }).value;
+        } catch {
+          return code.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+      };
+
+      // Render tree nodes (shared between docs and code views)
+      const renderTree = () => {
+        const tree = buildTree(currentFiles);
+        const renderNode = (node, path, depth) => {
+          const folderEntries = Object.keys(node.children).sort();
+          const pl = `${0.75 + depth * 0.75}rem`;
+          return (
+            <React.Fragment key={path || 'root'}>
+              {folderEntries.map(name => {
+                const folderPath = path ? `${path}/${name}` : name;
+                const isExpanded = expandedFolders[folderPath];
+                return (
+                  <React.Fragment key={folderPath}>
+                    <button onClick={() => toggleFolder(folderPath)}
+                            className="w-full text-left py-1.5 text-sm font-mono transition-colors flex items-center gap-1.5
+                                     text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
+                            style={{ paddingLeft: pl }}>
+                      <Icon name={isExpanded ? 'ChevronDown' : 'ChevronRight'} size={12} className="text-zinc-600 shrink-0" />
+                      <Icon name={isExpanded ? 'FolderOpen' : 'Folder'} size={14} className="text-amber-500/70 shrink-0" />
+                      <span className="truncate">{name}</span>
+                    </button>
+                    {isExpanded && renderNode(node.children[name], folderPath, depth + 1)}
+                  </React.Fragment>
+                );
+              })}
+              {node.files.map(file => (
+                <button key={file.path}
+                        onClick={() => setCurrentSelected(file.path)}
+                        className={`w-full text-left py-1.5 text-sm font-mono transition-colors flex items-center gap-1.5
+                                  ${currentSelected === file.path
+                                    ? 'bg-amber-500/20 text-amber-400 border-r-2 border-amber-500'
+                                    : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'}`}
+                        style={{ paddingLeft: `${0.75 + (depth + 0.5) * 0.75}rem` }}>
+                  <Icon name={viewMode === 'code' ? 'FileCode' : 'FileText'} size={14}
+                        className={currentSelected === file.path ? 'text-amber-500 shrink-0' : 'text-zinc-600 shrink-0'} />
+                  <span className="truncate">{file.name}</span>
+                </button>
+              ))}
+            </React.Fragment>
+          );
+        };
+        return <div className="py-1">{renderNode(tree, '', 0)}</div>;
+      };
+
+      const displayedPath = viewMode === 'docs' ? selectedDoc : (selectedCodeFile || '');
 
       return (
         <div className="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4"
@@ -501,13 +608,30 @@
                   <Icon name={sidebarOpen ? 'PanelLeftClose' : 'PanelLeft'} size={16} className="text-zinc-400" />
                 </button>
                 <div className="flex items-center gap-2">
-                  <Icon name="BookOpen" size={18} className="text-amber-500" />
+                  <Icon name={viewMode === 'docs' ? 'BookOpen' : 'Code'} size={18} className="text-amber-500" />
                   <span className="font-mono text-zinc-200 font-bold">{repo.name}</span>
-                  <span className="text-zinc-500 font-mono text-sm hidden sm:inline">/ {selectedDoc}</span>
+                  {displayedPath && (
+                    <span className="text-zinc-500 font-mono text-sm hidden sm:inline">/ {displayedPath}</span>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <a href={`${repo.html_url}/blob/HEAD/${selectedDoc}`} target="_blank" rel="noopener noreferrer"
+                {/* View mode toggle */}
+                <div className="flex bg-zinc-700/50 rounded-lg p-0.5">
+                  <button onClick={() => setViewMode('docs')}
+                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md font-mono text-xs transition-all
+                                    ${viewMode === 'docs' ? 'bg-amber-500 text-zinc-900' : 'text-zinc-400 hover:text-zinc-200'}`}>
+                    <Icon name="BookOpen" size={12} />
+                    <span className="hidden sm:inline">Docs</span>
+                  </button>
+                  <button onClick={() => setViewMode('code')}
+                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md font-mono text-xs transition-all
+                                    ${viewMode === 'code' ? 'bg-amber-500 text-zinc-900' : 'text-zinc-400 hover:text-zinc-200'}`}>
+                    <Icon name="Code" size={12} />
+                    <span className="hidden sm:inline">Code</span>
+                  </button>
+                </div>
+                <a href={`${repo.html_url}/blob/HEAD/${displayedPath}`} target="_blank" rel="noopener noreferrer"
                    className="flex items-center gap-1.5 text-zinc-400 hover:text-amber-400 transition-colors text-sm px-2 py-1 rounded hover:bg-zinc-700">
                   <Icon name="Github" size={14} />
                   <span className="hidden sm:inline">View on GitHub</span>
@@ -520,65 +644,29 @@
 
             {/* Main content area */}
             <div className="flex flex-1 overflow-hidden">
-              {/* Sidebar - Document list */}
+              {/* Sidebar - File tree */}
               <div className={`${sidebarOpen ? 'w-64' : 'w-0'} shrink-0 bg-zinc-850 border-r border-zinc-700 overflow-hidden transition-all duration-200`}
                    style={{ backgroundColor: '#1a1a1f' }}>
                 <div className="p-3 border-b border-zinc-700">
                   <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-                    <Icon name="Files" size={14} />
-                    Documentation
+                    <Icon name={viewMode === 'docs' ? 'Files' : 'FolderCode'} size={14} />
+                    {viewMode === 'docs' ? 'Documentation' : 'Source Code'}
                   </h3>
                 </div>
                 <div className="overflow-y-auto h-[calc(100%-48px)]">
-                  {docsLoading ? (
+                  {isTreeLoading ? (
                     <div className="p-4 text-center">
                       <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-amber-500 mx-auto"></div>
                     </div>
-                  ) : (() => {
-                    const tree = buildTree(docs);
-                    const renderNode = (node, path, depth) => {
-                      const folderEntries = Object.keys(node.children).sort();
-                      const pl = `${0.75 + depth * 0.75}rem`;
-                      return (
-                        <React.Fragment key={path || 'root'}>
-                          {folderEntries.map(name => {
-                            const folderPath = path ? `${path}/${name}` : name;
-                            const isExpanded = expandedFolders[folderPath];
-                            return (
-                              <React.Fragment key={folderPath}>
-                                <button onClick={() => toggleFolder(folderPath)}
-                                        className="w-full text-left py-1.5 text-sm font-mono transition-colors flex items-center gap-1.5
-                                                 text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200"
-                                        style={{ paddingLeft: pl }}>
-                                  <Icon name={isExpanded ? 'ChevronDown' : 'ChevronRight'} size={12} className="text-zinc-600 shrink-0" />
-                                  <Icon name={isExpanded ? 'FolderOpen' : 'Folder'} size={14} className="text-amber-500/70 shrink-0" />
-                                  <span className="truncate">{name}</span>
-                                </button>
-                                {isExpanded && renderNode(node.children[name], folderPath, depth + 1)}
-                              </React.Fragment>
-                            );
-                          })}
-                          {node.files.map(file => (
-                            <button key={file.path}
-                                    onClick={() => setSelectedDoc(file.path)}
-                                    className={`w-full text-left py-1.5 text-sm font-mono transition-colors flex items-center gap-1.5
-                                              ${selectedDoc === file.path
-                                                ? 'bg-amber-500/20 text-amber-400 border-r-2 border-amber-500'
-                                                : 'text-zinc-400 hover:bg-zinc-800 hover:text-zinc-200'}`}
-                                    style={{ paddingLeft: `${0.75 + (depth + 0.5) * 0.75}rem` }}>
-                              <Icon name="FileText" size={14} className={selectedDoc === file.path ? 'text-amber-500 shrink-0' : 'text-zinc-600 shrink-0'} />
-                              <span className="truncate">{file.name}</span>
-                            </button>
-                          ))}
-                        </React.Fragment>
-                      );
-                    };
-                    return <div className="py-1">{renderNode(tree, '', 0)}</div>;
-                  })()}
+                  ) : currentFiles.length === 0 ? (
+                    <div className="p-4 text-center text-zinc-600 font-mono text-xs">
+                      No files found
+                    </div>
+                  ) : renderTree()}
                 </div>
               </div>
 
-              {/* Document content */}
+              {/* Content area */}
               <div className="flex-1 overflow-y-auto">
                 {/* Stats bar */}
                 <div className="bg-zinc-800/30 border-b border-zinc-700/50 px-4 py-2 flex flex-wrap gap-4 text-xs shrink-0">
@@ -609,24 +697,59 @@
                   )}
                 </div>
 
-                {/* Markdown content */}
-                <div className="p-6 md:p-8">
-                  {loading ? (
-                    <div className="flex items-center justify-center py-12">
-                      <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-amber-500"></div>
-                      <span className="ml-3 text-zinc-400 font-mono">Loading {getFileName(selectedDoc)}...</span>
-                    </div>
-                  ) : content ? (
-                    <div className="markdown-body max-w-none"
-                         dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }} />
-                  ) : (
-                    <div className="text-center py-12 text-zinc-500">
-                      <Icon name="FileQuestion" size={48} className="mx-auto mb-4 opacity-50" />
-                      <p className="font-mono">Document not found: {selectedDoc}</p>
-                      <p className="text-sm mt-2">This file may not exist in the repository.</p>
-                    </div>
-                  )}
-                </div>
+                {/* Content */}
+                {viewMode === 'docs' ? (
+                  <div className="p-6 md:p-8">
+                    {loading ? (
+                      <div className="flex items-center justify-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-amber-500"></div>
+                        <span className="ml-3 text-zinc-400 font-mono">Loading {getFileName(selectedDoc)}...</span>
+                      </div>
+                    ) : content ? (
+                      <div className="markdown-body max-w-none"
+                           dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }} />
+                    ) : (
+                      <div className="text-center py-12 text-zinc-500">
+                        <Icon name="FileQuestion" size={48} className="mx-auto mb-4 opacity-50" />
+                        <p className="font-mono">Document not found: {selectedDoc}</p>
+                        <p className="text-sm mt-2">This file may not exist in the repository.</p>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="p-0">
+                    {!selectedCodeFile ? (
+                      <div className="text-center py-12 text-zinc-500">
+                        <Icon name="FileCode" size={48} className="mx-auto mb-4 opacity-50" />
+                        <p className="font-mono">Select a file to view</p>
+                      </div>
+                    ) : codeContentLoading ? (
+                      <div className="flex items-center justify-center py-12">
+                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-amber-500"></div>
+                        <span className="ml-3 text-zinc-400 font-mono">Loading {getFileName(selectedCodeFile)}...</span>
+                      </div>
+                    ) : codeContent ? (
+                      <div className="relative">
+                        <div className="bg-zinc-800/50 border-b border-zinc-700/50 px-4 py-1.5 flex items-center justify-between">
+                          <span className="font-mono text-xs text-zinc-500">{selectedCodeFile}</span>
+                          <button onClick={() => { navigator.clipboard.writeText(codeContent); }}
+                                  className="text-xs text-zinc-500 hover:text-zinc-300 font-mono px-2 py-0.5 rounded hover:bg-zinc-700 transition-colors">
+                            Copy
+                          </button>
+                        </div>
+                        <pre className="p-4 overflow-x-auto text-sm leading-relaxed"><code
+                          className={`hljs language-${getLangFromPath(selectedCodeFile)}`}
+                          dangerouslySetInnerHTML={{ __html: renderCodeContent(codeContent, selectedCodeFile) }}
+                        /></pre>
+                      </div>
+                    ) : (
+                      <div className="text-center py-12 text-zinc-500">
+                        <Icon name="FileQuestion" size={48} className="mx-auto mb-4 opacity-50" />
+                        <p className="font-mono">File not found: {selectedCodeFile}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
