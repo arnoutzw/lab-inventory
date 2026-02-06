@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Label Designer</title>
+<meta name="description" content="Design and print custom labels with text and barcodes">
+<meta name="theme-color" content="#0f172a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<style>
+:root {
+  --bg-0: #0f172a;
+  --bg-1: #1e293b;
+  --bg-2: #334155;
+  --bg-3: #475569;
+  --tx-1: #f1f5f9;
+  --tx-2: #94a3b8;
+  --tx-3: #64748b;
+  --accent: #3b82f6;
+  --accent-h: #2563eb;
+  --accent-bg: rgba(59,130,246,.15);
+  --danger: #ef4444;
+  --border: #475569;
+  --border-l: #334155;
+  --radius: 6px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--bg-0);
+  color: var(--tx-1);
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  overflow: hidden;
+  user-select: none;
+}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 3px; }
+
+/* === TOOLBAR === */
+.toolbar {
+  background: var(--bg-1);
+  border-bottom: 1px solid var(--border-l);
+  padding: 6px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  min-height: 44px;
+}
+.toolbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.toolbar-brand svg { flex-shrink: 0; }
+.toolbar-sep {
+  width: 1px;
+  height: 24px;
+  background: var(--border-l);
+  flex-shrink: 0;
+}
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--tx-2);
+}
+.toolbar-group label { white-space: nowrap; }
+.toolbar-spacer { flex: 1; }
+.tb-input {
+  width: 52px;
+  padding: 3px 4px;
+  background: var(--bg-0);
+  border: 1px solid var(--border-l);
+  border-radius: var(--radius);
+  color: var(--tx-1);
+  font-size: 12px;
+  text-align: center;
+}
+.tb-input:focus { border-color: var(--accent); outline: none; }
+.btn-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-0);
+  border: 1px solid var(--border-l);
+  border-radius: var(--radius);
+  color: var(--tx-1);
+  cursor: pointer;
+  font-size: 14px;
+  transition: background .15s;
+}
+.btn-icon:hover { background: var(--bg-2); }
+.btn-primary {
+  padding: 5px 14px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background .15s;
+}
+.btn-primary:hover { background: var(--accent-h); }
+.toggle-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--tx-2);
+}
+.toggle-wrap input { accent-color: var(--accent); }
+
+/* === WORKSPACE === */
+.workspace {
+  display: grid;
+  grid-template-columns: 180px 1fr 240px;
+  overflow: hidden;
+}
+
+/* === SIDEBAR === */
+.sidebar {
+  background: var(--bg-1);
+  border-right: 1px solid var(--border-l);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.sb-section {
+  padding: 10px;
+  border-bottom: 1px solid var(--border-l);
+}
+.sb-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--tx-3);
+  margin-bottom: 6px;
+}
+.tool-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 8px;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  color: var(--tx-2);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all .12s;
+  text-align: left;
+}
+.tool-btn:hover { background: var(--bg-2); color: var(--tx-1); }
+.tool-btn.active {
+  background: var(--accent-bg);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.tool-btn svg { flex-shrink: 0; }
+.layer-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--tx-2);
+  cursor: pointer;
+  transition: background .1s;
+}
+.layer-item:hover { background: var(--bg-2); }
+.layer-item.sel { background: var(--accent-bg); color: var(--accent); }
+.layer-icon {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-0);
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.layer-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.empty-msg { font-size: 11px; color: var(--tx-3); padding: 4px 8px; }
+
+/* === CANVAS AREA === */
+.canvas-area {
+  background: var(--bg-2);
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  position: relative;
+}
+#design-canvas {
+  position: relative;
+  background: #ffffff;
+  box-shadow: 0 4px 24px rgba(0,0,0,.35);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.canvas-element {
+  position: absolute;
+  cursor: move;
+  outline-offset: 2px;
+}
+.canvas-element:hover { outline: 1px dashed rgba(59,130,246,.5); }
+.canvas-element.sel { outline: 2px solid var(--accent); }
+.canvas-element.editing { outline: 2px solid #22c55e; cursor: text; }
+.text-content {
+  white-space: pre-wrap;
+  line-height: 1.3;
+  pointer-events: none;
+}
+.canvas-element.editing .text-content {
+  pointer-events: auto;
+  outline: none;
+  cursor: text;
+}
+.barcode-content {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+.canvas-info {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--tx-3);
+  pointer-events: none;
+}
+
+/* === PROPERTIES === */
+.properties {
+  background: var(--bg-1);
+  border-left: 1px solid var(--border-l);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+.panel-title {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-l);
+  color: var(--tx-2);
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.prop-section {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border-l);
+}
+.prop-section-title {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--tx-3);
+  margin-bottom: 8px;
+}
+.prop-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+.prop-row label {
+  font-size: 11px;
+  color: var(--tx-2);
+  width: 44px;
+  flex-shrink: 0;
+}
+.prop-row input[type="number"],
+.prop-row input[type="text"],
+.prop-row select {
+  flex: 1;
+  padding: 4px 6px;
+  background: var(--bg-0);
+  border: 1px solid var(--border-l);
+  border-radius: 4px;
+  color: var(--tx-1);
+  font-size: 12px;
+}
+.prop-row input:focus, .prop-row select:focus { border-color: var(--accent); outline: none; }
+.prop-row textarea {
+  width: 100%;
+  padding: 4px 6px;
+  background: var(--bg-0);
+  border: 1px solid var(--border-l);
+  border-radius: 4px;
+  color: var(--tx-1);
+  font-size: 12px;
+  resize: vertical;
+  font-family: inherit;
+  min-height: 48px;
+  max-height: 120px;
+}
+.prop-row textarea:focus { border-color: var(--accent); outline: none; }
+.prop-row input[type="color"] {
+  width: 32px;
+  height: 26px;
+  padding: 1px;
+  border: 1px solid var(--border-l);
+  border-radius: 4px;
+  background: var(--bg-0);
+  cursor: pointer;
+}
+.unit {
+  font-size: 10px;
+  color: var(--tx-3);
+  width: 20px;
+  flex-shrink: 0;
+}
+.btn-group { display: flex; gap: 2px; }
+.btn-toggle {
+  padding: 3px 8px;
+  background: var(--bg-0);
+  border: 1px solid var(--border-l);
+  border-radius: 4px;
+  color: var(--tx-2);
+  cursor: pointer;
+  font-size: 12px;
+  transition: all .12s;
+}
+.btn-toggle:hover { background: var(--bg-2); }
+.btn-toggle.active { background: var(--accent-bg); border-color: var(--accent); color: var(--accent); }
+.prop-value { font-size: 12px; color: var(--tx-1); }
+.btn-danger {
+  width: 100%;
+  padding: 6px;
+  background: rgba(239,68,68,.15);
+  border: 1px solid rgba(239,68,68,.3);
+  border-radius: 4px;
+  color: var(--danger);
+  font-size: 12px;
+  cursor: pointer;
+  margin-bottom: 4px;
+}
+.btn-danger:hover { background: rgba(239,68,68,.25); }
+.btn-secondary {
+  width: 100%;
+  padding: 6px;
+  background: var(--bg-0);
+  border: 1px solid var(--border-l);
+  border-radius: 4px;
+  color: var(--tx-2);
+  font-size: 12px;
+  cursor: pointer;
+}
+.btn-secondary:hover { background: var(--bg-2); }
+.no-sel { font-size: 12px; color: var(--tx-3); padding: 20px 12px; text-align: center; }
+
+/* === STATUS BAR === */
+.status-bar {
+  background: var(--bg-1);
+  border-top: 1px solid var(--border-l);
+  padding: 4px 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 11px;
+  color: var(--tx-3);
+}
+.status-bar span { white-space: nowrap; }
+
+/* === MODAL === */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+.modal {
+  background: var(--bg-1);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  width: 360px;
+  max-width: 90vw;
+  box-shadow: 0 20px 60px rgba(0,0,0,.5);
+}
+.modal-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+.modal-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.modal-row label {
+  font-size: 12px;
+  color: var(--tx-2);
+  width: 56px;
+  flex-shrink: 0;
+}
+.modal-row input, .modal-row select {
+  flex: 1;
+  padding: 6px 8px;
+  background: var(--bg-0);
+  border: 1px solid var(--border-l);
+  border-radius: var(--radius);
+  color: var(--tx-1);
+  font-size: 13px;
+}
+.modal-row input:focus { border-color: var(--accent); outline: none; }
+.modal-preview {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 12px;
+  margin: 12px 0;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal-preview img, .modal-preview canvas { max-width: 100%; max-height: 100px; }
+.modal-error { color: var(--danger); font-size: 11px; margin: 4px 0; }
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 14px;
+}
+.modal-actions button {
+  padding: 7px 18px;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+}
+.modal-cancel { background: var(--bg-2); color: var(--tx-2); }
+.modal-cancel:hover { background: var(--bg-3); }
+.modal-confirm { background: var(--accent); color: #fff; }
+.modal-confirm:hover { background: var(--accent-h); }
+</style>
+</head>
+<body>
+
+<!-- TOOLBAR -->
+<header class="toolbar">
+  <div class="toolbar-brand">
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+      <rect x="2" y="1" width="16" height="18" rx="2" stroke="currentColor" stroke-width="1.5"/>
+      <line x1="6" y1="6" x2="14" y2="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="6" y1="9.5" x2="11" y2="9.5" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity=".5"/>
+      <rect x="6" y="12" width="8" height="4" rx=".5" fill="currentColor" opacity=".3"/>
+    </svg>
+    Label Designer
+  </div>
+  <div class="toolbar-sep"></div>
+  <div class="toolbar-group">
+    <label>W</label>
+    <input type="number" class="tb-input" id="inp-cw" value="30" min="5" max="300">
+    <span>&times;</span>
+    <label>H</label>
+    <input type="number" class="tb-input" id="inp-ch" value="40" min="5" max="300">
+    <span class="unit" style="width:auto">mm</span>
+  </div>
+  <div class="toolbar-sep"></div>
+  <div class="toolbar-group">
+    <button class="btn-icon" id="btn-zout" title="Zoom out">&minus;</button>
+    <span id="zoom-display" style="min-width:36px;text-align:center">300%</span>
+    <button class="btn-icon" id="btn-zin" title="Zoom in">+</button>
+  </div>
+  <div class="toolbar-sep"></div>
+  <label class="toggle-wrap">
+    <input type="checkbox" id="chk-grid" checked>
+    Grid
+  </label>
+  <div class="toolbar-spacer"></div>
+  <div class="toolbar-group">
+    <label>Export DPI</label>
+    <input type="number" class="tb-input" id="inp-dpi" value="300" min="72" max="1200" style="width:48px">
+  </div>
+  <button class="btn-primary" id="btn-export">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+      <path d="M7 1v8M3.5 5.5L7 9l3.5-3.5M2 12h10"/>
+    </svg>
+    Export PNG
+  </button>
+</header>
+
+<!-- WORKSPACE -->
+<main class="workspace">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sb-section">
+      <div class="sb-title">Tools</div>
+      <button class="tool-btn active" data-tool="select">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M3.5 1L13 7.5 8.2 9l-2 5.2z"/></svg>
+        Select
+      </button>
+      <button class="tool-btn" data-tool="text">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><text x="3" y="13" font-size="14" font-weight="bold" font-family="serif">T</text></svg>
+        Add Text
+      </button>
+    </div>
+    <div class="sb-section">
+      <div class="sb-title">Barcodes</div>
+      <button class="tool-btn" data-tool="barcode-CODE128">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" opacity=".8"><rect x="1" y="2" width="2" height="12"/><rect x="4" y="2" width="1" height="12"/><rect x="6" y="2" width="3" height="12"/><rect x="10" y="2" width="1" height="12"/><rect x="12" y="2" width="2" height="12"/><rect x="15" y="2" width="1" height="12"/></svg>
+        CODE 128
+      </button>
+      <button class="tool-btn" data-tool="barcode-UPC">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" opacity=".8"><rect x="1" y="2" width="2" height="12"/><rect x="4" y="2" width="1" height="12"/><rect x="6" y="2" width="3" height="12"/><rect x="10" y="2" width="1" height="12"/><rect x="12" y="2" width="2" height="12"/><rect x="15" y="2" width="1" height="12"/></svg>
+        UPC-A
+      </button>
+      <button class="tool-btn" data-tool="barcode-EAN13">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" opacity=".8"><rect x="1" y="2" width="2" height="12"/><rect x="4" y="2" width="1" height="12"/><rect x="6" y="2" width="3" height="12"/><rect x="10" y="2" width="1" height="12"/><rect x="12" y="2" width="2" height="12"/><rect x="15" y="2" width="1" height="12"/></svg>
+        EAN-13
+      </button>
+      <button class="tool-btn" data-tool="barcode-QR">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" opacity=".8"><rect x="1" y="1" width="5" height="5"/><rect x="10" y="1" width="5" height="5"/><rect x="1" y="10" width="5" height="5"/><rect x="7" y="7" width="2" height="2"/><rect x="10" y="10" width="2" height="2"/><rect x="13" y="13" width="2" height="2"/><rect x="7" y="12" width="2" height="2"/><rect x="12" y="8" width="2" height="2"/></svg>
+        QR Code
+      </button>
+    </div>
+    <div class="sb-section" style="flex:1">
+      <div class="sb-title">Layers</div>
+      <div id="layers-list">
+        <div class="empty-msg">No elements yet</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Canvas Area -->
+  <section class="canvas-area" id="canvas-area">
+    <div id="design-canvas"></div>
+  </section>
+
+  <!-- Properties Panel -->
+  <aside class="properties">
+    <div class="panel-title">Properties</div>
+    <div id="props-content">
+      <div class="no-sel">Select an element<br>to edit its properties</div>
+    </div>
+  </aside>
+</main>
+
+<!-- Status Bar -->
+<footer class="status-bar">
+  <span id="status-pos">0.0, 0.0 mm</span>
+  <span id="status-size">30 &times; 40 mm</span>
+  <span id="status-zoom">Zoom 300%</span>
+  <span id="status-dpi">Export 300 DPI</span>
+  <span style="flex:1"></span>
+  <span id="status-info">Ready</span>
+</footer>
+
+<!-- Barcode Dialog -->
+<div class="modal-overlay" id="barcode-modal" style="display:none">
+  <div class="modal">
+    <div class="modal-title" id="bc-modal-title">Add Barcode</div>
+    <div class="modal-row">
+      <label>Type</label>
+      <span class="prop-value" id="bc-type-display">CODE128</span>
+    </div>
+    <div class="modal-row">
+      <label>Data</label>
+      <input type="text" id="bc-data" placeholder="Enter barcode data">
+    </div>
+    <div class="modal-row">
+      <label>Width</label>
+      <input type="number" id="bc-width" value="25" min="5" max="200" step="0.5">
+      <span class="unit">mm</span>
+    </div>
+    <div class="modal-row">
+      <label>Height</label>
+      <input type="number" id="bc-height" value="10" min="5" max="200" step="0.5">
+      <span class="unit">mm</span>
+    </div>
+    <div class="modal-row">
+      <label>Text</label>
+      <label class="toggle-wrap" style="width:auto">
+        <input type="checkbox" id="bc-showtext" checked> Show value
+      </label>
+    </div>
+    <div class="modal-preview" id="bc-preview">
+      <span style="color:#94a3b8;font-size:12px">Preview will appear here</span>
+    </div>
+    <div id="bc-error" class="modal-error" style="display:none"></div>
+    <div class="modal-actions">
+      <button class="modal-cancel" id="bc-cancel">Cancel</button>
+      <button class="modal-confirm" id="bc-confirm">Add to Label</button>
+    </div>
+  </div>
+</div>
+
+<!-- Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+
+<script>
+// ===================================================================
+// LABEL DESIGNER APPLICATION
+// ===================================================================
+
+// ----- Constants -----
+const PX_PER_MM = 96 / 25.4; // ~3.78
+let nextId = 1;
+
+// ----- State -----
+const S = {
+  canvas: { width: 30, height: 40 },
+  zoom: 3,
+  exportDPI: 300,
+  elements: [],
+  selectedId: null,
+  activeTool: 'select',
+  showGrid: true,
+  editingId: null,
+};
+
+// ----- DOM refs -----
+let canvasEl, canvasArea, propsEl, layersEl;
+
+// ----- Helpers -----
+function mmPx(mm) { return mm * PX_PER_MM * S.zoom; }
+function pxMm(px) { return px / (PX_PER_MM * S.zoom); }
+function ptPx(pt) { return pt * (96 / 72) * S.zoom; }
+function uid() { return 'e' + (nextId++); }
+function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
+function elById(id) { return S.elements.find(e => e.id === id); }
+
+// ----- Canvas Rendering -----
+function renderCanvas() {
+  // Save editing text
+  finishEditing(true);
+
+  const w = mmPx(S.canvas.width);
+  const h = mmPx(S.canvas.height);
+  canvasEl.style.width = w + 'px';
+  canvasEl.style.height = h + 'px';
+
+  // Grid background
+  if (S.showGrid) {
+    const g1 = mmPx(1), g5 = mmPx(5);
+    canvasEl.style.backgroundImage = [
+      `linear-gradient(rgba(0,0,0,.12) 1px, transparent 1px)`,
+      `linear-gradient(90deg, rgba(0,0,0,.12) 1px, transparent 1px)`,
+      `linear-gradient(rgba(0,0,0,.04) 1px, transparent 1px)`,
+      `linear-gradient(90deg, rgba(0,0,0,.04) 1px, transparent 1px)`
+    ].join(',');
+    canvasEl.style.backgroundSize = `${g5}px ${g5}px, ${g5}px ${g5}px, ${g1}px ${g1}px, ${g1}px ${g1}px`;
+  } else {
+    canvasEl.style.backgroundImage = 'none';
+  }
+
+  // Render elements
+  canvasEl.innerHTML = '';
+  S.elements.forEach(el => canvasEl.appendChild(makeNode(el)));
+
+  renderLayers();
+  renderProps();
+  updateStatus();
+}
+
+function makeNode(el) {
+  const d = document.createElement('div');
+  d.className = 'canvas-element' + (el.id === S.selectedId ? ' sel' : '');
+  d.dataset.id = el.id;
+  d.style.left = mmPx(el.x) + 'px';
+  d.style.top = mmPx(el.y) + 'px';
+
+  if (el.type === 'text') {
+    const c = document.createElement('div');
+    c.className = 'text-content';
+    c.textContent = el.text;
+    c.style.fontFamily = `"${el.fontFamily || 'Arial'}", sans-serif`;
+    c.style.fontSize = ptPx(el.fontSize || 12) + 'px';
+    c.style.fontWeight = el.bold ? 'bold' : 'normal';
+    c.style.fontStyle = el.italic ? 'italic' : 'normal';
+    c.style.color = el.color || '#000000';
+    c.style.letterSpacing = (el.letterSpacing || 0) + 'px';
+    d.appendChild(c);
+  } else if (el.type === 'barcode') {
+    const img = document.createElement('img');
+    img.className = 'barcode-content';
+    img.src = el.imageData || '';
+    img.draggable = false;
+    d.style.width = mmPx(el.width) + 'px';
+    d.style.height = mmPx(el.height) + 'px';
+    d.appendChild(img);
+  }
+  return d;
+}
+
+// ----- Layers -----
+function renderLayers() {
+  if (!layersEl) return;
+  if (S.elements.length === 0) {
+    layersEl.innerHTML = '<div class="empty-msg">No elements yet</div>';
+    return;
+  }
+  layersEl.innerHTML = S.elements.map(el => {
+    const icon = el.type === 'text' ? 'T' : (el.barcodeType === 'QR' ? 'QR' : 'BC');
+    const name = el.type === 'text'
+      ? (el.text.substring(0, 18) || 'Empty text')
+      : el.barcodeType + ' ' + (el.data || '').substring(0, 10);
+    return `<div class="layer-item ${el.id === S.selectedId ? 'sel' : ''}" data-layer-id="${el.id}">
+      <span class="layer-icon">${icon}</span>
+      <span class="layer-name">${name}</span>
+    </div>`;
+  }).join('');
+}
+
+// ----- Properties Panel -----
+function renderProps() {
+  if (!propsEl) return;
+  if (!S.selectedId) {
+    propsEl.innerHTML = '<div class="no-sel">Select an element<br>to edit its properties</div>';
+    return;
+  }
+  const el = elById(S.selectedId);
+  if (!el) { propsEl.innerHTML = ''; return; }
+
+  let h = '';
+  // Position
+  h += `<div class="prop-section"><div class="prop-section-title">Position</div>
+    <div class="prop-row"><label>X</label><input type="number" value="${el.x.toFixed(1)}" step="0.5" data-prop="x"><span class="unit">mm</span></div>
+    <div class="prop-row"><label>Y</label><input type="number" value="${el.y.toFixed(1)}" step="0.5" data-prop="y"><span class="unit">mm</span></div>
+  </div>`;
+
+  if (el.type === 'text') {
+    h += `<div class="prop-section"><div class="prop-section-title">Text</div>
+      <div class="prop-row"><textarea rows="3" data-prop="text">${escHtml(el.text)}</textarea></div>
+      <div class="prop-row"><label>Font</label><select data-prop="fontFamily">
+        ${['Arial','Helvetica','Times New Roman','Courier New','Georgia','Verdana','Trebuchet MS','Impact'].map(f =>
+          `<option value="${f}" ${el.fontFamily===f?'selected':''}>${f}</option>`).join('')}
+      </select></div>
+      <div class="prop-row"><label>Size</label><input type="number" value="${el.fontSize}" min="2" max="120" step="0.5" data-prop="fontSize"><span class="unit">pt</span></div>
+      <div class="prop-row"><label>Style</label><div class="btn-group">
+        <button class="btn-toggle ${el.bold?'active':''}" data-toggle="bold"><b>B</b></button>
+        <button class="btn-toggle ${el.italic?'active':''}" data-toggle="italic"><i>I</i></button>
+      </div></div>
+      <div class="prop-row"><label>Color</label><input type="color" value="${el.color||'#000000'}" data-prop="color"></div>
+    </div>`;
+  } else if (el.type === 'barcode') {
+    h += `<div class="prop-section"><div class="prop-section-title">Barcode</div>
+      <div class="prop-row"><label>Type</label><span class="prop-value">${el.barcodeType}</span></div>
+      <div class="prop-row"><label>Data</label><input type="text" value="${escHtml(el.data)}" data-prop="data" data-bc="1"></div>
+      <div class="prop-row"><label>Width</label><input type="number" value="${el.width.toFixed(1)}" step="0.5" min="3" data-prop="width" data-bc="1"><span class="unit">mm</span></div>
+      <div class="prop-row"><label>Height</label><input type="number" value="${el.height.toFixed(1)}" step="0.5" min="3" data-prop="height" data-bc="1"><span class="unit">mm</span></div>
+      <div class="prop-row"><label>Text</label><label class="toggle-wrap" style="width:auto">
+        <input type="checkbox" ${el.showText?'checked':''} data-toggle="showText" data-bc="1"> Show value
+      </label></div>
+    </div>`;
+  }
+
+  // Actions
+  h += `<div class="prop-section">
+    <button class="btn-secondary" data-action="duplicate" style="margin-bottom:4px">Duplicate</button>
+    <button class="btn-danger" data-action="delete">Delete Element</button>
+  </div>`;
+
+  propsEl.innerHTML = h;
+
+  // Bind events via delegation (handled in init)
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ----- Element Operations -----
+function addTextElement(x, y) {
+  const el = {
+    id: uid(), type: 'text',
+    x: Math.max(0, x), y: Math.max(0, y),
+    text: 'Text', fontFamily: 'Arial', fontSize: 10,
+    bold: false, italic: false, color: '#000000', letterSpacing: 0,
+  };
+  S.elements.push(el);
+  S.selectedId = el.id;
+  S.activeTool = 'select';
+  setActiveTool('select');
+  renderCanvas();
+  // Start editing immediately
+  startEditing(el.id);
+}
+
+function addBarcodeElement(type, data, w, h, showText) {
+  const imgData = generateBarcodeImg(type, data, w, h, showText);
+  if (!imgData) return;
+  const el = {
+    id: uid(), type: 'barcode',
+    x: Math.max(0, (S.canvas.width - w) / 2),
+    y: Math.max(0, (S.canvas.height - h) / 2),
+    width: w, height: h,
+    barcodeType: type, data: data,
+    showText: showText, imageData: imgData,
+  };
+  S.elements.push(el);
+  S.selectedId = el.id;
+  S.activeTool = 'select';
+  setActiveTool('select');
+  renderCanvas();
+}
+
+function updateEl(id, prop, val) {
+  const el = elById(id);
+  if (!el) return;
+  if (prop === 'x' || prop === 'y' || prop === 'fontSize' || prop === 'width' || prop === 'height') val = parseFloat(val);
+  el[prop] = val;
+  // Regenerate barcode if needed
+  if (el.type === 'barcode' && ['data','width','height','showText'].includes(prop)) {
+    const img = generateBarcodeImg(el.barcodeType, el.data, el.width, el.height, el.showText);
+    if (img) el.imageData = img;
+  }
+  renderCanvas();
+}
+
+function removeEl(id) {
+  S.elements = S.elements.filter(e => e.id !== id);
+  if (S.selectedId === id) S.selectedId = null;
+  renderCanvas();
+}
+
+function duplicateEl(id) {
+  const src = elById(id);
+  if (!src) return;
+  const dup = JSON.parse(JSON.stringify(src));
+  dup.id = uid();
+  dup.x += 2;
+  dup.y += 2;
+  S.elements.push(dup);
+  S.selectedId = dup.id;
+  renderCanvas();
+}
+
+// ----- Barcode Generation -----
+function generateBarcodeImg(type, data, wMM, hMM, showText) {
+  if (!data) return null;
+  try {
+    if (type === 'QR') {
+      const qr = qrcode(0, 'M');
+      qr.addData(data);
+      qr.make();
+      const moduleCount = qr.getModuleCount();
+      const cellSize = 6;
+      const size = moduleCount * cellSize;
+      const cv = document.createElement('canvas');
+      cv.width = size; cv.height = size;
+      const ctx = cv.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, size, size);
+      ctx.fillStyle = '#000000';
+      for (let r = 0; r < moduleCount; r++) {
+        for (let c = 0; c < moduleCount; c++) {
+          if (qr.isDark(r, c)) ctx.fillRect(c * cellSize, r * cellSize, cellSize, cellSize);
+        }
+      }
+      return cv.toDataURL();
+    } else {
+      const cv = document.createElement('canvas');
+      let fmt = type;
+      if (type === 'UPC') fmt = 'UPC';
+      if (type === 'EAN13') fmt = 'EAN13';
+      JsBarcode(cv, data, {
+        format: fmt,
+        width: 2,
+        height: 80,
+        displayValue: showText !== false,
+        margin: 4,
+        fontSize: 14,
+        textMargin: 2,
+        background: '#ffffff',
+      });
+      return cv.toDataURL();
+    }
+  } catch (e) {
+    console.warn('Barcode generation error:', e.message);
+    return null;
+  }
+}
+
+// ----- Text Editing -----
+function startEditing(id) {
+  finishEditing(true);
+  const el = elById(id);
+  if (!el || el.type !== 'text') return;
+  S.editingId = id;
+  const dom = canvasEl.querySelector(`[data-id="${id}"]`);
+  if (!dom) return;
+  dom.classList.add('editing');
+  const tc = dom.querySelector('.text-content');
+  tc.contentEditable = 'true';
+  tc.style.pointerEvents = 'auto';
+  tc.focus();
+  // Select all
+  const range = document.createRange();
+  range.selectNodeContents(tc);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+function finishEditing(save) {
+  if (!S.editingId) return;
+  const dom = canvasEl.querySelector(`[data-id="${S.editingId}"]`);
+  if (dom) {
+    const tc = dom.querySelector('.text-content');
+    if (tc && save) {
+      const el = elById(S.editingId);
+      if (el) el.text = tc.textContent || 'Text';
+    }
+    if (tc) {
+      tc.contentEditable = 'false';
+      tc.style.pointerEvents = 'none';
+    }
+    dom.classList.remove('editing');
+  }
+  S.editingId = null;
+}
+
+// ----- Drag & Drop -----
+let drag = { active: false, id: null, ox: 0, oy: 0, moved: false, sx: 0, sy: 0 };
+
+function onCanvasDown(e) {
+  if (e.button !== 0) return;
+
+  // Check if clicking on text being edited
+  if (S.editingId) {
+    const editDom = canvasEl.querySelector(`[data-id="${S.editingId}"]`);
+    if (editDom && editDom.contains(e.target)) return; // Let text editing handle it
+    finishEditing(true);
+  }
+
+  const elDom = e.target.closest('.canvas-element');
+  if (elDom) {
+    const id = elDom.dataset.id;
+    S.selectedId = id;
+    renderLayers();
+    renderProps();
+    // Update selection visuals
+    canvasEl.querySelectorAll('.canvas-element').forEach(d => d.classList.toggle('sel', d.dataset.id === id));
+
+    const rect = canvasEl.getBoundingClientRect();
+    const el = elById(id);
+    drag = {
+      active: true, id,
+      ox: e.clientX - rect.left - mmPx(el.x),
+      oy: e.clientY - rect.top - mmPx(el.y),
+      moved: false, sx: e.clientX, sy: e.clientY,
+    };
+    e.preventDefault();
+    return;
+  }
+
+  // Clicked on empty canvas space
+  if (S.activeTool === 'text') {
+    const rect = canvasEl.getBoundingClientRect();
+    addTextElement(pxMm(e.clientX - rect.left), pxMm(e.clientY - rect.top));
+  } else if (S.activeTool.startsWith('barcode-')) {
+    openBarcodeModal(S.activeTool.replace('barcode-', ''));
+  } else {
+    S.selectedId = null;
+    renderLayers();
+    renderProps();
+    canvasEl.querySelectorAll('.canvas-element').forEach(d => d.classList.remove('sel'));
+  }
+}
+
+function onDocMove(e) {
+  // Update cursor position
+  const rect = canvasEl.getBoundingClientRect();
+  const mx = pxMm(e.clientX - rect.left);
+  const my = pxMm(e.clientY - rect.top);
+  if (mx >= 0 && my >= 0 && mx <= S.canvas.width && my <= S.canvas.height) {
+    document.getElementById('status-pos').textContent = `${mx.toFixed(1)}, ${my.toFixed(1)} mm`;
+  }
+
+  if (!drag.active) return;
+  const dx = e.clientX - drag.sx;
+  const dy = e.clientY - drag.sy;
+  if (!drag.moved && (Math.abs(dx) + Math.abs(dy)) > 3) drag.moved = true;
+  if (!drag.moved) return;
+
+  const crect = canvasEl.getBoundingClientRect();
+  let x = pxMm(e.clientX - crect.left - drag.ox);
+  let y = pxMm(e.clientY - crect.top - drag.oy);
+  x = clamp(x, 0, S.canvas.width);
+  y = clamp(y, 0, S.canvas.height);
+
+  const el = elById(drag.id);
+  if (el) {
+    el.x = Math.round(x * 2) / 2; // Snap to 0.5mm
+    el.y = Math.round(y * 2) / 2;
+    const dom = canvasEl.querySelector(`[data-id="${drag.id}"]`);
+    if (dom) {
+      dom.style.left = mmPx(el.x) + 'px';
+      dom.style.top = mmPx(el.y) + 'px';
+    }
+  }
+}
+
+function onDocUp(e) {
+  if (drag.active) {
+    if (drag.moved) renderProps(); // Update position in props
+    drag.active = false;
+  }
+}
+
+// ----- Barcode Modal -----
+let modalType = 'CODE128';
+
+function openBarcodeModal(type) {
+  modalType = type;
+  document.getElementById('bc-modal-title').textContent = 'Add ' + (type === 'QR' ? 'QR Code' : type + ' Barcode');
+  document.getElementById('bc-type-display').textContent = type;
+  const dataInp = document.getElementById('bc-data');
+  const wInp = document.getElementById('bc-width');
+  const hInp = document.getElementById('bc-height');
+  const stChk = document.getElementById('bc-showtext');
+
+  // Set defaults per type
+  if (type === 'QR') {
+    dataInp.value = 'https://example.com';
+    wInp.value = '15'; hInp.value = '15';
+    stChk.checked = false;
+    stChk.parentElement.style.display = 'none';
+  } else if (type === 'UPC') {
+    dataInp.value = '012345678905';
+    wInp.value = '25'; hInp.value = '12';
+    stChk.checked = true;
+    stChk.parentElement.style.display = '';
+  } else if (type === 'EAN13') {
+    dataInp.value = '5901234123457';
+    wInp.value = '25'; hInp.value = '12';
+    stChk.checked = true;
+    stChk.parentElement.style.display = '';
+  } else {
+    dataInp.value = 'Hello-123';
+    wInp.value = '25'; hInp.value = '10';
+    stChk.checked = true;
+    stChk.parentElement.style.display = '';
+  }
+
+  document.getElementById('bc-error').style.display = 'none';
+  document.getElementById('barcode-modal').style.display = 'flex';
+  updateBarcodePreview();
+  dataInp.focus();
+}
+
+function updateBarcodePreview() {
+  const type = modalType;
+  const data = document.getElementById('bc-data').value;
+  const w = parseFloat(document.getElementById('bc-width').value) || 25;
+  const h = parseFloat(document.getElementById('bc-height').value) || 10;
+  const showText = document.getElementById('bc-showtext').checked;
+  const preview = document.getElementById('bc-preview');
+  const errEl = document.getElementById('bc-error');
+
+  if (!data) {
+    preview.innerHTML = '<span style="color:#94a3b8;font-size:12px">Enter data to preview</span>';
+    errEl.style.display = 'none';
+    return;
+  }
+
+  const img = generateBarcodeImg(type, data, w, h, showText);
+  if (img) {
+    preview.innerHTML = `<img src="${img}" style="max-width:100%;max-height:80px">`;
+    errEl.style.display = 'none';
+  } else {
+    preview.innerHTML = '<span style="color:#ef4444;font-size:12px">Invalid barcode data</span>';
+    errEl.textContent = getDataHint(type);
+    errEl.style.display = 'block';
+  }
+}
+
+function getDataHint(type) {
+  switch(type) {
+    case 'UPC': return 'UPC-A requires 11 or 12 digits';
+    case 'EAN13': return 'EAN-13 requires 12 or 13 digits';
+    case 'CODE128': return 'CODE128 supports ASCII characters';
+    case 'QR': return 'QR supports text, URLs, numbers';
+    default: return '';
+  }
+}
+
+function closeBarcodeModal() {
+  document.getElementById('barcode-modal').style.display = 'none';
+}
+
+function confirmBarcode() {
+  const data = document.getElementById('bc-data').value;
+  const w = parseFloat(document.getElementById('bc-width').value);
+  const h = parseFloat(document.getElementById('bc-height').value);
+  const showText = document.getElementById('bc-showtext').checked;
+
+  if (!data) return;
+
+  const test = generateBarcodeImg(modalType, data, w, h, showText);
+  if (!test) {
+    document.getElementById('bc-error').textContent = 'Invalid barcode data. ' + getDataHint(modalType);
+    document.getElementById('bc-error').style.display = 'block';
+    return;
+  }
+
+  closeBarcodeModal();
+  addBarcodeElement(modalType, data, w, h, showText);
+}
+
+// ----- Export -----
+function exportPNG() {
+  const dpi = S.exportDPI;
+  const ppm = dpi / 25.4; // pixels per mm
+  const W = Math.round(S.canvas.width * ppm);
+  const H = Math.round(S.canvas.height * ppm);
+
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d');
+
+  // White background
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, W, H);
+
+  // Render elements
+  for (const el of S.elements) {
+    const x = el.x * ppm;
+    const y = el.y * ppm;
+
+    if (el.type === 'text') {
+      const fsPx = el.fontSize * (dpi / 72);
+      const weight = el.bold ? 'bold' : 'normal';
+      const style = el.italic ? 'italic' : 'normal';
+      ctx.font = `${style} ${weight} ${fsPx}px "${el.fontFamily || 'Arial'}"`;
+      ctx.fillStyle = el.color || '#000000';
+      ctx.textBaseline = 'top';
+
+      const lines = (el.text || '').split('\n');
+      const lh = fsPx * 1.3;
+      lines.forEach((line, i) => ctx.fillText(line, x, y + i * lh));
+
+    } else if (el.type === 'barcode') {
+      const w = el.width * ppm;
+      const h = el.height * ppm;
+
+      if (el.barcodeType === 'QR') {
+        try {
+          const qr = qrcode(0, 'M');
+          qr.addData(el.data);
+          qr.make();
+          const mc = qr.getModuleCount();
+          const cs = Math.min(w, h) / mc;
+          const ox = x + (w - cs * mc) / 2;
+          const oy = y + (h - cs * mc) / 2;
+          // White background for QR
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(x, y, w, h);
+          ctx.fillStyle = '#000000';
+          for (let r = 0; r < mc; r++) {
+            for (let c = 0; c < mc; c++) {
+              if (qr.isDark(r, c)) {
+                ctx.fillRect(ox + c * cs, oy + r * cs, Math.ceil(cs), Math.ceil(cs));
+              }
+            }
+          }
+        } catch (e) { console.warn('QR export error', e); }
+      } else {
+        try {
+          const bcv = document.createElement('canvas');
+          JsBarcode(bcv, el.data, {
+            format: el.barcodeType,
+            width: 4,
+            height: Math.round(h * 0.75),
+            displayValue: el.showText !== false,
+            margin: Math.round(ppm * 0.5),
+            fontSize: Math.round(h * 0.12),
+            textMargin: Math.round(ppm * 0.3),
+            background: '#ffffff',
+          });
+          ctx.drawImage(bcv, x, y, w, h);
+        } catch (e) { console.warn('Barcode export error', e); }
+      }
+    }
+  }
+
+  // Download
+  const a = document.createElement('a');
+  a.href = cv.toDataURL('image/png');
+  a.download = `label-${S.canvas.width}x${S.canvas.height}mm-${dpi}dpi.png`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  document.getElementById('status-info').textContent = `Exported ${W}x${H}px at ${dpi} DPI`;
+}
+
+// ----- Toolbar Handlers -----
+function setActiveTool(tool) {
+  S.activeTool = tool;
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.toggle('active', b.dataset.tool === tool));
+  // Change cursor
+  canvasEl.style.cursor = tool === 'text' ? 'crosshair' : (tool.startsWith('barcode') ? 'crosshair' : 'default');
+}
+
+function setZoom(z) {
+  S.zoom = clamp(z, 1, 8);
+  document.getElementById('zoom-display').textContent = Math.round(S.zoom * 100) + '%';
+  document.getElementById('status-zoom').textContent = 'Zoom ' + Math.round(S.zoom * 100) + '%';
+  renderCanvas();
+}
+
+function updateStatus() {
+  document.getElementById('status-size').innerHTML = `${S.canvas.width} &times; ${S.canvas.height} mm`;
+  document.getElementById('status-dpi').textContent = 'Export ' + S.exportDPI + ' DPI';
+}
+
+// ----- Keyboard -----
+function onKey(e) {
+  // Don't handle keys when editing text
+  if (S.editingId) {
+    if (e.key === 'Escape') { finishEditing(true); renderCanvas(); }
+    return;
+  }
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+
+  if ((e.key === 'Delete' || e.key === 'Backspace') && S.selectedId) {
+    removeEl(S.selectedId);
+    e.preventDefault();
+  }
+  if (e.key === 'Escape') {
+    S.selectedId = null;
+    renderCanvas();
+  }
+  if (e.key === 'v' || e.key === 'V') setActiveTool('select');
+  if (e.key === 't' || e.key === 'T') setActiveTool('text');
+  if ((e.key === 'd' || e.key === 'D') && (e.ctrlKey || e.metaKey) && S.selectedId) {
+    e.preventDefault();
+    duplicateEl(S.selectedId);
+  }
+
+  // Arrow keys to nudge
+  if (S.selectedId && ['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) {
+    e.preventDefault();
+    const el = elById(S.selectedId);
+    if (!el) return;
+    const step = e.shiftKey ? 1 : 0.5;
+    if (e.key === 'ArrowUp') el.y = Math.max(0, el.y - step);
+    if (e.key === 'ArrowDown') el.y += step;
+    if (e.key === 'ArrowLeft') el.x = Math.max(0, el.x - step);
+    if (e.key === 'ArrowRight') el.x += step;
+    renderCanvas();
+  }
+}
+
+// ----- Init -----
+function init() {
+  canvasEl = document.getElementById('design-canvas');
+  canvasArea = document.getElementById('canvas-area');
+  propsEl = document.getElementById('props-content');
+  layersEl = document.getElementById('layers-list');
+
+  // Canvas events
+  canvasEl.addEventListener('mousedown', onCanvasDown);
+  document.addEventListener('mousemove', onDocMove);
+  document.addEventListener('mouseup', onDocUp);
+  canvasEl.addEventListener('dblclick', (e) => {
+    const elDom = e.target.closest('.canvas-element');
+    if (elDom) {
+      const el = elById(elDom.dataset.id);
+      if (el && el.type === 'text') startEditing(el.id);
+    }
+  });
+  document.addEventListener('keydown', onKey);
+
+  // Toolbar: canvas size
+  document.getElementById('inp-cw').addEventListener('change', function() {
+    S.canvas.width = clamp(parseInt(this.value) || 30, 5, 300);
+    this.value = S.canvas.width;
+    renderCanvas();
+  });
+  document.getElementById('inp-ch').addEventListener('change', function() {
+    S.canvas.height = clamp(parseInt(this.value) || 40, 5, 300);
+    this.value = S.canvas.height;
+    renderCanvas();
+  });
+
+  // Toolbar: zoom
+  document.getElementById('btn-zin').addEventListener('click', () => setZoom(S.zoom + 0.5));
+  document.getElementById('btn-zout').addEventListener('click', () => setZoom(S.zoom - 0.5));
+
+  // Toolbar: grid
+  document.getElementById('chk-grid').addEventListener('change', function() {
+    S.showGrid = this.checked;
+    renderCanvas();
+  });
+
+  // Toolbar: DPI
+  document.getElementById('inp-dpi').addEventListener('change', function() {
+    S.exportDPI = clamp(parseInt(this.value) || 300, 72, 1200);
+    this.value = S.exportDPI;
+    updateStatus();
+  });
+
+  // Toolbar: export
+  document.getElementById('btn-export').addEventListener('click', exportPNG);
+
+  // Sidebar: tools
+  document.querySelectorAll('.tool-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const tool = btn.dataset.tool;
+      if (tool.startsWith('barcode-')) {
+        setActiveTool(tool);
+        openBarcodeModal(tool.replace('barcode-', ''));
+      } else {
+        setActiveTool(tool);
+      }
+    });
+  });
+
+  // Sidebar: layers click
+  layersEl.addEventListener('click', (e) => {
+    const item = e.target.closest('.layer-item');
+    if (item) {
+      S.selectedId = item.dataset.layerId;
+      renderCanvas();
+    }
+  });
+
+  // Properties: event delegation
+  propsEl.addEventListener('change', (e) => {
+    const inp = e.target;
+    if (!S.selectedId) return;
+    const prop = inp.dataset.prop;
+    if (prop) {
+      let val = inp.type === 'number' ? parseFloat(inp.value) : inp.value;
+      if (inp.tagName === 'TEXTAREA') val = inp.value;
+      updateEl(S.selectedId, prop, val);
+    }
+  });
+  propsEl.addEventListener('input', (e) => {
+    // Live update for color picker
+    if (e.target.type === 'color' && e.target.dataset.prop) {
+      updateEl(S.selectedId, e.target.dataset.prop, e.target.value);
+    }
+  });
+  propsEl.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn || !S.selectedId) return;
+    const action = btn.dataset.action;
+    const toggle = btn.dataset.toggle;
+    if (action === 'delete') removeEl(S.selectedId);
+    if (action === 'duplicate') duplicateEl(S.selectedId);
+    if (toggle) {
+      const el = elById(S.selectedId);
+      if (el) {
+        el[toggle] = !el[toggle];
+        if (el.type === 'barcode' && ['showText'].includes(toggle)) {
+          const img = generateBarcodeImg(el.barcodeType, el.data, el.width, el.height, el.showText);
+          if (img) el.imageData = img;
+        }
+        renderCanvas();
+      }
+    }
+  });
+
+  // Barcode modal
+  document.getElementById('bc-cancel').addEventListener('click', closeBarcodeModal);
+  document.getElementById('bc-confirm').addEventListener('click', confirmBarcode);
+  document.getElementById('bc-data').addEventListener('input', updateBarcodePreview);
+  document.getElementById('bc-width').addEventListener('input', updateBarcodePreview);
+  document.getElementById('bc-height').addEventListener('input', updateBarcodePreview);
+  document.getElementById('bc-showtext').addEventListener('change', updateBarcodePreview);
+  document.getElementById('barcode-modal').addEventListener('click', (e) => {
+    if (e.target === e.currentTarget) closeBarcodeModal();
+  });
+  document.getElementById('bc-data').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') confirmBarcode();
+  });
+
+  // Initial render
+  renderCanvas();
+
+  // PWA service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
