@@ -2638,7 +2638,6 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
             // Calculate total inventory value
             const totalInventoryValue = useMemo(() => items.reduce((sum, item) => sum + (item.value || 0) * item.quantity, 0), [items]);
 
-            if (!isAuthenticated) return <LoginScreen onLogin={() => setIsAuthenticated(true)} />;
             if (loading) return <div className="flex items-center justify-center h-screen"><div className="text-xl">Loading...</div></div>;
 
             return (
@@ -2664,7 +2663,6 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
                                 <button onClick={() => setShowPrintQR(true)} className="p-2 bg-indigo-500 text-white rounded-lg text-lg" title="Print labels"><span class="material-icons">print</span></button>
                                 <button onClick={() => setShowAddItem(true)} className="p-2 bg-green-500 text-white rounded-lg text-lg" title="Nieuw item"><span class="material-icons">add_circle</span></button>
                                 <button onClick={() => setShowSettings(true)} className="p-2 bg-zinc-700 rounded-lg text-lg" title="Instellingen"><span class="material-icons">settings</span></button>
-                                <button onClick={() => setIsAuthenticated(false)} className="p-2 bg-zinc-700 rounded-lg text-lg" title="Uitloggen"><span class="material-icons">logout</span></button>
                             </div>
                         </div>
                     </div>

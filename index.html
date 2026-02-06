@@ -148,7 +148,8 @@
           url: './lab-inventory-app/index.html',
           description: 'Electronics component manager',
           isLocal: true,
-          fullscreen: true
+          fullscreen: true,
+          requiresAdmin: true
         },
         {
           id: 'label-designer',
@@ -1046,7 +1047,7 @@
                           onClick={() => setActiveView('projects')} />
                   <NavTab active={activeView === 'forked-projects'} icon="GitFork" label="Forked Projects"
                           onClick={() => setActiveView('forked-projects')} />
-                  {CONFIG.INTEGRATED_APPS.map(app => (
+                  {CONFIG.INTEGRATED_APPS.filter(app => !app.requiresAdmin || isAdmin).map(app => (
                     <NavTab key={app.id} active={activeView === app.id} icon={app.icon} label={app.name}
                             onClick={() => setActiveView(app.id)} />
                   ))}
@@ -1118,6 +1119,7 @@
           {/* Fullscreen App View - rendered outside main container */}
           {activeView !== 'projects' && activeView !== 'forked-projects' && (() => {
             const app = CONFIG.INTEGRATED_APPS.find(a => a.id === activeView);
+            if (app && app.requiresAdmin && !isAdmin) return null;
             return app && app.fullscreen ? <EmbeddedApp app={app} /> : null;
           })()}
 
@@ -1126,6 +1128,7 @@
             {/* Embedded App View (non-fullscreen) */}
             {activeView !== 'projects' && activeView !== 'forked-projects' && (() => {
               const app = CONFIG.INTEGRATED_APPS.find(a => a.id === activeView);
+              if (app && app.requiresAdmin && !isAdmin) return null;
               return app && !app.fullscreen ? <EmbeddedApp app={app} /> : null;
             })()}
 
