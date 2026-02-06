@@ -1,0 +1,119 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <!-- Background -->
+  <rect width="960" height="540" fill="#09090b"/>
+
+  <!-- Header -->
+  <rect width="960" height="56" fill="#18181b"/>
+  <rect y="56" width="960" height="1" fill="#27272a"/>
+  <text x="42" y="35" fill="#f59e0b" font-size="16" font-weight="700">3D Model Library</text>
+  <text x="830" y="28" fill="#71717a" font-size="12">4 models</text>
+  <rect x="880" y="14" width="60" height="30" rx="6" fill="#f59e0b"/>
+  <text x="892" y="34" fill="#09090b" font-size="12" font-weight="600">Upload</text>
+
+  <!-- Grid of model cards -->
+  <!-- Card 1: Benchy -->
+  <rect x="30" y="76" width="210" height="200" rx="8" fill="#18181b" stroke="#27272a"/>
+  <rect x="30" y="76" width="210" height="130" rx="8" fill="#09090b"/>
+  <rect x="30" y="198" width="210" height="1" fill="#09090b"/>
+  <!-- 3D boat shape (simplified benchy) -->
+  <g transform="translate(135,140)" fill="none" stroke="#f59e0b" stroke-width="1.5">
+    <path d="M-40,10 L-35,-15 L-20,-25 L20,-25 L35,-15 L40,10 Z" fill="#f59e0b" fill-opacity="0.15"/>
+    <path d="M-20,-25 L-20,-40 L-5,-45 L-5,-25" fill="#f59e0b" fill-opacity="0.1"/>
+    <line x1="-50" y1="15" x2="50" y2="15" stroke="#27272a" stroke-width="0.5"/>
+  </g>
+  <rect x="30" y="206" width="210" height="70" rx="0" fill="#18181b"/>
+  <text x="44" y="226" fill="#f4f4f5" font-size="13" font-weight="600">3DBenchy</text>
+  <rect x="44" y="234" width="30" height="16" rx="3" fill="rgba(245,158,11,0.12)"/>
+  <text x="50" y="246" fill="#f59e0b" font-size="9" font-weight="600">STL</text>
+  <text x="82" y="246" fill="#71717a" font-size="10">4.2 MB</text>
+
+  <!-- Card 2: Gear -->
+  <rect x="260" y="76" width="210" height="200" rx="8" fill="#18181b" stroke="#27272a"/>
+  <rect x="260" y="76" width="210" height="130" rx="8" fill="#09090b"/>
+  <rect x="260" y="198" width="210" height="1" fill="#09090b"/>
+  <!-- Gear shape -->
+  <g transform="translate(365,140)">
+    <circle r="30" fill="none" stroke="#f59e0b" stroke-width="1.5" fill-opacity="0"/>
+    <circle r="30" fill="#f59e0b" fill-opacity="0.1"/>
+    <circle r="10" fill="#09090b" stroke="#f59e0b" stroke-width="1"/>
+    <rect x="-4" y="-34" width="8" height="10" rx="1" fill="#f59e0b" fill-opacity="0.3" stroke="#f59e0b" stroke-width="0.8"/>
+    <rect x="-4" y="24" width="8" height="10" rx="1" fill="#f59e0b" fill-opacity="0.3" stroke="#f59e0b" stroke-width="0.8"/>
+    <rect x="-34" y="-4" width="10" height="8" rx="1" fill="#f59e0b" fill-opacity="0.3" stroke="#f59e0b" stroke-width="0.8"/>
+    <rect x="24" y="-4" width="10" height="8" rx="1" fill="#f59e0b" fill-opacity="0.3" stroke="#f59e0b" stroke-width="0.8"/>
+    <line x1="-50" y1="15" x2="50" y2="15" stroke="#27272a" stroke-width="0.5"/>
+  </g>
+  <rect x="260" y="206" width="210" height="70" rx="0" fill="#18181b"/>
+  <text x="274" y="226" fill="#f4f4f5" font-size="13" font-weight="600">Spur Gear 20T</text>
+  <rect x="274" y="234" width="30" height="16" rx="3" fill="rgba(245,158,11,0.12)"/>
+  <text x="280" y="246" fill="#f59e0b" font-size="9" font-weight="600">3MF</text>
+  <text x="312" y="246" fill="#71717a" font-size="10">1.8 MB</text>
+
+  <!-- Card 3: Enclosure -->
+  <rect x="490" y="76" width="210" height="200" rx="8" fill="#18181b" stroke="#27272a"/>
+  <rect x="490" y="76" width="210" height="130" rx="8" fill="#09090b"/>
+  <rect x="490" y="198" width="210" height="1" fill="#09090b"/>
+  <!-- Box/enclosure shape -->
+  <g transform="translate(595,130)" fill="none" stroke="#f59e0b" stroke-width="1.2">
+    <path d="M-35,15 L-35,-15 L0,-30 L35,-15 L35,15 L0,30 Z" fill="#f59e0b" fill-opacity="0.1"/>
+    <line x1="0" y1="-30" x2="0" y2="30"/>
+    <line x1="-35" y1="-15" x2="35" y2="-15" opacity="0.4"/>
+    <line x1="-50" y1="25" x2="50" y2="25" stroke="#27272a" stroke-width="0.5"/>
+  </g>
+  <rect x="490" y="206" width="210" height="70" rx="0" fill="#18181b"/>
+  <text x="504" y="226" fill="#f4f4f5" font-size="13" font-weight="600">ESP32 Enclosure</text>
+  <rect x="504" y="234" width="30" height="16" rx="3" fill="rgba(245,158,11,0.12)"/>
+  <text x="510" y="246" fill="#f59e0b" font-size="9" font-weight="600">STL</text>
+  <text x="542" y="246" fill="#71717a" font-size="10">2.1 MB</text>
+
+  <!-- Card 4: Bracket -->
+  <rect x="720" y="76" width="210" height="200" rx="8" fill="#18181b" stroke="#f59e0b"/>
+  <rect x="720" y="76" width="210" height="130" rx="8" fill="#09090b"/>
+  <rect x="720" y="198" width="210" height="1" fill="#09090b"/>
+  <!-- L-bracket shape -->
+  <g transform="translate(825,130)" fill="none" stroke="#f59e0b" stroke-width="1.2">
+    <path d="M-25,-20 L15,-30 L25,-10 L25,20 L-15,30 L-25,10 Z" fill="#f59e0b" fill-opacity="0.1"/>
+    <path d="M-25,-20 L-25,10 L-15,30 L25,20" fill="none"/>
+    <line x1="-50" y1="25" x2="50" y2="25" stroke="#27272a" stroke-width="0.5"/>
+  </g>
+  <rect x="720" y="206" width="210" height="70" rx="0" fill="#18181b"/>
+  <text x="734" y="226" fill="#f4f4f5" font-size="13" font-weight="600">Mounting Bracket</text>
+  <rect x="734" y="234" width="30" height="16" rx="3" fill="rgba(245,158,11,0.12)"/>
+  <text x="740" y="246" fill="#f59e0b" font-size="9" font-weight="600">AMF</text>
+  <text x="772" y="246" fill="#71717a" font-size="10">890 KB</text>
+
+  <!-- Viewer panel (shown as overlay on right half) -->
+  <rect x="400" y="300" width="540" height="230" rx="8" fill="#18181b" stroke="#27272a" stroke-width="1.5"/>
+  <!-- Viewer header -->
+  <rect x="400" y="300" width="540" height="36" rx="8" fill="#27272a"/>
+  <text x="416" y="323" fill="#f4f4f5" font-size="13" font-weight="600">3DBenchy</text>
+  <rect x="490" y="310" width="26" height="16" rx="3" fill="rgba(245,158,11,0.12)"/>
+  <text x="495" y="322" fill="#f59e0b" font-size="9" font-weight="600">STL</text>
+  <rect x="880" y="306" width="50" height="24" rx="6" fill="#27272a" stroke="#3f3f46"/>
+  <text x="892" y="322" fill="#a1a1aa" font-size="10" font-weight="600">Close</text>
+
+  <!-- 3D viewport -->
+  <rect x="406" y="342" width="528" height="160" fill="#09090b" rx="4"/>
+  <!-- Grid floor -->
+  <g stroke="#27272a" stroke-width="0.5" opacity="0.6">
+    <line x1="420" y1="480" x2="920" y2="480"/>
+    <line x1="440" y1="490" x2="900" y2="460"/>
+    <line x1="520" y1="490" x2="800" y2="460"/>
+    <line x1="600" y1="490" x2="700" y2="460"/>
+    <line x1="430" y1="470" x2="910" y2="470"/>
+    <line x1="450" y1="460" x2="890" y2="460"/>
+  </g>
+  <!-- 3D benchy in viewer -->
+  <g transform="translate(670,420)" fill="none" stroke="#f59e0b" stroke-width="2">
+    <path d="M-60,15 L-50,-30 L-30,-50 L30,-50 L50,-30 L60,15 Z" fill="#f59e0b" fill-opacity="0.2"/>
+    <path d="M-30,-50 L-30,-70 L-5,-80 L-5,-50" fill="#f59e0b" fill-opacity="0.15" stroke-width="1.5"/>
+    <path d="M-60,15 L60,15" stroke-width="1"/>
+  </g>
+
+  <!-- Viewer info bar -->
+  <rect x="400" y="508" width="540" height="22" rx="0" fill="#18181b"/>
+  <text x="416" y="522" fill="#71717a" font-size="10">Size: 60.0 x 31.0 x 48.0 mm | Triangles: 225,564 | File: 4.2 MB</text>
+
+  <!-- Drop zone hint (subtle) -->
+  <text x="140" y="340" fill="#3f3f46" font-size="12" text-anchor="middle">Drag &amp; drop files</text>
+  <text x="140" y="358" fill="#3f3f46" font-size="10" text-anchor="middle">STL, 3MF, AMF, OBJ, G-code</text>
+</svg>

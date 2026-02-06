@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <!-- Background -->
+  <rect width="960" height="540" fill="#09090b"/>
+
+  <!-- Header -->
+  <rect width="960" height="56" fill="#18181b"/>
+  <rect y="56" width="960" height="1" fill="#27272a"/>
+  <text x="42" y="35" fill="#f59e0b" font-size="18" font-weight="700">Datasheet Search</text>
+  <text x="210" y="35" fill="#71717a" font-size="12">Find component datasheets from multiple sources</text>
+
+  <!-- Search bar -->
+  <rect x="180" y="80" width="600" height="44" rx="8" fill="#18181b" stroke="#27272a" stroke-width="1.5"/>
+  <text x="210" y="107" fill="#71717a" font-size="14">Search by part number, e.g. LM7805, NE555...</text>
+  <rect x="690" y="86" width="80" height="32" rx="6" fill="#f59e0b"/>
+  <text x="714" y="107" fill="#09090b" font-size="12" font-weight="600">Search</text>
+
+  <!-- Tabs -->
+  <rect x="180" y="138" width="80" height="30" rx="6" fill="#f59e0b"/>
+  <text x="202" y="157" fill="#09090b" font-size="11" font-weight="600">Browse</text>
+  <rect x="268" y="138" width="80" height="30" rx="6" fill="#27272a"/>
+  <text x="290" y="157" fill="#a1a1aa" font-size="11" font-weight="600">History</text>
+  <rect x="356" y="138" width="100" height="30" rx="6" fill="#27272a"/>
+  <text x="372" y="157" fill="#a1a1aa" font-size="11" font-weight="600">Bookmarks</text>
+
+  <!-- Popular Components -->
+  <text x="180" y="200" fill="#a1a1aa" font-size="12" font-weight="600" letter-spacing="0.5">POPULAR COMPONENTS</text>
+  <!-- Chips -->
+  <rect x="180" y="210" width="70" height="26" rx="13" fill="#27272a" stroke="#3f3f46"/>
+  <text x="197" y="228" fill="#f4f4f5" font-size="11">NE555</text>
+  <rect x="258" y="210" width="76" height="26" rx="13" fill="#27272a" stroke="#3f3f46"/>
+  <text x="273" y="228" fill="#f4f4f5" font-size="11">LM7805</text>
+  <rect x="342" y="210" width="100" height="26" rx="13" fill="#27272a" stroke="#3f3f46"/>
+  <text x="355" y="228" fill="#f4f4f5" font-size="11">ATmega328P</text>
+  <rect x="450" y="210" width="84" height="26" rx="13" fill="#27272a" stroke="#3f3f46"/>
+  <text x="464" y="228" fill="#f4f4f5" font-size="11">LM358N</text>
+  <rect x="542" y="210" width="90" height="26" rx="13" fill="#27272a" stroke="#3f3f46"/>
+  <text x="555" y="228" fill="#f4f4f5" font-size="11">ESP32-S3</text>
+  <rect x="640" y="210" width="86" height="26" rx="13" fill="#27272a" stroke="#3f3f46"/>
+  <text x="653" y="228" fill="#f4f4f5" font-size="11">STM32F4</text>
+
+  <rect x="180" y="242" width="80" height="26" rx="13" fill="#27272a" stroke="#3f3f46"/>
+  <text x="193" y="260" fill="#f4f4f5" font-size="11">IRF540N</text>
+  <rect x="268" y="242" width="80" height="26" rx="13" fill="#27272a" stroke="#3f3f46"/>
+  <text x="282" y="260" fill="#f4f4f5" font-size="11">2N2222</text>
+  <rect x="356" y="242" width="84" height="26" rx="13" fill="#27272a" stroke="#3f3f46"/>
+  <text x="370" y="260" fill="#f4f4f5" font-size="11">LM317T</text>
+  <rect x="448" y="242" width="80" height="26" rx="13" fill="#27272a" stroke="#3f3f46"/>
+  <text x="462" y="260" fill="#f4f4f5" font-size="11">TL072</text>
+
+  <!-- Categories grid -->
+  <text x="180" y="300" fill="#a1a1aa" font-size="12" font-weight="600" letter-spacing="0.5">CATEGORIES</text>
+
+  <!-- Category card 1 -->
+  <rect x="180" y="312" width="184" height="96" rx="8" fill="#18181b" stroke="#27272a"/>
+  <text x="200" y="338" fill="#f59e0b" font-size="13" font-weight="600">Voltage Regulators</text>
+  <text x="200" y="356" fill="#71717a" font-size="11">LM7805, LM317, LDO</text>
+  <text x="200" y="374" fill="#a1a1aa" font-size="10">LM7805 LM7812 LM317T</text>
+  <text x="200" y="390" fill="#a1a1aa" font-size="10">AMS1117 LM1117 LM2596</text>
+
+  <!-- Category card 2 -->
+  <rect x="380" y="312" width="184" height="96" rx="8" fill="#18181b" stroke="#27272a"/>
+  <text x="400" y="338" fill="#f59e0b" font-size="13" font-weight="600">Op-Amps &amp; Audio</text>
+  <text x="400" y="356" fill="#71717a" font-size="11">LM358, TL072, NE5532</text>
+  <text x="400" y="374" fill="#a1a1aa" font-size="10">LM358 LM741 TL072</text>
+  <text x="400" y="390" fill="#a1a1aa" font-size="10">NE5532 OPA2134 LM386</text>
+
+  <!-- Category card 3 -->
+  <rect x="580" y="312" width="184" height="96" rx="8" fill="#18181b" stroke="#27272a"/>
+  <text x="600" y="338" fill="#f59e0b" font-size="13" font-weight="600">Microcontrollers</text>
+  <text x="600" y="356" fill="#71717a" font-size="11">ATmega, STM32, ESP32</text>
+  <text x="600" y="374" fill="#a1a1aa" font-size="10">ATmega328P ATtiny85</text>
+  <text x="600" y="390" fill="#a1a1aa" font-size="10">STM32F103 ESP32-S3</text>
+
+  <!-- Category card 4 -->
+  <rect x="180" y="424" width="184" height="96" rx="8" fill="#18181b" stroke="#27272a"/>
+  <text x="200" y="450" fill="#f59e0b" font-size="13" font-weight="600">LED Drivers</text>
+  <text x="200" y="468" fill="#71717a" font-size="11">WS2812B, TLC5940</text>
+  <text x="200" y="486" fill="#a1a1aa" font-size="10">WS2812B TLC5940</text>
+  <text x="200" y="502" fill="#a1a1aa" font-size="10">MAX7219 PCA9685</text>
+
+  <!-- Category card 5 -->
+  <rect x="380" y="424" width="184" height="96" rx="8" fill="#18181b" stroke="#27272a"/>
+  <text x="400" y="450" fill="#f59e0b" font-size="13" font-weight="600">Transistors &amp; MOSFETs</text>
+  <text x="400" y="468" fill="#71717a" font-size="11">2N2222, IRF540N</text>
+  <text x="400" y="486" fill="#a1a1aa" font-size="10">2N2222 2N3904 BC547</text>
+  <text x="400" y="502" fill="#a1a1aa" font-size="10">IRF540N IRFZ44N</text>
+
+  <!-- Category card 6 -->
+  <rect x="580" y="424" width="184" height="96" rx="8" fill="#18181b" stroke="#27272a"/>
+  <text x="600" y="450" fill="#f59e0b" font-size="13" font-weight="600">Sensors</text>
+  <text x="600" y="468" fill="#71717a" font-size="11">DHT22, BMP280, MPU6050</text>
+  <text x="600" y="486" fill="#a1a1aa" font-size="10">DHT22 BMP280 BME280</text>
+  <text x="600" y="502" fill="#a1a1aa" font-size="10">MPU6050 ACS712</text>
+</svg>

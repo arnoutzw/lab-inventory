@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <!-- Background -->
+  <rect width="960" height="540" fill="#09090b"/>
+
+  <!-- Header bar -->
+  <rect y="0" width="960" height="56" fill="#18181b"/>
+  <rect y="56" width="960" height="1" fill="#27272a"/>
+  <!-- Logo -->
+  <text x="20" y="35" fill="#f59e0b" font-size="16" font-weight="700">Maker Portfolio</text>
+  <text x="170" y="35" fill="#71717a" font-size="12">Building things that work (mostly)</text>
+
+  <!-- Nav tabs -->
+  <rect x="20" y="14" width="0" height="0" rx="6"/>
+  <rect x="520" y="14" width="120" height="30" rx="6" fill="#f59e0b"/>
+  <text x="546" y="34" fill="#09090b" font-size="11" font-weight="600">Original Projects</text>
+  <rect x="648" y="14" width="100" height="30" rx="6" fill="#27272a"/>
+  <text x="662" y="34" fill="#a1a1aa" font-size="11" font-weight="600">Label Designer</text>
+  <rect x="756" y="14" width="90" height="30" rx="6" fill="#27272a"/>
+  <text x="772" y="34" fill="#a1a1aa" font-size="11" font-weight="600">Resistor Colors</text>
+  <rect x="854" y="14" width="80" height="30" rx="6" fill="#27272a"/>
+  <text x="871" y="34" fill="#a1a1aa" font-size="11" font-weight="600">3D Models</text>
+
+  <!-- Search bar -->
+  <rect x="20" y="72" width="920" height="40" rx="8" fill="#18181b" stroke="#27272a"/>
+  <text x="44" y="97" fill="#71717a" font-size="13">Search projects...</text>
+
+  <!-- Sort/filter -->
+  <rect x="20" y="124" width="100" height="28" rx="6" fill="#27272a"/>
+  <text x="36" y="142" fill="#a1a1aa" font-size="11">Recently Updated</text>
+
+  <!-- Project cards grid -->
+  <!-- Card 1 -->
+  <rect x="20" y="168" width="296" height="160" rx="8" fill="#18181b" stroke="#27272a"/>
+  <text x="36" y="196" fill="#f59e0b" font-size="14" font-weight="600">smart-greenhouse</text>
+  <text x="36" y="216" fill="#a1a1aa" font-size="12">ESP32-based greenhouse automation</text>
+  <rect x="36" y="230" width="50" height="20" rx="4" fill="#27272a"/>
+  <text x="44" y="244" fill="#22c55e" font-size="10">C++</text>
+  <rect x="92" y="230" width="56" height="20" rx="4" fill="#27272a"/>
+  <text x="100" y="244" fill="#a1a1aa" font-size="10">esp32</text>
+  <rect x="36" y="264" width="264" height="1" fill="#27272a"/>
+  <text x="36" y="282" fill="#71717a" font-size="10">Updated 3 days ago</text>
+  <text x="220" y="282" fill="#71717a" font-size="10">2 stars</text>
+
+  <!-- Card 2 -->
+  <rect x="332" y="168" width="296" height="160" rx="8" fill="#18181b" stroke="#27272a"/>
+  <text x="348" y="196" fill="#f59e0b" font-size="14" font-weight="600">cnc-controller</text>
+  <text x="348" y="216" fill="#a1a1aa" font-size="12">GRBL-based CNC mill controller</text>
+  <rect x="348" y="230" width="60" height="20" rx="4" fill="#27272a"/>
+  <text x="356" y="244" fill="#3b82f6" font-size="10">Python</text>
+  <rect x="414" y="230" width="40" height="20" rx="4" fill="#27272a"/>
+  <text x="422" y="244" fill="#a1a1aa" font-size="10">cnc</text>
+  <rect x="348" y="264" width="264" height="1" fill="#27272a"/>
+  <text x="348" y="282" fill="#71717a" font-size="10">Updated 1 week ago</text>
+  <text x="536" y="282" fill="#71717a" font-size="10">5 stars</text>
+
+  <!-- Card 3 -->
+  <rect x="644" y="168" width="296" height="160" rx="8" fill="#18181b" stroke="#27272a"/>
+  <text x="660" y="196" fill="#f59e0b" font-size="14" font-weight="600">led-matrix-clock</text>
+  <text x="660" y="216" fill="#a1a1aa" font-size="12">WS2812B LED matrix desk clock</text>
+  <rect x="660" y="230" width="70" height="20" rx="4" fill="#27272a"/>
+  <text x="668" y="244" fill="#f59e0b" font-size="10">Arduino</text>
+  <rect x="660" y="264" width="264" height="1" fill="#27272a"/>
+  <text x="660" y="282" fill="#71717a" font-size="10">Updated 2 weeks ago</text>
+
+  <!-- Card row 2 -->
+  <rect x="20" y="344" width="296" height="160" rx="8" fill="#18181b" stroke="#27272a"/>
+  <text x="36" y="372" fill="#f59e0b" font-size="14" font-weight="600">pcb-reflow-oven</text>
+  <text x="36" y="392" fill="#a1a1aa" font-size="12">PID-controlled reflow oven mod</text>
+  <rect x="36" y="406" width="40" height="20" rx="4" fill="#27272a"/>
+  <text x="46" y="420" fill="#ef4444" font-size="10">C</text>
+  <rect x="36" y="440" width="264" height="1" fill="#27272a"/>
+  <text x="36" y="458" fill="#71717a" font-size="10">Updated 1 month ago</text>
+
+  <rect x="332" y="344" width="296" height="160" rx="8" fill="#18181b" stroke="#27272a"/>
+  <text x="348" y="372" fill="#f59e0b" font-size="14" font-weight="600">3d-printer-mods</text>
+  <text x="348" y="392" fill="#a1a1aa" font-size="12">Custom mods for Prusa MK3S+</text>
+  <rect x="348" y="406" width="66" height="20" rx="4" fill="#27272a"/>
+  <text x="356" y="420" fill="#a855f7" font-size="10">OpenSCAD</text>
+  <rect x="348" y="440" width="264" height="1" fill="#27272a"/>
+  <text x="348" y="458" fill="#71717a" font-size="10">Updated 2 months ago</text>
+
+  <rect x="644" y="344" width="296" height="160" rx="8" fill="#18181b" stroke="#27272a"/>
+  <text x="660" y="372" fill="#f59e0b" font-size="14" font-weight="600">power-supply-v2</text>
+  <text x="660" y="392" fill="#a1a1aa" font-size="12">Adjustable bench power supply</text>
+  <rect x="660" y="406" width="60" height="20" rx="4" fill="#27272a"/>
+  <text x="668" y="420" fill="#22c55e" font-size="10">KiCad</text>
+  <rect x="660" y="440" width="264" height="1" fill="#27272a"/>
+  <text x="660" y="458" fill="#71717a" font-size="10">Updated 3 months ago</text>
+</svg>

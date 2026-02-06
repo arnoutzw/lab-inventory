@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 540" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
+  <!-- Background -->
+  <rect width="960" height="540" fill="#09090b"/>
+
+  <!-- Top toolbar -->
+  <rect width="960" height="44" fill="#18181b"/>
+  <rect y="44" width="960" height="1" fill="#27272a"/>
+  <text x="36" y="28" fill="#f59e0b" font-size="15" font-weight="700">Label Designer</text>
+  <text x="180" y="28" fill="#a1a1aa" font-size="12">W</text>
+  <rect x="195" y="12" width="46" height="22" rx="4" fill="#27272a" stroke="#3f3f46"/>
+  <text x="208" y="28" fill="#f4f4f5" font-size="12">62</text>
+  <text x="248" y="28" fill="#a1a1aa" font-size="12">x H</text>
+  <rect x="272" y="12" width="46" height="22" rx="4" fill="#27272a" stroke="#3f3f46"/>
+  <text x="285" y="28" fill="#f4f4f5" font-size="12">29</text>
+  <text x="326" y="28" fill="#71717a" font-size="12">mm</text>
+  <text x="380" y="28" fill="#a1a1aa" font-size="12">300%</text>
+  <rect x="416" y="12" width="20" height="22" rx="4" fill="#27272a"/>
+  <text x="421" y="28" fill="#a1a1aa" font-size="14">+</text>
+  <!-- Grid toggle -->
+  <rect x="450" y="14" width="14" height="14" rx="2" fill="#f59e0b" stroke="#f59e0b"/>
+  <text x="468" y="28" fill="#a1a1aa" font-size="12">Grid</text>
+  <!-- Export -->
+  <rect x="830" y="10" width="110" height="26" rx="6" fill="#f59e0b"/>
+  <text x="850" y="28" fill="#09090b" font-size="12" font-weight="600">Export PNG</text>
+
+  <!-- Left sidebar -->
+  <rect x="0" y="45" width="160" height="495" fill="#18181b"/>
+  <rect x="160" y="45" width="1" height="495" fill="#27272a"/>
+
+  <!-- Tools -->
+  <text x="14" y="72" fill="#71717a" font-size="10" font-weight="600" letter-spacing="0.5">TOOLS</text>
+  <rect x="10" y="80" width="140" height="28" rx="6" fill="#f59e0b"/>
+  <text x="38" y="98" fill="#09090b" font-size="12" font-weight="600">Select</text>
+  <text x="38" y="124" fill="#a1a1aa" font-size="12">Add Text</text>
+
+  <!-- Barcodes -->
+  <text x="14" y="152" fill="#71717a" font-size="10" font-weight="600" letter-spacing="0.5">BARCODES</text>
+  <text x="38" y="172" fill="#a1a1aa" font-size="12">CODE 128</text>
+  <text x="38" y="192" fill="#a1a1aa" font-size="12">UPC-A</text>
+  <text x="38" y="212" fill="#a1a1aa" font-size="12">EAN-13</text>
+  <text x="38" y="232" fill="#a1a1aa" font-size="12">QR Code</text>
+
+  <!-- Shapes -->
+  <text x="14" y="260" fill="#71717a" font-size="10" font-weight="600" letter-spacing="0.5">SHAPES</text>
+  <text x="38" y="280" fill="#a1a1aa" font-size="12">Rectangle</text>
+  <text x="38" y="300" fill="#a1a1aa" font-size="12">Ellipse</text>
+  <text x="38" y="320" fill="#a1a1aa" font-size="12">Line</text>
+
+  <!-- Inventory -->
+  <text x="14" y="352" fill="#71717a" font-size="10" font-weight="600" letter-spacing="0.5">INVENTORY</text>
+  <rect x="10" y="360" width="140" height="28" rx="6" fill="#27272a" stroke="#3f3f46"/>
+  <text x="32" y="378" fill="#a1a1aa" font-size="11">Import Item</text>
+
+  <!-- Layers -->
+  <text x="14" y="412" fill="#71717a" font-size="10" font-weight="600" letter-spacing="0.5">LAYERS</text>
+  <rect x="10" y="420" width="140" height="24" rx="4" fill="#27272a"/>
+  <text x="20" y="436" fill="#f4f4f5" font-size="11">Text: LM7805</text>
+  <rect x="10" y="448" width="140" height="24" rx="4" fill="#f59e0b" opacity="0.15"/>
+  <rect x="10" y="448" width="140" height="24" rx="4" fill="none" stroke="#f59e0b" stroke-width="1"/>
+  <text x="20" y="464" fill="#f59e0b" font-size="11">Barcode: 12NC</text>
+  <rect x="10" y="476" width="140" height="24" rx="4" fill="#27272a"/>
+  <text x="20" y="492" fill="#f4f4f5" font-size="11">Rect: border</text>
+
+  <!-- Canvas area -->
+  <rect x="161" y="45" width="600" height="475" fill="#09090b"/>
+
+  <!-- Label canvas (centered, white) -->
+  <rect x="240" y="120" width="440" height="210" rx="1" fill="#ffffff"/>
+  <!-- Grid lines (subtle) -->
+  <g stroke="#e5e5e5" stroke-width="0.3">
+    <line x1="240" y1="155" x2="680" y2="155"/>
+    <line x1="240" y1="190" x2="680" y2="190"/>
+    <line x1="240" y1="225" x2="680" y2="225"/>
+    <line x1="240" y1="260" x2="680" y2="260"/>
+    <line x1="240" y1="295" x2="680" y2="295"/>
+    <line x1="275" y1="120" x2="275" y2="330"/>
+    <line x1="310" y1="120" x2="310" y2="330"/>
+    <line x1="345" y1="120" x2="345" y2="330"/>
+    <line x1="380" y1="120" x2="380" y2="330"/>
+    <line x1="415" y1="120" x2="415" y2="330"/>
+    <line x1="450" y1="120" x2="450" y2="330"/>
+    <line x1="485" y1="120" x2="485" y2="330"/>
+    <line x1="520" y1="120" x2="520" y2="330"/>
+    <line x1="555" y1="120" x2="555" y2="330"/>
+    <line x1="590" y1="120" x2="590" y2="330"/>
+    <line x1="625" y1="120" x2="625" y2="330"/>
+    <line x1="660" y1="120" x2="660" y2="330"/>
+  </g>
+
+  <!-- Label content: Component label -->
+  <text x="270" y="155" fill="#18181b" font-size="18" font-weight="700">LM7805CT</text>
+  <text x="270" y="178" fill="#71717a" font-size="11">5V Linear Voltage Regulator</text>
+  <!-- Barcode -->
+  <g fill="#18181b">
+    <rect x="270" y="195" width="2" height="50"/><rect x="274" y="195" width="1" height="50"/>
+    <rect x="278" y="195" width="3" height="50"/><rect x="283" y="195" width="1" height="50"/>
+    <rect x="287" y="195" width="2" height="50"/><rect x="291" y="195" width="1" height="50"/>
+    <rect x="295" y="195" width="3" height="50"/><rect x="300" y="195" width="2" height="50"/>
+    <rect x="304" y="195" width="1" height="50"/><rect x="308" y="195" width="2" height="50"/>
+    <rect x="312" y="195" width="3" height="50"/><rect x="317" y="195" width="1" height="50"/>
+    <rect x="321" y="195" width="2" height="50"/><rect x="325" y="195" width="1" height="50"/>
+    <rect x="329" y="195" width="3" height="50"/><rect x="334" y="195" width="2" height="50"/>
+    <rect x="338" y="195" width="1" height="50"/><rect x="342" y="195" width="2" height="50"/>
+    <rect x="347" y="195" width="3" height="50"/><rect x="352" y="195" width="1" height="50"/>
+    <rect x="356" y="195" width="2" height="50"/><rect x="360" y="195" width="1" height="50"/>
+    <rect x="364" y="195" width="3" height="50"/><rect x="369" y="195" width="2" height="50"/>
+    <rect x="373" y="195" width="1" height="50"/><rect x="377" y="195" width="2" height="50"/>
+  </g>
+  <text x="270" y="258" fill="#71717a" font-size="9">4931812345678</text>
+
+  <!-- Selection handles on barcode -->
+  <rect x="267" y="192" width="116" height="70" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <rect x="263" y="188" width="8" height="8" rx="1" fill="#f59e0b"/>
+  <rect x="379" y="188" width="8" height="8" rx="1" fill="#f59e0b"/>
+  <rect x="263" y="258" width="8" height="8" rx="1" fill="#f59e0b"/>
+  <rect x="379" y="258" width="8" height="8" rx="1" fill="#f59e0b"/>
+
+  <!-- Border rectangle shape on label -->
+  <rect x="258" y="130" width="400" height="190" rx="4" fill="none" stroke="#18181b" stroke-width="1.5"/>
+
+  <!-- Right sidebar: Properties -->
+  <rect x="761" y="45" width="199" height="495" fill="#18181b"/>
+  <rect x="761" y="45" width="1" height="495" fill="#27272a"/>
+  <text x="776" y="72" fill="#71717a" font-size="10" font-weight="600" letter-spacing="0.5">PROPERTIES</text>
+
+  <text x="776" y="98" fill="#a1a1aa" font-size="11">Type</text>
+  <text x="870" y="98" fill="#f4f4f5" font-size="11">Barcode</text>
+  <text x="776" y="122" fill="#a1a1aa" font-size="11">Format</text>
+  <text x="870" y="122" fill="#f4f4f5" font-size="11">CODE128</text>
+  <text x="776" y="146" fill="#a1a1aa" font-size="11">X</text>
+  <rect x="802" y="133" width="56" height="20" rx="4" fill="#27272a" stroke="#3f3f46"/>
+  <text x="812" y="148" fill="#f4f4f5" font-size="11">8.5</text>
+  <text x="870" y="146" fill="#a1a1aa" font-size="11">Y</text>
+  <rect x="884" y="133" width="56" height="20" rx="4" fill="#27272a" stroke="#3f3f46"/>
+  <text x="894" y="148" fill="#f4f4f5" font-size="11">21.4</text>
+  <text x="776" y="176" fill="#a1a1aa" font-size="11">W</text>
+  <rect x="802" y="163" width="56" height="20" rx="4" fill="#27272a" stroke="#3f3f46"/>
+  <text x="812" y="178" fill="#f4f4f5" font-size="11">33.1</text>
+  <text x="870" y="176" fill="#a1a1aa" font-size="11">H</text>
+  <rect x="884" y="163" width="56" height="20" rx="4" fill="#27272a" stroke="#3f3f46"/>
+  <text x="894" y="178" fill="#f4f4f5" font-size="11">20.0</text>
+
+  <!-- Status bar -->
+  <rect y="520" width="960" height="20" fill="#18181b"/>
+  <rect y="520" width="960" height="1" fill="#27272a"/>
+  <text x="12" y="535" fill="#71717a" font-size="10">8.5, 21.4 mm</text>
+  <text x="120" y="535" fill="#71717a" font-size="10">62 x 29 mm</text>
+  <text x="220" y="535" fill="#71717a" font-size="10">Zoom 300%</text>
+  <text x="320" y="535" fill="#71717a" font-size="10">Export 300 DPI</text>
+  <text x="910" y="535" fill="#22c55e" font-size="10">Ready</text>
+</svg>
