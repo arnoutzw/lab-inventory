@@ -1603,55 +1603,67 @@ function onKey(e) {
 
 // ----- Inventory Import -----
 const INV_STORAGE_KEY = 'arnout-lab-inventory-v2';
+const INV_DB_NAME = 'lab-inventory-db';
 let invItems = [];
 
 function loadInventoryItems() {
   invItems = [];
-  // Try IndexedDB first, fall back to localStorage
-  const req = indexedDB.open('lab-inventory-db', 1);
-  req.onsuccess = function(e) {
-    try {
-      const db = e.target.result;
-      if (db.objectStoreNames.contains('inventory')) {
-        const tx = db.transaction('inventory', 'readonly');
-        const store = tx.objectStore('inventory');
-        const get = store.get('main');
-        get.onsuccess = function() {
-          if (get.result && get.result.items) {
-            invItems = get.result.items;
-          } else {
-            loadInventoryFromLocalStorage();
-          }
-          renderInventoryList('');
-        };
-        get.onerror = function() {
-          loadInventoryFromLocalStorage();
-          renderInventoryList('');
-        };
-      } else {
-        loadInventoryFromLocalStorage();
-        renderInventoryList('');
-      }
-    } catch (err) {
-      loadInventoryFromLocalStorage();
-      renderInventoryList('');
-    }
-  };
-  req.onerror = function() {
-    loadInventoryFromLocalStorage();
-    renderInventoryList('');
-  };
-}
 
-function loadInventoryFromLocalStorage() {
+  // Try localStorage first (synchronous, always available on same origin)
   try {
     const raw = localStorage.getItem(INV_STORAGE_KEY);
     if (raw) {
       const data = JSON.parse(raw);
-      invItems = data.items || [];
+      invItems = (data.items || []).filter(i => i.name);
     }
+  } catch (e) { /* ignore */ }
+
+  // If localStorage had data, show it immediately then try IndexedDB for fresher data
+  if (invItems.length > 0) {
+    renderInventoryList('');
+    // Also try IndexedDB in background for potentially newer data
+    tryLoadFromIndexedDB(true);
+  } else {
+    // No localStorage data — must try IndexedDB
+    tryLoadFromIndexedDB(false);
+  }
+}
+
+function tryLoadFromIndexedDB(hasLocalData) {
+  try {
+    // Open without version to avoid triggering onupgradeneeded
+    const req = indexedDB.open(INV_DB_NAME);
+    req.onsuccess = function(e) {
+      try {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('inventory')) {
+          db.close();
+          if (!hasLocalData) renderInventoryList('');
+          return;
+        }
+        const tx = db.transaction('inventory', 'readonly');
+        const store = tx.objectStore('inventory');
+        const get = store.get('main');
+        get.onsuccess = function() {
+          if (get.result && get.result.items && get.result.items.length > 0) {
+            invItems = get.result.items.filter(i => i.name);
+          }
+          db.close();
+          renderInventoryList('');
+        };
+        get.onerror = function() {
+          db.close();
+          if (!hasLocalData) renderInventoryList('');
+        };
+      } catch (err) {
+        if (!hasLocalData) renderInventoryList('');
+      }
+    };
+    req.onerror = function() {
+      if (!hasLocalData) renderInventoryList('');
+    };
   } catch (e) {
-    invItems = [];
+    if (!hasLocalData) renderInventoryList('');
   }
 }
 
