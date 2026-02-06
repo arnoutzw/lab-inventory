@@ -557,7 +557,7 @@
                             <option value="1000000">MΩ</option>
                         </select>
                     </div>
-                    <input type="range" id="resistanceSlider" min="0.1" max="1000000" value="1000" style="margin-top: 0.5rem;">
+                    <input type="range" id="resistanceSlider" min="0" max="1" value="0.5" step="0.001" style="margin-top: 0.5rem;">
                 </div>
 
                 <!-- Inductance Input -->
@@ -572,7 +572,7 @@
                             <option value="0.000000001">nH</option>
                         </select>
                     </div>
-                    <input type="range" id="inductanceSlider" min="0.000001" max="100" value="0.001" style="margin-top: 0.5rem;">
+                    <input type="range" id="inductanceSlider" min="0" max="1" value="0.5" step="0.001" style="margin-top: 0.5rem;">
                 </div>
 
                 <!-- Capacitance Input -->
@@ -587,7 +587,7 @@
                             <option value="0.000000000001">pF</option>
                         </select>
                     </div>
-                    <input type="range" id="capacitanceSlider" min="0.000000000001" max="0.1" value="0.000001" style="margin-top: 0.5rem;">
+                    <input type="range" id="capacitanceSlider" min="0" max="1" value="0.5" step="0.001" style="margin-top: 0.5rem;">
                 </div>
 
                 <!-- Input Voltage -->
@@ -610,7 +610,7 @@
                             <option value="1000000">MHz</option>
                         </select>
                     </div>
-                    <input type="range" id="frequencySlider" min="0.1" max="1000000" value="1000" style="margin-top: 0.5rem;">
+                    <input type="range" id="frequencySlider" min="0" max="1" value="0.5" step="0.001" style="margin-top: 0.5rem;">
                 </div>
             </div>
 
@@ -1735,13 +1735,16 @@
                     `L = <span class="val">${formatEngineering(L, 'H')}</span>, ` +
                     `C = <span class="val">${formatEngineering(C, 'F')}</span></div>`;
 
-                // Update component inputs to match
+                // Update component inputs and sliders to match
                 document.getElementById('resistance').value = R;
                 document.getElementById('resistanceUnit').value = '1';
+                document.getElementById('resistanceSlider').value = valueToSlider('resistance', R);
                 document.getElementById('inductance').value = L;
                 document.getElementById('inductanceUnit').value = '1';
+                document.getElementById('inductanceSlider').value = valueToSlider('inductance', L);
                 document.getElementById('capacitance').value = C;
                 document.getElementById('capacitanceUnit').value = '1';
+                document.getElementById('capacitanceSlider').value = valueToSlider('capacitance', C);
 
                 // Update results grid
                 const grid = document.getElementById('resultsGrid');
@@ -1862,30 +1865,55 @@
             });
         });
 
-        // Input synchronization
+        // Log-mapped slider synchronization
+        const sliderRanges = {
+            resistance:  { min: 0.1,  max: 1e7  },   // 0.1 Ω – 10 MΩ
+            inductance:  { min: 1e-9, max: 100   },   // 1 nH – 100 H
+            capacitance: { min: 1e-13, max: 0.1  },   // 0.1 pF – 100 mF
+            frequency:   { min: 0.1,  max: 1e9   }    // 0.1 Hz – 1 GHz
+        };
+
+        function valueToSlider(param, baseValue) {
+            const { min, max } = sliderRanges[param];
+            const v = Math.max(min, Math.min(max, baseValue));
+            return (Math.log10(v) - Math.log10(min)) / (Math.log10(max) - Math.log10(min));
+        }
+
+        function sliderToValue(param, t) {
+            const { min, max } = sliderRanges[param];
+            return Math.pow(10, Math.log10(min) + t * (Math.log10(max) - Math.log10(min)));
+        }
+
         const syncInputs = [
-            { input: 'resistance', slider: 'resistanceSlider', unit: 'resistanceUnit' },
-            { input: 'inductance', slider: 'inductanceSlider', unit: 'inductanceUnit' },
-            { input: 'capacitance', slider: 'capacitanceSlider', unit: 'capacitanceUnit' },
-            { input: 'frequency', slider: 'frequencySlider', unit: 'frequencyUnit' }
+            { input: 'resistance', slider: 'resistanceSlider', unit: 'resistanceUnit', param: 'resistance' },
+            { input: 'inductance', slider: 'inductanceSlider', unit: 'inductanceUnit', param: 'inductance' },
+            { input: 'capacitance', slider: 'capacitanceSlider', unit: 'capacitanceUnit', param: 'capacitance' },
+            { input: 'frequency', slider: 'frequencySlider', unit: 'frequencyUnit', param: 'frequency' }
         ];
 
-        syncInputs.forEach(({ input, slider, unit }) => {
+        syncInputs.forEach(({ input, slider, unit, param }) => {
             document.getElementById(input).addEventListener('input', () => {
                 const val = parseFloat(document.getElementById(input).value) || 0;
                 const unitVal = parseFloat(document.getElementById(unit).value) || 1;
-                document.getElementById(slider).value = val * unitVal;
+                const baseVal = val * unitVal;
+                document.getElementById(slider).value = valueToSlider(param, baseVal);
                 updateCircuitDisplay();
             });
 
             document.getElementById(slider).addEventListener('input', () => {
-                const val = parseFloat(document.getElementById(slider).value) || 0;
+                const baseVal = sliderToValue(param, parseFloat(document.getElementById(slider).value));
                 const unitVal = parseFloat(document.getElementById(unit).value) || 1;
-                document.getElementById(input).value = (val / unitVal).toPrecision(4);
+                document.getElementById(input).value = (baseVal / unitVal).toPrecision(4);
                 updateCircuitDisplay();
             });
 
-            document.getElementById(unit).addEventListener('change', updateCircuitDisplay);
+            document.getElementById(unit).addEventListener('change', () => {
+                // Re-sync input display from slider position when unit changes
+                const baseVal = sliderToValue(param, parseFloat(document.getElementById(slider).value));
+                const unitVal = parseFloat(document.getElementById(unit).value) || 1;
+                document.getElementById(input).value = (baseVal / unitVal).toPrecision(4);
+                updateCircuitDisplay();
+            });
         });
 
         document.getElementById('voltage').addEventListener('input', updateCircuitDisplay);
@@ -1951,6 +1979,12 @@
         // ============================================================================
 
         document.addEventListener('DOMContentLoaded', () => {
+            // Set initial slider positions from default input values
+            syncInputs.forEach(({ input, slider, unit, param }) => {
+                const val = parseFloat(document.getElementById(input).value) || 0;
+                const unitVal = parseFloat(document.getElementById(unit).value) || 1;
+                document.getElementById(slider).value = valueToSlider(param, val * unitVal);
+            });
             updateCircuitDisplay();
 
             // Make tab-button responsive
