@@ -1615,9 +1615,9 @@ window.INVENTORY_DATABASE = {"version": "1.0", "created": "2026-01-31", "stats":
 
             useEffect(() => {
                 if (!loading && items.length > 0) {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify({ boxes, items }));
                     dbPut('inventory', { id: 'main', boxes, items }).catch(err => {
                         console.error('IndexedDB save error:', err);
-                        localStorage.setItem(STORAGE_KEY, JSON.stringify({ boxes, items }));
                     });
                 }
             }, [items, boxes, loading]);

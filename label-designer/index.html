@@ -253,6 +253,22 @@ body {
   inset: 0;
   overflow: visible;
 }
+/* Resize handles */
+.resize-handle {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  border: 1px solid #fff;
+  border-radius: 2px;
+  display: none;
+  z-index: 10;
+}
+.canvas-element.sel .resize-handle { display: block; }
+.resize-handle.rh-se { bottom: -4px; right: -4px; cursor: se-resize; }
+.resize-handle.rh-sw { bottom: -4px; left: -4px; cursor: sw-resize; }
+.resize-handle.rh-ne { top: -4px; right: -4px; cursor: ne-resize; }
+.resize-handle.rh-nw { top: -4px; left: -4px; cursor: nw-resize; }
 .canvas-info {
   position: absolute;
   bottom: 8px;
@@ -616,10 +632,6 @@ body {
       </button>
     </div>
     <div class="sb-section">
-      <div class="sb-title">Inventory</div>
-      <button class="tool-btn" id="btn-inv-import">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" opacity=".8"><rect x="2" y="1" width="12" height="3" rx="1"/><rect x="2" y="6" width="12" height="3" rx="1"/><rect x="2" y="11" width="12" height="3" rx="1"/><circle cx="13" cy="13" r="3" fill="var(--accent)"/><path d="M12 13h2M13 12v2" stroke="var(--bg-0)" stroke-width="1.2"/></svg>
-        Import Item
       <div class="sb-title">Shapes</div>
       <button class="tool-btn" data-tool="shape-rect">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="10" rx="1"/></svg>
@@ -632,6 +644,13 @@ body {
       <button class="tool-btn" data-tool="shape-line">
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="2" y1="14" x2="14" y2="2"/></svg>
         Line
+      </button>
+    </div>
+    <div class="sb-section">
+      <div class="sb-title">Inventory</div>
+      <button class="tool-btn" id="btn-inv-import">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor" opacity=".8"><rect x="2" y="1" width="12" height="3" rx="1"/><rect x="2" y="6" width="12" height="3" rx="1"/><rect x="2" y="11" width="12" height="3" rx="1"/><circle cx="13" cy="13" r="3" fill="var(--accent)"/><path d="M12 13h2M13 12v2" stroke="var(--bg-0)" stroke-width="1.2"/></svg>
+        Import Item
       </button>
     </div>
     <div class="sb-section" style="flex:1">
@@ -870,6 +889,13 @@ function makeNode(el) {
       s.style.boxSizing = 'border-box';
       d.appendChild(s);
     }
+    // Add resize handles
+    ['se','sw','ne','nw'].forEach(pos => {
+      const h = document.createElement('div');
+      h.className = 'resize-handle rh-' + pos;
+      h.dataset.resize = pos;
+      d.appendChild(h);
+    });
   }
   return d;
 }
@@ -976,6 +1002,7 @@ function renderProps() {
 function escHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
+const esc = escHtml;
 
 // ----- Element Operations -----
 function addTextElement(x, y) {
@@ -1161,6 +1188,27 @@ function onCanvasDown(e) {
     finishEditing(true);
   }
 
+  // Check if clicking on a resize handle
+  const resizeHandle = e.target.closest('.resize-handle');
+  if (resizeHandle) {
+    const elDom = resizeHandle.closest('.canvas-element');
+    if (elDom) {
+      const id = elDom.dataset.id;
+      const el = elById(id);
+      if (el) {
+        const rect = canvasEl.getBoundingClientRect();
+        drag = {
+          active: true, id, resize: resizeHandle.dataset.resize,
+          startX: e.clientX, startY: e.clientY,
+          origX: el.x, origY: el.y, origW: el.width, origH: el.height,
+          moved: false, sx: e.clientX, sy: e.clientY,
+        };
+        e.preventDefault();
+        return;
+      }
+    }
+  }
+
   const elDom = e.target.closest('.canvas-element');
   if (elDom) {
     const id = elDom.dataset.id;
@@ -1214,6 +1262,44 @@ function onDocMove(e) {
   if (!drag.moved && (Math.abs(dx) + Math.abs(dy)) > 3) drag.moved = true;
   if (!drag.moved) return;
 
+  // Resize mode
+  if (drag.resize) {
+    const el = elById(drag.id);
+    if (!el) return;
+    const dxMm = pxMm(e.clientX - drag.startX);
+    const dyMm = pxMm(e.clientY - drag.startY);
+    const minW = 1, minH = el.shapeType === 'line' ? 0.1 : 1;
+    if (drag.resize === 'se') {
+      el.width = Math.max(minW, Math.round((drag.origW + dxMm) * 2) / 2);
+      el.height = Math.max(minH, Math.round((drag.origH + dyMm) * 2) / 2);
+    } else if (drag.resize === 'sw') {
+      const newW = Math.max(minW, Math.round((drag.origW - dxMm) * 2) / 2);
+      el.x = Math.round((drag.origX + drag.origW - newW) * 2) / 2;
+      el.width = newW;
+      el.height = Math.max(minH, Math.round((drag.origH + dyMm) * 2) / 2);
+    } else if (drag.resize === 'ne') {
+      el.width = Math.max(minW, Math.round((drag.origW + dxMm) * 2) / 2);
+      const newH = Math.max(minH, Math.round((drag.origH - dyMm) * 2) / 2);
+      el.y = Math.round((drag.origY + drag.origH - newH) * 2) / 2;
+      el.height = newH;
+    } else if (drag.resize === 'nw') {
+      const newW = Math.max(minW, Math.round((drag.origW - dxMm) * 2) / 2);
+      const newH = Math.max(minH, Math.round((drag.origH - dyMm) * 2) / 2);
+      el.x = Math.round((drag.origX + drag.origW - newW) * 2) / 2;
+      el.y = Math.round((drag.origY + drag.origH - newH) * 2) / 2;
+      el.width = newW;
+      el.height = newH;
+    }
+    const dom = canvasEl.querySelector(`[data-id="${drag.id}"]`);
+    if (dom) {
+      dom.style.left = mmPx(el.x) + 'px';
+      dom.style.top = mmPx(el.y) + 'px';
+      dom.style.width = mmPx(el.width) + 'px';
+      dom.style.height = mmPx(el.height) + 'px';
+    }
+    return;
+  }
+
   const crect = canvasEl.getBoundingClientRect();
   let x = pxMm(e.clientX - crect.left - drag.ox);
   let y = pxMm(e.clientY - crect.top - drag.oy);
@@ -1234,7 +1320,10 @@ function onDocMove(e) {
 
 function onDocUp(e) {
   if (drag.active) {
-    if (drag.moved) renderProps(); // Update position in props
+    if (drag.moved) {
+      if (drag.resize) renderCanvas(); // Full re-render after resize
+      renderProps();
+    }
     drag.active = false;
   }
 }
@@ -1520,6 +1609,37 @@ function printLabel() {
           ctx.drawImage(bcv, x, y, w, h);
         } catch (e) { console.warn('Barcode print error', e); }
       }
+    } else if (el.type === 'shape') {
+      const w = el.width * ppm;
+      const h = el.height * ppm;
+      const sw = (el.strokeWidth || 0.3) * ppm;
+
+      if (el.shapeType === 'rect') {
+        ctx.fillStyle = hexToRgba(el.fill || '#000', el.fillOpacity ?? 0.1);
+        if (el.borderRadius > 0) {
+          const r = el.borderRadius * ppm;
+          roundRect(ctx, x, y, w, h, r);
+          ctx.fill();
+          if (sw > 0) { ctx.strokeStyle = el.stroke || '#000'; ctx.lineWidth = sw; ctx.stroke(); }
+        } else {
+          ctx.fillRect(x, y, w, h);
+          if (sw > 0) { ctx.strokeStyle = el.stroke || '#000'; ctx.lineWidth = sw; ctx.strokeRect(x, y, w, h); }
+        }
+      } else if (el.shapeType === 'ellipse') {
+        ctx.beginPath();
+        ctx.ellipse(x + w / 2, y + h / 2, w / 2, h / 2, 0, 0, Math.PI * 2);
+        ctx.fillStyle = hexToRgba(el.fill || '#000', el.fillOpacity ?? 0.1);
+        ctx.fill();
+        if (sw > 0) { ctx.strokeStyle = el.stroke || '#000'; ctx.lineWidth = sw; ctx.stroke(); }
+      } else if (el.shapeType === 'line') {
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.lineTo(x + w, y + h);
+        ctx.strokeStyle = el.stroke || '#000';
+        ctx.lineWidth = sw;
+        ctx.lineCap = 'round';
+        ctx.stroke();
+      }
     }
   }
 
@@ -1603,13 +1723,10 @@ function onKey(e) {
 
 // ----- Inventory Import -----
 const INV_STORAGE_KEY = 'arnout-lab-inventory-v2';
-const INV_DB_NAME = 'lab-inventory-db';
 let invItems = [];
 
 function loadInventoryItems() {
   invItems = [];
-
-  // Try localStorage first (synchronous, always available on same origin)
   try {
     const raw = localStorage.getItem(INV_STORAGE_KEY);
     if (raw) {
@@ -1617,54 +1734,7 @@ function loadInventoryItems() {
       invItems = (data.items || []).filter(i => i.name);
     }
   } catch (e) { /* ignore */ }
-
-  // If localStorage had data, show it immediately then try IndexedDB for fresher data
-  if (invItems.length > 0) {
-    renderInventoryList('');
-    // Also try IndexedDB in background for potentially newer data
-    tryLoadFromIndexedDB(true);
-  } else {
-    // No localStorage data — must try IndexedDB
-    tryLoadFromIndexedDB(false);
-  }
-}
-
-function tryLoadFromIndexedDB(hasLocalData) {
-  try {
-    // Open without version to avoid triggering onupgradeneeded
-    const req = indexedDB.open(INV_DB_NAME);
-    req.onsuccess = function(e) {
-      try {
-        const db = e.target.result;
-        if (!db.objectStoreNames.contains('inventory')) {
-          db.close();
-          if (!hasLocalData) renderInventoryList('');
-          return;
-        }
-        const tx = db.transaction('inventory', 'readonly');
-        const store = tx.objectStore('inventory');
-        const get = store.get('main');
-        get.onsuccess = function() {
-          if (get.result && get.result.items && get.result.items.length > 0) {
-            invItems = get.result.items.filter(i => i.name);
-          }
-          db.close();
-          renderInventoryList('');
-        };
-        get.onerror = function() {
-          db.close();
-          if (!hasLocalData) renderInventoryList('');
-        };
-      } catch (err) {
-        if (!hasLocalData) renderInventoryList('');
-      }
-    };
-    req.onerror = function() {
-      if (!hasLocalData) renderInventoryList('');
-    };
-  } catch (e) {
-    if (!hasLocalData) renderInventoryList('');
-  }
+  renderInventoryList('');
 }
 
 function renderInventoryList(query) {
