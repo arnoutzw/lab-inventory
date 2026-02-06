@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#1a365d">
+<meta name="theme-color" content="#09090b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="EngCalc">
@@ -16,20 +16,20 @@
 :root {
   --sidebar-w: 300px;
   --header-h: 56px;
-  --bg: #f0f2f5;
-  --sidebar-bg: #1a2332;
-  --sidebar-hover: #243044;
-  --sidebar-active: #2c5282;
-  --accent: #3b82f6;
-  --accent-light: #60a5fa;
-  --text: #e2e8f0;
-  --text-muted: #94a3b8;
-  --card-bg: #fff;
-  --card-border: #e2e8f0;
-  --input-bg: #f8fafc;
-  --input-border: #cbd5e1;
-  --output-bg: #f0fdf4;
-  --output-border: #86efac;
+  --bg: #09090b;
+  --sidebar-bg: #18181b;
+  --sidebar-hover: #27272a;
+  --sidebar-active: rgba(245,158,11,0.15);
+  --accent: #f59e0b;
+  --accent-light: #fbbf24;
+  --text: #f4f4f5;
+  --text-muted: #a1a1aa;
+  --card-bg: #18181b;
+  --card-border: #3f3f46;
+  --input-bg: #27272a;
+  --input-border: #3f3f46;
+  --output-bg: #052e16;
+  --output-border: #22c55e;
   --cat-contact: #3b82f6;
   --cat-bearing-roll: #22c55e;
   --cat-bearing-hydro: #06b6d4;
@@ -46,7 +46,7 @@
 body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: var(--bg); overflow: hidden; height: 100vh; width: 100vw; }
 
 /* HEADER */
-.header { position: fixed; top: 0; left: 0; right: 0; height: var(--header-h); background: linear-gradient(135deg, #1a365d, #2c5282); display: flex; align-items: center; padding: 0 16px; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
+.header { position: fixed; top: 0; left: 0; right: 0; height: var(--header-h); background: #18181b; display: flex; align-items: center; padding: 0 16px; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.4); border-bottom: 1px solid #3f3f46; }
 .menu-btn { width: 40px; height: 40px; background: none; border: none; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: background .15s; flex-shrink: 0; }
 .menu-btn:hover { background: rgba(255,255,255,.1); }
 .menu-btn svg { width: 24px; height: 24px; }
@@ -56,9 +56,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
 .header-badge { background: rgba(255,255,255,.15); color: rgba(255,255,255,.8); font-size: .7rem; padding: 3px 10px; border-radius: 12px; white-space: nowrap; }
 
 /* SIDEBAR */
-.sidebar { position: fixed; top: var(--header-h); left: 0; bottom: 0; width: var(--sidebar-w); background: var(--sidebar-bg); overflow-y: auto; overflow-x: hidden; z-index: 90; transition: transform .25s cubic-bezier(.4,0,.2,1); scrollbar-width: thin; scrollbar-color: #475569 transparent; }
+.sidebar { position: fixed; top: var(--header-h); left: 0; bottom: 0; width: var(--sidebar-w); background: var(--sidebar-bg); overflow-y: auto; overflow-x: hidden; z-index: 90; transition: transform .25s cubic-bezier(.4,0,.2,1); scrollbar-width: thin; scrollbar-color: #3f3f46 transparent; }
 .sidebar::-webkit-scrollbar { width: 6px; }
-.sidebar::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+.sidebar::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 3px; }
 .sidebar.collapsed { transform: translateX(-100%); }
 .sidebar-search { padding: 12px 14px 8px; position: sticky; top: 0; background: var(--sidebar-bg); z-index: 5; }
 .sidebar-search input { width: 100%; padding: 8px 12px 8px 36px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.1); border-radius: 8px; color: var(--text); font-size: .85rem; outline: none; transition: border-color .15s; }
@@ -76,7 +76,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
 .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 32px; cursor: pointer; color: var(--text); font-size: .85rem; transition: background .12s; border-left: 3px solid transparent; text-decoration: none; }
 .nav-item:hover { background: var(--sidebar-hover); }
 .nav-item.active { background: var(--sidebar-active); border-left-color: var(--accent-light); color: white; }
-.nav-code { font-family: 'SF Mono','Fira Code',monospace; font-size: .7rem; color: var(--accent-light); background: rgba(59,130,246,.15); padding: 1px 6px; border-radius: 4px; flex-shrink: 0; }
+.nav-code { font-family: 'SF Mono','Fira Code',monospace; font-size: .7rem; color: var(--accent-light); background: rgba(245,158,11,.15); padding: 1px 6px; border-radius: 4px; flex-shrink: 0; }
 .nav-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 /* MAIN */
@@ -86,23 +86,23 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
 /* WELCOME */
 .welcome { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100%; padding: 32px; text-align: center; }
 .welcome.hidden { display: none; }
-.welcome-icon { width: 80px; height: 80px; background: linear-gradient(135deg, #2c5282, #3b82f6); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 8px 24px rgba(59,130,246,.25); }
+.welcome-icon { width: 80px; height: 80px; background: linear-gradient(135deg, #92400e, #f59e0b); border-radius: 20px; display: flex; align-items: center; justify-content: center; margin-bottom: 24px; box-shadow: 0 8px 24px rgba(245,158,11,.25); }
 .welcome-icon svg { width: 40px; height: 40px; color: white; }
-.welcome h2 { font-size: 1.6rem; color: #1a2332; margin-bottom: 8px; }
-.welcome p { color: #64748b; max-width: 480px; font-size: .95rem; line-height: 1.6; }
+.welcome h2 { font-size: 1.6rem; color: #f4f4f5; margin-bottom: 8px; }
+.welcome p { color: #a1a1aa; max-width: 480px; font-size: .95rem; line-height: 1.6; }
 .quick-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-top: 28px; max-width: 640px; width: 100%; }
-.quick-card { background: white; border-radius: 10px; padding: 14px; cursor: pointer; text-align: center; border: 1px solid #e2e8f0; transition: box-shadow .15s, transform .1s; }
-.quick-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.08); transform: translateY(-2px); }
+.quick-card { background: #18181b; border-radius: 10px; padding: 14px; cursor: pointer; text-align: center; border: 1px solid #3f3f46; transition: box-shadow .15s, transform .1s, border-color .15s; }
+.quick-card:hover { box-shadow: 0 4px 12px rgba(245,158,11,.1); transform: translateY(-2px); border-color: #f59e0b; }
 .quick-card .qc-icon { font-size: 1.3rem; margin-bottom: 6px; }
-.quick-card .qc-label { font-size: .78rem; color: #475569; font-weight: 500; }
+.quick-card .qc-label { font-size: .78rem; color: #a1a1aa; font-weight: 500; }
 
 /* CALCULATOR PANELS */
 .calc-panel { display: none; padding: 24px; max-width: 860px; margin: 0 auto; }
 .calc-panel.active { display: block; }
-.calc-title { font-size: 1.3rem; font-weight: 700; color: #1a2332; margin-bottom: 4px; }
-.calc-desc { color: #64748b; font-size: .9rem; margin-bottom: 20px; line-height: 1.5; }
+.calc-title { font-size: 1.3rem; font-weight: 700; color: #f4f4f5; margin-bottom: 4px; }
+.calc-desc { color: #a1a1aa; font-size: .9rem; margin-bottom: 20px; line-height: 1.5; }
 .calc-section { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 20px; margin-bottom: 16px; }
-.calc-section h3 { font-size: .85rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.calc-section h3 { font-size: .85rem; font-weight: 700; color: #a1a1aa; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
 .calc-section h3 .dot { width: 8px; height: 8px; border-radius: 50%; }
 .input-dot { background: var(--accent); }
 .output-dot { background: #22c55e; }
@@ -110,16 +110,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
 
 .field-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
 .field { display: flex; flex-direction: column; }
-.field label { font-size: .78rem; color: #64748b; margin-bottom: 4px; font-weight: 500; }
-.field label .unit { color: #94a3b8; font-weight: 400; }
-.field input, .field select { padding: 8px 10px; border: 1px solid var(--input-border); border-radius: 6px; font-size: .9rem; background: var(--input-bg); outline: none; transition: border-color .15s; }
+.field label { font-size: .78rem; color: #a1a1aa; margin-bottom: 4px; font-weight: 500; }
+.field label .unit { color: #71717a; font-weight: 400; }
+.field input, .field select { padding: 8px 10px; border: 1px solid var(--input-border); border-radius: 6px; font-size: .9rem; background: var(--input-bg); color: #f4f4f5; outline: none; transition: border-color .15s; }
 .field input:focus, .field select:focus { border-color: var(--accent); }
-.field input[readonly] { background: var(--output-bg); border-color: var(--output-border); color: #166534; font-weight: 600; cursor: default; }
-.field input.warn { background: #fef2f2; border-color: #fca5a5; color: #991b1b; }
+.field input[readonly] { background: var(--output-bg); border-color: var(--output-border); color: #4ade80; font-weight: 600; cursor: default; }
+.field input.warn { background: rgba(239,68,68,0.1); border-color: #ef4444; color: #fca5a5; }
 
 .calc-btn { display: inline-flex; align-items: center; gap: 8px; background: var(--accent); color: white; border: none; padding: 10px 24px; border-radius: 8px; font-weight: 600; font-size: .9rem; cursor: pointer; transition: background .15s; margin-top: 8px; }
-.calc-btn:hover { background: #2563eb; }
-.formula-box { background: #faf5ff; border: 1px solid #e9d5ff; border-radius: 8px; padding: 14px 16px; margin-top: 12px; font-family: 'SF Mono','Fira Code',monospace; font-size: .82rem; color: #6b21a8; line-height: 1.7; white-space: pre-wrap; overflow-x: auto; }
+.calc-btn:hover { background: #d97706; }
+.formula-box { background: rgba(168,85,247,0.08); border: 1px solid rgba(124,58,237,0.25); border-radius: 8px; padding: 14px 16px; margin-top: 12px; font-family: 'SF Mono','Fira Code',monospace; font-size: .82rem; color: #c4b5fd; line-height: 1.7; white-space: pre-wrap; overflow-x: auto; }
 
 /* OVERLAY (mobile) */
 .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 85; display: none; cursor: pointer; }
@@ -137,12 +137,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sa
 
 /* REFERENCE TABLE */
 .ref-table { width: 100%; border-collapse: collapse; font-size: .82rem; margin-top: 8px; }
-.ref-table th { background: #f1f5f9; text-align: left; padding: 6px 10px; border-bottom: 2px solid #cbd5e1; font-weight: 600; color: #475569; white-space: nowrap; }
-.ref-table td { padding: 5px 10px; border-bottom: 1px solid #e2e8f0; color: #334155; }
-.ref-table tr:hover td { background: #f8fafc; }
+.ref-table th { background: #27272a; text-align: left; padding: 6px 10px; border-bottom: 2px solid #3f3f46; font-weight: 600; color: #a1a1aa; white-space: nowrap; }
+.ref-table td { padding: 5px 10px; border-bottom: 1px solid #3f3f46; color: #d4d4d8; }
+.ref-table tr:hover td { background: #27272a; }
 
 /* INSTALL BANNER */
-.install-banner { display: none; align-items: center; gap: 12px; background: #1e3a5f; padding: 10px 16px; position: fixed; top: var(--header-h); left: 0; right: 0; z-index: 95; }
+.install-banner { display: none; align-items: center; gap: 12px; background: #27272a; padding: 10px 16px; position: fixed; top: var(--header-h); left: 0; right: 0; z-index: 95; border-bottom: 1px solid #3f3f46; }
 .install-banner.show { display: flex; }
 .install-banner p { color: white; font-size: .85rem; flex: 1; }
 .install-btn { background: var(--accent); color: white; border: none; padding: 6px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: .82rem; }
@@ -798,7 +798,7 @@ const CALCS = [
      ];
      let h = '<table class="ref-table"><tr><th>Material</th><th>E (GPa)</th><th>ν</th><th>Su (MPa)</th><th>Sy (MPa)</th><th>Se (MPa)</th></tr>';
      data.forEach(r=>{h+=`<tr><td>${r[0]}</td><td>${r[1]}</td><td>${r[2]}</td><td>${r[3]}</td><td>${r[4]}</td><td>${r[5]}</td></tr>`;});
-     h+='</table><p style="margin-top:10px;font-size:.78rem;color:#94a3b8;">E = Young\'s modulus, ν = Poisson\'s ratio, Su = ultimate tensile, Sy = yield, Se ≈ endurance limit (rotating bending)</p>';
+     h+='</table><p style="margin-top:10px;font-size:.78rem;color:#a1a1aa;">E = Young\'s modulus, ν = Poisson\'s ratio, Su = ultimate tensile, Sy = yield, Se ≈ endurance limit (rotating bending)</p>';
      return h;
    },
    formula:'Se ≈ 0.5·Su for Su ≤ 1400 MPa (steels)\nG = E / (2·(1+ν))'
