@@ -4,13 +4,13 @@
   "description": "Design and print custom labels with text and barcodes",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#0f172a",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
   "orientation": "any",
   "categories": ["productivity", "utilities"],
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='64' fill='%230f172a'/><rect x='96' y='64' width='320' height='384' rx='16' fill='%231e293b' stroke='%233b82f6' stroke-width='8'/><rect x='144' y='120' width='224' height='16' rx='4' fill='%23f1f5f9'/><rect x='144' y='160' width='160' height='12' rx='4' fill='%2394a3b8'/><rect x='144' y='200' width='224' height='120' rx='4' fill='%23fff'/><line x1='170' y1='220' x2='170' y2='300' stroke='%23000' stroke-width='4'/><line x1='182' y1='220' x2='182' y2='300' stroke='%23000' stroke-width='2'/><line x1='190' y1='220' x2='190' y2='300' stroke='%23000' stroke-width='4'/><line x1='200' y1='220' x2='200' y2='300' stroke='%23000' stroke-width='2'/><line x1='210' y1='220' x2='210' y2='300' stroke='%23000' stroke-width='6'/><line x1='224' y1='220' x2='224' y2='300' stroke='%23000' stroke-width='2'/><line x1='232' y1='220' x2='232' y2='300' stroke='%23000' stroke-width='4'/><line x1='244' y1='220' x2='244' y2='300' stroke='%23000' stroke-width='2'/><line x1='252' y1='220' x2='252' y2='300' stroke='%23000' stroke-width='6'/><line x1='266' y1='220' x2='266' y2='300' stroke='%23000' stroke-width='4'/><line x1='278' y1='220' x2='278' y2='300' stroke='%23000' stroke-width='2'/><line x1='286' y1='220' x2='286' y2='300' stroke='%23000' stroke-width='4'/><rect x='144' y='348' width='120' height='12' rx='4' fill='%2394a3b8'/></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='64' fill='%2309090b'/><rect x='96' y='64' width='320' height='384' rx='16' fill='%2318181b' stroke='%23f59e0b' stroke-width='8'/><rect x='144' y='120' width='224' height='16' rx='4' fill='%23f4f4f5'/><rect x='144' y='160' width='160' height='12' rx='4' fill='%23a1a1aa'/><rect x='144' y='200' width='224' height='120' rx='4' fill='%23fff'/><line x1='170' y1='220' x2='170' y2='300' stroke='%23000' stroke-width='4'/><line x1='182' y1='220' x2='182' y2='300' stroke='%23000' stroke-width='2'/><line x1='190' y1='220' x2='190' y2='300' stroke='%23000' stroke-width='4'/><line x1='200' y1='220' x2='200' y2='300' stroke='%23000' stroke-width='2'/><line x1='210' y1='220' x2='210' y2='300' stroke='%23000' stroke-width='6'/><line x1='224' y1='220' x2='224' y2='300' stroke='%23000' stroke-width='2'/><line x1='232' y1='220' x2='232' y2='300' stroke='%23000' stroke-width='4'/><line x1='244' y1='220' x2='244' y2='300' stroke='%23000' stroke-width='2'/><line x1='252' y1='220' x2='252' y2='300' stroke='%23000' stroke-width='6'/><line x1='266' y1='220' x2='266' y2='300' stroke='%23000' stroke-width='4'/><line x1='278' y1='220' x2='278' y2='300' stroke='%23000' stroke-width='2'/><line x1='286' y1='220' x2='286' y2='300' stroke='%23000' stroke-width='4'/><rect x='144' y='348' width='120' height='12' rx='4' fill='%23a1a1aa'/></svg>",
       "sizes": "512x512",
       "type": "image/svg+xml",
       "purpose": "any maskable"
