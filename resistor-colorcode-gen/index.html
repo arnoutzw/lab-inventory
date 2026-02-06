@@ -10,6 +10,26 @@
     <div class="container">
         <h1>Resistor Color Code Generator</h1>
 
+        <!-- Camera Scanner Section -->
+        <div class="section" id="scan-section">
+            <h2>Scan Resistor</h2>
+            <div id="camera-container">
+                <video id="camera-feed" autoplay playsinline muted></video>
+                <canvas id="scan-canvas"></canvas>
+                <div id="scan-guide">
+                    <div class="guide-line"></div>
+                    <span class="guide-text">Align resistor bands here</span>
+                </div>
+            </div>
+            <div id="scan-controls">
+                <button id="btn-start-cam">Open Camera</button>
+                <button id="btn-capture" style="display:none">Capture &amp; Scan</button>
+                <button id="btn-stop-cam" style="display:none" class="btn-secondary">Close Camera</button>
+            </div>
+            <div id="scan-status"></div>
+            <div id="detected-bands"></div>
+        </div>
+
         <!-- Section to input resistor value -->
         <div class="section">
             <h2>Input Resistor Value</h2>
@@ -80,7 +100,7 @@
             <div id="resistorResult"></div>
         </div>
     </div>
- 
+
     <script src="script.js"></script>
 </body>
 </html>
