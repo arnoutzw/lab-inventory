@@ -128,7 +128,7 @@
       TAGLINE: 'Building things that work (mostly)',
 
       // Repos to exclude (by name)
-      EXCLUDE_REPOS: ['lab-inventory', 'resistor-colorcode-gen', 'datasheet-search', 'model-library', 'rlc-calculator', 'biquad-pwa', 'jk-bms-app', 'pq-bms-app', 'engineering-calcs-app', 'control-tuner-app', 'label-designer-app', 'filter-design-studio-app', 'datasheet-search-app', 'pages'], // Exclude embedded apps and the pages repo itself
+      EXCLUDE_REPOS: ['datasheet-search', 'model-library', 'rlc-calculator', 'biquad-pwa', 'jk-bms-app', 'pq-bms-app', 'engineering-calcs-app', 'control-tuner-app', 'label-designer-app', 'filter-design-studio-app', 'datasheet-search-app', 'pages'], // Exclude embedded apps and the pages repo itself
 
       // Only show repos with these topics (leave empty to show all)
       FILTER_TOPICS: [],
@@ -141,16 +141,6 @@
 
       // Integrated apps (local copies, linked from portfolio)
       INTEGRATED_APPS: [
-        {
-          id: 'lab-inventory',
-          name: 'Lab Inventory',
-          icon: 'Package',
-          url: './lab-inventory-app/index.html',
-          description: 'Electronics component manager',
-          isLocal: true,
-          fullscreen: true,
-          requiresAdmin: true
-        },
         {
           id: 'ray-optics',
           name: 'Ray Optics',
@@ -167,15 +157,6 @@
           url: 'https://www.falstad.com/circuit/circuitjs.html',
           description: 'Interactive circuit simulator',
           isLocal: false,
-          fullscreen: true
-        },
-        {
-          id: 'resistor-colorcode',
-          name: 'Resistor Colors',
-          icon: 'Cpu',
-          url: './resistor-colorcode-gen/index.html',
-          description: '4-band resistor color code generator',
-          isLocal: true,
           fullscreen: true
         },
         {
