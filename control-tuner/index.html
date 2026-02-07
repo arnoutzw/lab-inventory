@@ -79,8 +79,8 @@ header .sub{font-size:11px;color:var(--t2)}
 <div class="pnl"><div class="pnl-h" onclick="tP(this)"><h3>Simulation</h3><span class="arr">&#9660;</span></div>
 <div class="pnl-b">
 <div class="pr"><label>T_end (s)</label><input type="number" id="simTend" value="10" min="0.1" step="1"></div>
-<div class="pr"><label>&omega;_min</label><input type="number" id="simWmin" value="0.01" min="0.0001" step="0.01"></div>
-<div class="pr"><label>&omega;_max</label><input type="number" id="simWmax" value="1000" min="1" step="100"></div>
+<div class="pr"><label>f_min (Hz)</label><input type="number" id="simFmin" value="0.001" min="0.0001" step="0.001"></div>
+<div class="pr"><label>f_max (Hz)</label><input type="number" id="simFmax" value="200" min="0.1" step="10"></div>
 </div></div>
 
 <!-- Plant -->
@@ -105,8 +105,8 @@ header .sub{font-size:11px;color:var(--t2)}
 <div class="pnl-b">
 <div class="tgl-row"><div class="tgl on" id="pidTgl" onclick="tglS(this)"></div><label>Enabled</label></div>
 <div class="pr"><label>Kp</label><input type="number" id="pidKp" value="1" step="0.1"></div>
-<div class="pr"><label>&omega;i (rad/s)</label><input type="number" id="pidWi" value="0.5" min="0" step="0.1"></div>
-<div class="pr"><label>&omega;d (rad/s)</label><input type="number" id="pidWd" value="5" min="0" step="0.5"></div>
+<div class="pr"><label>fi (Hz)</label><input type="number" id="pidFi" value="0.08" min="0" step="0.01"></div>
+<div class="pr"><label>fd (Hz)</label><input type="number" id="pidFd" value="0.8" min="0" step="0.1"></div>
 <div class="pr"><label>T_f (s)</label><input type="number" id="pidTf" value="0.01" min="0.001" step="0.01"></div>
 </div></div>
 
@@ -192,8 +192,8 @@ function plantTF(){
 
 function pidTF(){
   if(!$('pidTgl').classList.contains('on'))return{n:[1],d:[1]};
-  const Kp=+$('pidKp').value,wi=+$('pidWi').value,wd=+$('pidWd').value,Tf=Math.max(+$('pidTf').value,1e-6);
-  const Ki=Kp*wi,Kd=wd>1e-15?Kp/wd:0;
+  const Kp=+$('pidKp').value,fi=+$('pidFi').value,fd=+$('pidFd').value,Tf=Math.max(+$('pidTf').value,1e-6);
+  const wi=2*Math.PI*fi,wd=2*Math.PI*fd,Ki=Kp*wi,Kd=wd>1e-15?Kp/wd:0;
   if(Math.abs(Ki)<1e-15&&Math.abs(Kd)<1e-15)return{n:[Kp||1e-10],d:[1]};
   if(Math.abs(Ki)<1e-15)return{n:[Kp,Kp*Tf+Kd],d:[1,Tf]};
   return{n:[Ki,Kp+Ki*Tf,Kp*Tf+Kd],d:[0,1,Tf]};
@@ -357,8 +357,9 @@ function mkChart(id,cfg){
 
 function updCharts(sys){
   const tEnd=Math.max(+$('simTend').value||10,.1);
-  const wMin=Math.max(+$('simWmin').value||.01,1e-6);
-  const wMax=Math.max(+$('simWmax').value||1000,wMin*10);
+  const fMin=Math.max(+$('simFmin').value||.001,1e-6);
+  const fMax=Math.max(+$('simFmax').value||200,fMin*10);
+  const wMin=fMin*2*Math.PI,wMax=fMax*2*Math.PI;
   const nPts=2000,nFreq=600;
 
   // Generate freq array (log-spaced)
@@ -400,26 +401,27 @@ function updCharts(sys){
   });
 
   // Bode Magnitude
+  const TP=2*Math.PI;
   mkChart('cMag',{
     type:'scatter',
     data:{datasets:[
-      {label:'0 dB',data:[{x:wMin,y:0},{x:wMax,y:0}],showLine:true,borderColor:COLS.zero,borderWidth:1,borderDash:[6,3],pointRadius:0,order:1},
-      {label:'|L(j\u03c9)| (dB)',data:freqs.map((w,i)=>({x:w,y:fr.m[i]})),showLine:true,borderColor:COLS.mag,borderWidth:2,pointRadius:0,order:0},
-      ...(bm.gcf?[{label:'Gain Crossover',data:[{x:bm.gcf,y:0}],pointRadius:6,pointBackgroundColor:COLS.ref,pointBorderColor:COLS.ref,showLine:false}]:[]),
-      ...(bm.pcf?[{label:'Phase Crossover',data:[{x:bm.pcf,y:-(bm.gm||0)}],pointRadius:6,pointBackgroundColor:COLS.ref,pointBorderColor:COLS.ref,pointStyle:'triangle',showLine:false}]:[])
+      {label:'0 dB',data:[{x:fMin,y:0},{x:fMax,y:0}],showLine:true,borderColor:COLS.zero,borderWidth:1,borderDash:[6,3],pointRadius:0,order:1},
+      {label:'|L(j\u03c9)| (dB)',data:freqs.map((w,i)=>({x:w/TP,y:fr.m[i]})),showLine:true,borderColor:COLS.mag,borderWidth:2,pointRadius:0,order:0},
+      ...(bm.gcf?[{label:'Gain Crossover',data:[{x:bm.gcf/TP,y:0}],pointRadius:6,pointBackgroundColor:COLS.ref,pointBorderColor:COLS.ref,showLine:false}]:[]),
+      ...(bm.pcf?[{label:'Phase Crossover',data:[{x:bm.pcf/TP,y:-(bm.gm||0)}],pointRadius:6,pointBackgroundColor:COLS.ref,pointBorderColor:COLS.ref,pointStyle:'triangle',showLine:false}]:[])
     ]},
-    options:scatterOpts('Frequency (rad/s)','Magnitude (dB)',true)
+    options:scatterOpts('Frequency (Hz)','Magnitude (dB)',true)
   });
 
   // Bode Phase
   mkChart('cPhase',{
     type:'scatter',
     data:{datasets:[
-      {label:'-180\u00b0',data:[{x:wMin,y:-180},{x:wMax,y:-180}],showLine:true,borderColor:COLS.zero,borderWidth:1,borderDash:[6,3],pointRadius:0,order:1},
-      {label:'\u2220L(j\u03c9) (\u00b0)',data:freqs.map((w,i)=>({x:w,y:fr.ph[i]})),showLine:true,borderColor:COLS.phase,borderWidth:2,pointRadius:0,order:0},
-      ...(bm.gcf?[{label:'PM point',data:[{x:bm.gcf,y:(bm.pm||0)-180}],pointRadius:6,pointBackgroundColor:COLS.ref,pointBorderColor:COLS.ref,showLine:false}]:[])
+      {label:'-180\u00b0',data:[{x:fMin,y:-180},{x:fMax,y:-180}],showLine:true,borderColor:COLS.zero,borderWidth:1,borderDash:[6,3],pointRadius:0,order:1},
+      {label:'\u2220L(j\u03c9) (\u00b0)',data:freqs.map((w,i)=>({x:w/TP,y:fr.ph[i]})),showLine:true,borderColor:COLS.phase,borderWidth:2,pointRadius:0,order:0},
+      ...(bm.gcf?[{label:'PM point',data:[{x:bm.gcf/TP,y:(bm.pm||0)-180}],pointRadius:6,pointBackgroundColor:COLS.ref,pointBorderColor:COLS.ref,showLine:false}]:[])
     ]},
-    options:scatterOpts('Frequency (rad/s)','Phase (\u00b0)',true)
+    options:scatterOpts('Frequency (Hz)','Phase (\u00b0)',true)
   });
 }
 
@@ -451,8 +453,8 @@ function updMetrics(sm,bm){
   }else{
     h+=met('GM',bm.gm!==undefined?bm.gm.toFixed(1)+' dB':'&infin;',bm.gm===undefined||bm.gm>6?'g':bm.gm>0?'w':'b');
     h+=met('PM',bm.pm!==undefined?bm.pm.toFixed(1)+'&deg;':'--',bm.pm===undefined?'':bm.pm>45?'g':bm.pm>0?'w':'b');
-    h+=met('&omega;gc',bm.gcf!==undefined?bm.gcf.toFixed(2)+' rad/s':'--','');
-    h+=met('&omega;pc',bm.pcf!==undefined?bm.pcf.toFixed(2)+' rad/s':'--','');
+    h+=met('f<sub>gc</sub>',bm.gcf!==undefined?(bm.gcf/(2*Math.PI)).toFixed(2)+' Hz':'--','');
+    h+=met('f<sub>pc</sub>',bm.pcf!==undefined?(bm.pcf/(2*Math.PI)).toFixed(2)+' Hz':'--','');
   }
   mb.innerHTML=h;
 }
