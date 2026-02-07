@@ -19,8 +19,15 @@ if git diff --cached --name-only | grep -q "^${INDEX_FILE}$"; then
         CONTENT_HASH=$(git rev-parse --short HEAD 2>/dev/null || echo "0000000")
     fi
 
-    # Update GIT_HASH in index.html
+    # Update GIT_HASH in index.html (lab-inventory pattern)
     sed -i "s/const GIT_HASH = '[a-f0-9]*'/const GIT_HASH = '${CONTENT_HASH}'/" "$INDEX_FILE"
+
+    # Update BUILD_COMMIT in index.html (main portfolio pattern - full hash)
+    FULL_HASH=$(git diff --cached | sha1sum | cut -c1-40)
+    if [ -z "$FULL_HASH" ] || [ "$FULL_HASH" = "da39a3ee5e6b4b0d3255bfef95601890afd80709" ]; then
+        FULL_HASH=$(git rev-parse HEAD 2>/dev/null || echo "0000000")
+    fi
+    sed -i "s/const BUILD_COMMIT = '[a-f0-9]*'/const BUILD_COMMIT = '${FULL_HASH}'/" "$INDEX_FILE"
 
     # Update BUILD_DATE in index.html
     sed -i "s/const BUILD_DATE = '[0-9-]*'/const BUILD_DATE = '${BUILD_DATE}'/" "$INDEX_FILE"
