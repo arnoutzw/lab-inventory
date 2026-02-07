@@ -1,5 +1,9 @@
 # Project Rules
 
+## Config 
+
+export CLAUDE_CODE_MAX_OUTPUT_TOKENS=64000
+
 ## Architecture
 
 - This is a single-page application using React 18 (UMD/CDN), Tailwind CSS, and Babel for JSX transformation
@@ -34,3 +38,4 @@
 - Write concise commit messages describing the "what" and "why"
 - Non-trivial changes should be reflected in `RELEASES.md` and `VERSION_HISTORY`
 - The pre-commit hook at `.githooks/pre-commit` must be installed: `git config core.hooksPath .githooks`
+
