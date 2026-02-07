@@ -128,7 +128,7 @@
       TAGLINE: 'Building things that work (mostly)',
 
       // Repos to exclude (by name)
-      EXCLUDE_REPOS: ['lab-inventory', 'label-designer', 'resistor-colorcode-gen', 'datasheet-search', 'model-library', 'rlc-calculator', 'biquad-pwa', 'engcalc-pwa', 'control-tuner', 'lab-battery-ups', 'pages'], // Exclude embedded apps and the pages repo itself
+      EXCLUDE_REPOS: ['lab-inventory', 'label-designer', 'resistor-colorcode-gen', 'datasheet-search', 'model-library', 'rlc-calculator', 'biquad-pwa', 'engcalc-pwa', 'control-tuner', 'lab-battery-ups', 'jk-bms-app', 'pages'], // Exclude embedded apps and the pages repo itself
 
       // Only show repos with these topics (leave empty to show all)
       FILTER_TOPICS: [],
@@ -248,6 +248,15 @@
           url: './lab-battery-ups/index.html',
           description: 'Monitor Powerqueen LiFePO4 batteries via Bluetooth',
           isLocal: true,
+          fullscreen: true
+        },
+        {
+          id: 'jk-bms-app',
+          name: 'JK BMS App',
+          icon: 'BatteryCharging',
+          url: 'https://arnoutzw.github.io/jk-bms-app/',
+          description: 'JK BMS battery monitor',
+          isLocal: false,
           fullscreen: true
         }
       ],
