@@ -128,7 +128,7 @@
       TAGLINE: 'Building things that work (mostly)',
 
       // Repos to exclude (by name)
-      EXCLUDE_REPOS: ['lab-inventory', 'resistor-colorcode-gen', 'datasheet-search', 'model-library', 'rlc-calculator', 'biquad-pwa', 'jk-bms-app', 'pq-bms-app', 'engineering-calcs-app', 'control-tuner-app', 'label-designer-app', 'pages'], // Exclude embedded apps and the pages repo itself
+      EXCLUDE_REPOS: ['lab-inventory', 'resistor-colorcode-gen', 'datasheet-search', 'model-library', 'rlc-calculator', 'biquad-pwa', 'jk-bms-app', 'pq-bms-app', 'engineering-calcs-app', 'control-tuner-app', 'label-designer-app', 'filter-design-studio-app', 'pages'], // Exclude embedded apps and the pages repo itself
 
       // Only show repos with these topics (leave empty to show all)
       FILTER_TOPICS: [],
@@ -256,6 +256,15 @@
           icon: 'PenTool',
           url: 'https://arnoutzw.github.io/label-designer-app/',
           description: 'Design and print custom labels',
+          isLocal: false,
+          fullscreen: true
+        },
+        {
+          id: 'filter-design-studio-app',
+          name: 'Filter Design Studio',
+          icon: 'AudioLines',
+          url: 'https://arnoutzw.github.io/filter-design-studio-app/',
+          description: 'Analog and digital filter design tool',
           isLocal: false,
           fullscreen: true
         }
