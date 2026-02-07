@@ -182,7 +182,7 @@ pages/
 │   └── index.html                 # Datasheet search tool
 ├── model-library/
 │   └── index.html                 # 3D model viewer/library
-├── werktuigbouw-pwa/
+├── engcalc-pwa/
 │   ├── index.html                 # Engineering calculators
 │   ├── manifest.json              # PWA manifest
 │   └── sw.js                      # Service worker

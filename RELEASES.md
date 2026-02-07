@@ -6,9 +6,9 @@ All notable changes to Maker Portfolio, organized by date and git commit hash.
 
 ## 2026-02-06
 
-### `005d933` - Restyle werktuigbouw-pwa to match portfolio's dark zinc/amber theme
+### `005d933` - Restyle Engineering Calculators to match portfolio's dark zinc/amber theme
 
-### `e6a46b3` - Add werktuigbouw-pwa to main page integrated apps
+### `e6a46b3` - Add Engineering Calculators to main page integrated apps
 
 ### `1a93eaf` - Update print label CSS to specify 40x30mm label size
 

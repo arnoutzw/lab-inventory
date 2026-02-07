@@ -128,7 +128,7 @@
       TAGLINE: 'Building things that work (mostly)',
 
       // Repos to exclude (by name)
-      EXCLUDE_REPOS: ['lab-inventory', 'label-designer', 'resistor-colorcode-gen', 'datasheet-search', 'model-library', 'rlc-calculator', 'biquad-pwa', 'werktuigbouw-pwa', 'pages'], // Exclude embedded apps and the pages repo itself
+      EXCLUDE_REPOS: ['lab-inventory', 'label-designer', 'resistor-colorcode-gen', 'datasheet-search', 'model-library', 'rlc-calculator', 'biquad-pwa', 'engcalc-pwa', 'pages'], // Exclude embedded apps and the pages repo itself
 
       // Only show repos with these topics (leave empty to show all)
       FILTER_TOPICS: [],
@@ -224,10 +224,10 @@
           fullscreen: true
         },
         {
-          id: 'werktuigbouw-pwa',
+          id: 'engcalc-pwa',
           name: 'Engineering Calculators',
           icon: 'Wrench',
-          url: './werktuigbouw-pwa/index.html',
+          url: './engcalc-pwa/index.html',
           description: 'Tribology, bearings, fatigue & machine design calculators',
           isLocal: true,
           fullscreen: true
@@ -244,8 +244,8 @@
 
     // Release notes per git hash, grouped by date
     const VERSION_HISTORY = [
-      { hash: '005d933', date: '2026-02-06', changes: 'Restyle werktuigbouw-pwa to match portfolio\'s dark zinc/amber theme' },
-      { hash: 'e6a46b3', date: '2026-02-06', changes: 'Add werktuigbouw-pwa to main page integrated apps' },
+      { hash: '005d933', date: '2026-02-06', changes: 'Restyle Engineering Calculators to match portfolio\'s dark zinc/amber theme' },
+      { hash: 'e6a46b3', date: '2026-02-06', changes: 'Add Engineering Calculators to main page integrated apps' },
       { hash: '1a93eaf', date: '2026-02-06', changes: 'Update print label CSS to specify 40x30mm label size' },
       { hash: '389d9db', date: '2026-02-06', changes: 'Add preferences menu with tab visibility toggles when logged in' },
       { hash: '4fa4c57', date: '2026-02-06', changes: 'Fix stuck sliders in Analog Filter Designer with log-mapped ranges' },
