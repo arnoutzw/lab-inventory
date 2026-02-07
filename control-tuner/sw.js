@@ -1,7 +1,8 @@
-const CACHE_NAME = 'ctrl-tuner-v2';
+const CACHE_NAME = 'ctrl-tuner-v3';
 const ASSETS = [
   './',
   './index.html',
+  './mimo.html',
   './manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js'
 ];
