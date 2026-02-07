@@ -1152,6 +1152,9 @@
       const [selectedRepo, setSelectedRepo] = useState(null);
       const [username, setUsername] = useState(CONFIG.GITHUB_USERNAME);
       const [activeView, setActiveView] = useState('projects'); // 'projects', 'forked-projects', or app id
+      const [forkFilter, setForkFilter] = useState('all'); // 'all', 'contributed', 'not-contributed'
+      const [forkContributions, setForkContributions] = useState({}); // { repoFullName: boolean }
+      const [loadingContributions, setLoadingContributions] = useState(false);
       const [isAdmin, setIsAdmin] = useState(false);
       const [showLoginModal, setShowLoginModal] = useState(false);
       const [hiddenRepos, setHiddenRepos] = useState(() => {
@@ -1238,6 +1241,37 @@
         fetchRepos();
       }, [username]);
 
+      // Fetch contribution status for forked repos
+      useEffect(() => {
+        if (activeView !== 'forked-projects') return;
+        const forkedRepos = repos.filter(r => r.fork);
+        const unchecked = forkedRepos.filter(r => !(r.full_name in forkContributions));
+        if (unchecked.length === 0) return;
+
+        setLoadingContributions(true);
+        const checkContributions = async () => {
+          const results = { ...forkContributions };
+          await Promise.all(unchecked.map(async (repo) => {
+            try {
+              const res = await fetch(
+                `https://api.github.com/repos/${repo.full_name}/commits?author=${username}&per_page=1`
+              );
+              if (res.ok) {
+                const commits = await res.json();
+                results[repo.full_name] = commits.length > 0;
+              } else {
+                results[repo.full_name] = false;
+              }
+            } catch {
+              results[repo.full_name] = false;
+            }
+          }));
+          setForkContributions(results);
+          setLoadingContributions(false);
+        };
+        checkContributions();
+      }, [activeView, repos, username]);
+
       // Get languages
       const languages = useMemo(() => {
         const langs = [...new Set(repos.map(r => r.language).filter(Boolean))];
@@ -1268,6 +1302,12 @@
 
         if (activeView === 'forked-projects') {
           filtered = filtered.filter(r => r.fork);
+          // Apply contribution filter
+          if (forkFilter === 'contributed') {
+            filtered = filtered.filter(r => forkContributions[r.full_name] === true);
+          } else if (forkFilter === 'not-contributed') {
+            filtered = filtered.filter(r => forkContributions[r.full_name] === false);
+          }
         } else {
           filtered = filtered.filter(r => !r.fork);
         }
@@ -1279,7 +1319,7 @@
             default: return new Date(b.updated_at) - new Date(a.updated_at);
           }
         });
-      }, [repos, searchTerm, selectedLanguage, activeView, sortBy, isAdmin, hiddenRepos]);
+      }, [repos, searchTerm, selectedLanguage, activeView, sortBy, isAdmin, hiddenRepos, forkFilter, forkContributions]);
 
       return (
         <div className="min-h-screen bg-zinc-950 text-zinc-100">
@@ -1376,6 +1416,20 @@
                     </select>
                     <Icon name="ChevronDown" size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none" />
                   </div>
+                  {activeView === 'forked-projects' && (
+                    <div className="relative">
+                      <select value={forkFilter} onChange={(e) => setForkFilter(e.target.value)}
+                              className="appearance-none bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 pr-10 font-mono text-sm
+                                       focus:border-amber-500 focus:outline-none cursor-pointer min-w-[180px]"
+                              disabled={loadingContributions}>
+                        <option value="all">All Forks</option>
+                        <option value="contributed">My Commits</option>
+                        <option value="not-contributed">No Commits By Me</option>
+                      </select>
+                      <Icon name={loadingContributions ? "Loader" : "ChevronDown"} size={16}
+                            className={`absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none${loadingContributions ? ' animate-spin' : ''}`} />
+                    </div>
+                  )}
                   <div className="relative">
                     <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}
                             className="appearance-none bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 pr-10 font-mono text-sm
