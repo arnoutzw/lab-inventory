@@ -241,6 +241,80 @@
     // ============================================
     const BUILD_COMMIT = '18c665ca7b560b8b10dc5bcf983b59e32c3a538e';
     const BUILD_DATE = '2026-02-06';
+
+    // Release notes per git hash, grouped by date
+    const VERSION_HISTORY = [
+      { hash: '005d933', date: '2026-02-06', changes: 'Restyle werktuigbouw-pwa to match portfolio\'s dark zinc/amber theme' },
+      { hash: 'e6a46b3', date: '2026-02-06', changes: 'Add werktuigbouw-pwa to main page integrated apps' },
+      { hash: '1a93eaf', date: '2026-02-06', changes: 'Update print label CSS to specify 40x30mm label size' },
+      { hash: '389d9db', date: '2026-02-06', changes: 'Add preferences menu with tab visibility toggles when logged in' },
+      { hash: '4fa4c57', date: '2026-02-06', changes: 'Fix stuck sliders in Analog Filter Designer with log-mapped ranges' },
+      { hash: 'a96f5af', date: '2026-02-06', changes: 'Add H(s) transfer function as design input to both filter designers' },
+      { hash: '4cc55c2', date: '2026-02-06', changes: 'Rename apps and add transfer function displays' },
+      { hash: '1cfce74', date: '2026-02-06', changes: 'Refactor printLabel() to use same render output as exportPNG()' },
+      { hash: '6081109', date: '2026-02-06', changes: 'Fix RLC Calculator layout to match Filter Designer scrolling' },
+      { hash: 'd78506e', date: '2026-02-06', changes: 'Make README.md the default opening item in project modal' },
+      { hash: '84ddcde', date: '2026-02-06', changes: 'Fix label designer export/print alignment to match design canvas' },
+      { hash: '389521e', date: '2026-02-06', changes: 'Add discrete biquad filter designer as new tab' },
+      { hash: '615dc06', date: '2026-02-06', changes: 'Restyle RLC calculator to match main portfolio theme' },
+      { hash: 'b4e75b9', date: '2026-02-06', changes: 'Add RLC Calculator as integrated app tab' },
+      { hash: 'c17aeac', date: '2026-02-06', changes: 'Fix silent barcode failure on inventory import in label designer' },
+      { hash: 'a1bd258', date: '2026-02-06', changes: 'Collapse nav tabs into hamburger menu on mobile/tablet' },
+      { hash: 'b011a43', date: '2026-02-06', changes: 'Add TrustedParts API as 3rd search mode in datasheet tab' },
+      { hash: '0e58754', date: '2026-02-06', changes: 'Encrypt NEXAR credentials with admin auth via AES-256-GCM' },
+      { hash: 'df1ff64', date: '2026-02-06', changes: 'Add NEXAR API search mode to datasheet search' },
+      { hash: '922db65', date: '2026-02-06', changes: 'Rename Projects tab to Original Projects' },
+      { hash: 'faa501d', date: '2026-02-06', changes: 'Add datasheet search and 3D model library tabs' },
+      { hash: '937938d', date: '2026-02-06', changes: 'Add camera-based resistor color band scanner' },
+      { hash: '33b0e4f', date: '2026-02-06', changes: 'Add resistor color code generator as integrated app tab' },
+      { hash: '12609cf', date: '2026-02-06', changes: 'Add basic shapes feature with resize support to label designer' },
+      { hash: '95b0b40', date: '2026-02-06', changes: 'Remove built-in label maker from lab-inventory app' },
+      { hash: '8f77bf7', date: '2026-02-06', changes: 'Move lab-inventory auth to main page admin login' },
+      { hash: '944db32', date: '2026-02-06', changes: 'Add Falstad Circuit Simulator as fullscreen app tab' },
+      { hash: '7b2dfb3', date: '2026-02-06', changes: 'Make Lab Inventory and Ray Optics render fullscreen' },
+      { hash: '57da581', date: '2026-02-06', changes: 'Make label designer embed fullscreen, hiding chrome and padding' },
+      { hash: 'ae64591', date: '2026-02-06', changes: 'Add Ray Optics simulator as an external app tab' },
+      { hash: 'ddc4ff7', date: '2026-02-06', changes: 'Add Label Designer as integrated app tab in portfolio' },
+      { hash: '92c8920', date: '2026-02-06', changes: 'Add code view with syntax highlighting to project modal' },
+      { hash: '18c665c', date: '2026-02-06', changes: 'Collapse folder tree by default in document reader' },
+      { hash: 'b977f60', date: '2026-02-06', changes: 'Replace flat file list with collapsible folder tree in doc reader' },
+      { hash: '5ac6810', date: '2026-02-06', changes: 'Add about section with build info and pre-commit hook' },
+      { hash: '35ebc6d', date: '2026-02-06', changes: 'Exclude pages repo from portfolio by default' },
+      { hash: '609f900', date: '2026-02-05', changes: 'Add admin login interface with repo hide/unhide functionality' },
+      { hash: 'dbd3440', date: '2026-02-05', changes: 'Add separate Forked Projects tab next to Projects tab' },
+      { hash: '51cbdc9', date: '2026-02-05', changes: 'Add login screen to protect lab inventory access' },
+      { hash: '9540075', date: '2026-02-05', changes: 'Restyle Lab Inventory to match Maker Portfolio dark/amber theme' },
+      { hash: '0b05ba1', date: '2026-02-05', changes: 'Add fork filter dropdown to portfolio page' },
+      { hash: 'e42ec29', date: '2026-02-05', changes: 'Fix markdown rendering for marked.js v12+ API changes' },
+      { hash: '4b3f2d6', date: '2026-02-05', changes: 'Increase MAX_REPOS to 100 to show all repositories' },
+      { hash: '19bd95b', date: '2026-02-05', changes: 'Show forked repos in portfolio' },
+      { hash: '56e5ccd', date: '2026-02-05', changes: 'Rename portfolio.html to index.html' },
+      { hash: '6ca4718', date: '2026-02-05', changes: 'Clean up repo to keep only portfolio.html and its dependencies' },
+      { hash: 'c5afde6', date: '2026-02-05', changes: 'Add pre-commit hook for auto version updates' },
+      { hash: 'c2d0016', date: '2026-02-05', changes: 'Add Easy Label Maker as a new page' },
+      { hash: '93f557e', date: '2026-02-01', changes: 'Add multiple CORS proxy fallbacks for image download' },
+      { hash: '0416dc7', date: '2026-02-01', changes: 'Fix barcode scanner crash and add more formats' },
+      { hash: '60ac2e1', date: '2026-02-01', changes: 'Add download button to sync photo from product URL' },
+      { hash: '8a9899f', date: '2026-02-01', changes: 'Replace version number with git hash and build date' },
+      { hash: '836a1d2', date: '2026-02-01', changes: 'Replace low stock warnings with project overallocation warnings' },
+      { hash: 'bcb1994', date: '2026-02-01', changes: 'Add automatic version check with update banner' },
+      { hash: 'd8c5138', date: '2026-02-01', changes: 'Update scanner for CODE128 barcode support' },
+      { hash: '36239b4', date: '2026-02-01', changes: 'Add sync photos from product links feature' },
+      { hash: 'e05aecb', date: '2026-02-01', changes: 'Add nested menus for Locaties view' },
+      { hash: 'cad748c', date: '2026-02-01', changes: 'Switch from QR codes to CODE128 barcodes for label printing' },
+      { hash: 'e4b1be2', date: '2026-02-01', changes: 'Update lab map to show dynamic locations from Locaties tab' },
+      { hash: 'a6a5da5', date: '2026-02-01', changes: 'Add Locaties (shelves/drawers) view with collapsible boxes' },
+      { hash: '1111e41', date: '2026-02-01', changes: 'Add interactive lab map view' },
+      { hash: 'ed50ea1', date: '2026-02-01', changes: 'Add value field and projects/BoM system' },
+      { hash: '87894e7', date: '2026-02-01', changes: 'Add dark mode theme and Material Design icons' },
+      { hash: 'cd05eca', date: '2026-02-01', changes: 'Add OWASP security improvements' },
+      { hash: '55c2a76', date: '2026-02-01', changes: 'Add ZIP export/import with photos' },
+      { hash: '66390e9', date: '2026-02-01', changes: 'Add Philips 12NC identification codes to items' },
+      { hash: '0258d02', date: '2026-02-01', changes: 'Add IndexedDB storage with photo support' },
+      { hash: '7ca5282', date: '2026-02-01', changes: 'Add QR code printing functionality via CUPS' },
+      { hash: '9393842', date: '2026-01-31', changes: 'Change box click to navigate to Items tab with filter' },
+      { hash: '27c6221', date: '2026-01-31', changes: 'Initial upload' },
+    ];
     // ============================================
 
     // Lucide icons
@@ -1075,6 +1149,7 @@
       });
       const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
       const [showPreferences, setShowPreferences] = useState(false);
+      const [showReleaseNotes, setShowReleaseNotes] = useState(false);
       const [hiddenTabs, setHiddenTabs] = useState(() => {
         try { return JSON.parse(localStorage.getItem('hiddenTabs') || '[]'); }
         catch { return []; }
@@ -1439,7 +1514,62 @@
                   <Icon name="Calendar" size={12} />
                   <span>{BUILD_DATE !== 'dev' ? BUILD_DATE : 'development'}</span>
                 </span>
+                <span className="text-zinc-800">•</span>
+                <button onClick={() => setShowReleaseNotes(!showReleaseNotes)}
+                        className="flex items-center gap-1 hover:text-zinc-500 transition-colors cursor-pointer bg-transparent border-none p-0 font-mono text-xs text-zinc-700">
+                  <Icon name="ScrollText" size={12} />
+                  <span>Release Notes</span>
+                  <Icon name={showReleaseNotes ? 'ChevronUp' : 'ChevronDown'} size={10} />
+                </button>
               </div>
+
+              {/* Expandable Release Notes */}
+              {showReleaseNotes && (
+                <div className="mt-4 max-w-2xl mx-auto text-left">
+                  <div className="bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden">
+                    <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
+                      <h3 className="font-mono text-sm text-zinc-300 flex items-center gap-2">
+                        <Icon name="ScrollText" size={14} className="text-amber-500" />
+                        Version History
+                      </h3>
+                      <a href={`https://github.com/${username}/pages/blob/main/RELEASES.md`}
+                         target="_blank" rel="noopener noreferrer"
+                         className="font-mono text-xs text-amber-500 hover:text-amber-400 transition-colors flex items-center gap-1">
+                        Full changelog
+                        <Icon name="ExternalLink" size={10} />
+                      </a>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto">
+                      {(() => {
+                        const grouped = {};
+                        VERSION_HISTORY.forEach(v => {
+                          if (!grouped[v.date]) grouped[v.date] = [];
+                          grouped[v.date].push(v);
+                        });
+                        return Object.entries(grouped).map(([date, entries]) => (
+                          <div key={date}>
+                            <div className="px-4 py-2 bg-zinc-800/50 font-mono text-xs text-zinc-400 sticky top-0">
+                              {date}
+                            </div>
+                            {entries.map((v, i) => (
+                              <div key={v.hash} className="px-4 py-2 border-b border-zinc-800/50 hover:bg-zinc-800/30 transition-colors">
+                                <div className="flex items-start gap-2">
+                                  <a href={`https://github.com/${username}/pages/commit/${v.hash}`}
+                                     target="_blank" rel="noopener noreferrer"
+                                     className="font-mono text-xs text-amber-600 hover:text-amber-500 transition-colors shrink-0 mt-0.5">
+                                    {v.hash}
+                                  </a>
+                                  <span className="font-mono text-xs text-zinc-400">{v.changes}</span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        ));
+                      })()}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </footer>
 
