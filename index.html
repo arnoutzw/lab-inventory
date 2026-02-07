@@ -915,15 +915,17 @@
       );
     };
 
-    // Navigation Tab Button
+    // Navigation Tab Button (icon-only with tooltip)
     const NavTab = ({ active, icon, label, onClick }) => (
-      <button onClick={onClick}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-mono text-sm transition-all
+      <button onClick={onClick} title={label}
+              className={`relative group flex items-center justify-center w-9 h-9 rounded-lg transition-all
                         ${active
                           ? 'bg-amber-500 text-zinc-900 shadow-lg shadow-amber-500/20'
-                          : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200'}`}>
+                          : 'bg-zinc-800/60 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200'}`}>
         <Icon name={icon} size={16} />
-        <span className="hidden sm:inline">{label}</span>
+        <span className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 rounded bg-zinc-800
+                         border border-zinc-700 text-xs font-mono text-zinc-300 whitespace-nowrap opacity-0
+                         group-hover:opacity-100 transition-opacity z-50 shadow-lg">{label}</span>
       </button>
     );
 
@@ -1147,7 +1149,7 @@
         try { return JSON.parse(localStorage.getItem('hiddenRepos') || '[]'); }
         catch { return []; }
       });
-      const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
       const [showPreferences, setShowPreferences] = useState(false);
       const [showReleaseNotes, setShowReleaseNotes] = useState(false);
       const [hiddenTabs, setHiddenTabs] = useState(() => {
@@ -1279,14 +1281,14 @@
 
           {/* Header */}
           <header className="relative border-b border-zinc-800 bg-zinc-900/80 backdrop-blur-sm sticky top-0 z-40">
-            <div className="max-w-7xl mx-auto px-4 py-4">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-amber-500/20 rounded-lg border border-amber-500/30">
-                    <Icon name="Wrench" size={28} className="text-amber-500" />
+            <div className="max-w-7xl mx-auto px-4 py-3">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3 shrink-0">
+                  <div className="p-1.5 bg-amber-500/20 rounded-lg border border-amber-500/30">
+                    <Icon name="Wrench" size={22} className="text-amber-500" />
                   </div>
-                  <div>
-                    <h1 className="text-xl font-mono font-bold">
+                  <div className="hidden sm:block">
+                    <h1 className="text-lg font-mono font-bold leading-tight">
                       <span className="text-amber-500">$</span> {CONFIG.SITE_TITLE.toLowerCase().replace(/\s/g, '_')}
                     </h1>
                     <p className="text-zinc-500 text-xs font-mono">
@@ -1295,8 +1297,8 @@
                   </div>
                 </div>
 
-                {/* Navigation Tabs - desktop */}
-                <div className="hidden lg:flex items-center gap-2">
+                {/* Navigation Tabs - compact icon bar */}
+                <div className="flex items-center gap-1 flex-1 justify-center min-w-0">
                   <NavTab active={activeView === 'projects'} icon="FolderGit2" label="Original Projects"
                           onClick={() => setActiveView('projects')} />
                   {!hiddenTabs.includes('forked-projects') && (
@@ -1309,48 +1311,33 @@
                   ))}
                 </div>
 
-                {/* Hamburger button - mobile/tablet */}
-                <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                        className="lg:hidden flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-800 border border-zinc-700
-                                   text-zinc-300 hover:bg-zinc-700 hover:text-zinc-100 transition-colors font-mono text-sm">
-                  <Icon name={mobileMenuOpen ? 'X' : 'Menu'} size={18} />
-                  <span className="hidden sm:inline">
-                    {(() => {
-                      if (activeView === 'projects') return 'Original Projects';
-                      if (activeView === 'forked-projects') return 'Forked Projects';
-                      const app = CONFIG.INTEGRATED_APPS.find(a => a.id === activeView);
-                      return app ? app.name : 'Menu';
-                    })()}
-                  </span>
-                </button>
-
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 shrink-0">
                   <a href={`https://github.com/${username}`} target="_blank" rel="noopener noreferrer"
-                     className="flex items-center gap-2 text-zinc-400 hover:text-amber-400 transition-colors">
+                     title={`@${username}`}
+                     className="flex items-center justify-center w-9 h-9 rounded-lg text-zinc-400 hover:text-amber-400 hover:bg-zinc-800 transition-colors">
                     <Icon name="Github" size={18} />
-                    <span className="font-mono text-sm">@{username}</span>
                   </a>
                   {isAdmin ? (
                     <>
                       <button onClick={() => setShowPreferences(true)}
-                              className="flex items-center gap-1.5 bg-zinc-800 text-zinc-400 hover:text-amber-400
-                                       hover:bg-zinc-700 px-2.5 py-1.5 rounded-lg text-xs transition-colors border border-zinc-700"
+                              className="flex items-center justify-center w-9 h-9 rounded-lg bg-zinc-800/60 text-zinc-400
+                                       hover:text-amber-400 hover:bg-zinc-700 transition-colors"
                               title="Preferences">
-                        <Icon name="Settings" size={14} />
+                        <Icon name="Settings" size={16} />
                       </button>
                       <button onClick={() => setIsAdmin(false)}
-                              className="flex items-center gap-1.5 bg-amber-500/20 text-amber-400 hover:bg-amber-500/30
-                                       px-3 py-1.5 rounded-lg font-mono text-xs transition-colors border border-amber-500/30">
-                        <Icon name="LogOut" size={14} />
-                        <span className="hidden sm:inline">Logout</span>
+                              className="flex items-center justify-center w-9 h-9 rounded-lg bg-amber-500/20 text-amber-400
+                                       hover:bg-amber-500/30 transition-colors border border-amber-500/30"
+                              title="Logout">
+                        <Icon name="LogOut" size={16} />
                       </button>
                     </>
                   ) : (
                     <button onClick={() => setShowLoginModal(true)}
-                            className="flex items-center gap-1.5 bg-zinc-800 text-zinc-500 hover:text-zinc-300
-                                     hover:bg-zinc-700 px-3 py-1.5 rounded-lg font-mono text-xs transition-colors border border-zinc-700">
-                      <Icon name="Lock" size={14} />
-                      <span className="hidden sm:inline">Login</span>
+                            className="flex items-center justify-center w-9 h-9 rounded-lg bg-zinc-800/60 text-zinc-500
+                                     hover:text-zinc-300 hover:bg-zinc-700 transition-colors"
+                            title="Login">
+                      <Icon name="Lock" size={16} />
                     </button>
                   )}
                 </div>
@@ -1358,47 +1345,9 @@
             </div>
           </header>
 
-          {/* Mobile navigation menu */}
-          {mobileMenuOpen && (
-            <div className="lg:hidden fixed inset-0 z-50" onClick={() => setMobileMenuOpen(false)}>
-              <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-              <div className="absolute top-0 left-0 right-0 bg-zinc-900 border-b border-zinc-700 shadow-2xl shadow-black/50"
-                   onClick={e => e.stopPropagation()}>
-                {/* Menu header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800">
-                  <span className="font-mono text-sm text-zinc-400">
-                    <span className="text-green-400">$</span> navigate
-                  </span>
-                  <button onClick={() => setMobileMenuOpen(false)}
-                          className="p-1.5 rounded-lg hover:bg-zinc-800 text-zinc-500 hover:text-zinc-300 transition-colors">
-                    <Icon name="X" size={20} />
-                  </button>
-                </div>
-                {/* Menu items */}
-                <div className="p-3 grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[70vh] overflow-y-auto">
-                  {[
-                    { id: 'projects', icon: 'FolderGit2', name: 'Original Projects' },
-                    ...(!hiddenTabs.includes('forked-projects') ? [{ id: 'forked-projects', icon: 'GitFork', name: 'Forked Projects' }] : []),
-                    ...visibleApps.map(app => ({ id: app.id, icon: app.icon, name: app.name }))
-                  ].map(item => (
-                    <button key={item.id}
-                            onClick={() => { setActiveView(item.id); setMobileMenuOpen(false); }}
-                            className={`flex items-center gap-3 px-3 py-3 rounded-lg font-mono text-sm transition-all text-left
-                                      ${activeView === item.id
-                                        ? 'bg-amber-500 text-zinc-900 shadow-lg shadow-amber-500/20'
-                                        : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-200 border border-zinc-700'}`}>
-                      <Icon name={item.icon} size={18} />
-                      <span className="truncate">{item.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Filters - show in projects and forked-projects views */}
           {(activeView === 'projects' || activeView === 'forked-projects') && !loading && !error && (
-            <div className="border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-sm sticky top-[72px] z-30">
+            <div className="border-b border-zinc-800 bg-zinc-900/50 backdrop-blur-sm sticky top-[61px] z-30">
               <div className="max-w-7xl mx-auto px-4 py-4">
                 <div className="flex flex-col sm:flex-row gap-4">
                   <div className="relative flex-1">
