@@ -31,7 +31,7 @@ header .sub{font-size:11px;color:var(--t2)}
 .pnl-b.hide{display:none}
 .pr{display:flex;align-items:center;margin-bottom:6px;gap:6px}
 .pr label{width:70px;font-size:12px;color:var(--t2);flex-shrink:0}
-.pr input[type=number],.pr select{flex:1;background:var(--bg1);border:1px solid var(--brd);border-radius:4px;padding:4px 6px;color:var(--t0);font-size:12px;font-family:'SF Mono',Menlo,monospace}
+.pr input[type=number],.pr input[type=text],.pr select{flex:1;background:var(--bg1);border:1px solid var(--brd);border-radius:4px;padding:4px 6px;color:var(--t0);font-size:12px;font-family:'SF Mono',Menlo,monospace}
 .pr input:focus,.pr select:focus{outline:none;border-color:var(--acc)}
 .pr select{cursor:pointer}
 .tgl-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
@@ -115,12 +115,25 @@ header .sub{font-size:11px;color:var(--t2)}
 <div class="pnl-b" id="filtersBody"></div>
 </div>
 
+<!-- Time Simulator -->
+<div class="pnl"><div class="pnl-h" onclick="tP(this)"><h3>Time Simulator</h3><span class="arr">&#9660;</span></div>
+<div class="pnl-b">
+<div class="pr"><label>Signal</label><select id="simSigType" onchange="updSimUI();sched()"><option value="step">Step</option><option value="ramp">Ramp</option><option value="sine">Sine</option><option value="square">Square</option><option value="sawtooth">Sawtooth</option></select></div>
+<div class="pr"><label id="lblSigAmp">Amplitude</label><input type="number" id="simSigAmp" value="1" step="0.1"></div>
+<div class="pr" id="rowSigFreq" style="display:none"><label>Freq (Hz)</label><input type="number" id="simSigFreq" value="1" min="0.001" step="0.1"></div>
+<div class="pr" id="rowSigDelay"><label>Delay (s)</label><input type="number" id="simSigDelay" value="0" min="0" step="0.1"></div>
+<div class="pr" id="rowSigDuty" style="display:none"><label>Duty (%)</label><input type="number" id="simSigDuty" value="50" min="1" max="99" step="5"></div>
+<div class="pr"><label>Offset</label><input type="number" id="simSigOff" value="0" step="0.1"></div>
+<div class="pr"><label>x&#x2080;</label><input type="text" id="simX0" value="0" placeholder="0, 0, ..."></div>
+</div></div>
+
 </aside>
 <main class="plot-area">
 <div class="tabs">
 <button class="tab act" data-tab="step" onclick="setTab('step',this)">Step Response</button>
 <button class="tab" data-tab="impulse" onclick="setTab('impulse',this)">Impulse Response</button>
 <button class="tab" data-tab="bode" onclick="setTab('bode',this)">Bode Plot</button>
+<button class="tab" data-tab="sim" onclick="setTab('sim',this)">Simulator</button>
 </div>
 <div class="mbar" id="mbar"></div>
 <div class="charts">
@@ -128,6 +141,7 @@ header .sub{font-size:11px;color:var(--t2)}
 <div class="chwrap hide" id="wImpulse"><canvas id="cImpulse"></canvas></div>
 <div class="chwrap hide" id="wMag"><canvas id="cMag"></canvas></div>
 <div class="chwrap hide" id="wPhase"><canvas id="cPhase"></canvas></div>
+<div class="chwrap hide" id="wSim"><canvas id="cSim"></canvas></div>
 </div>
 </main>
 </div>
@@ -307,6 +321,32 @@ function simImpulse(ss,tEnd,nPts){
   return{t:ts,y:ys,unstable:blow};
 }
 
+function simCustom(ss,uFn,tEnd,nPts,x0){
+  const{A,B,C:Cv,D,n}=ss;
+  if(n===0){const t=Array.from({length:nPts},(_,i)=>i*tEnd/(nPts-1));return{t,y:t.map(ti=>D*uFn(ti)),u:t.map(ti=>uFn(ti))};}
+  const dt=tEnd/(nPts-1),x=new Float64Array(n);
+  for(let i=0;i<n&&i<x0.length;i++)x[i]=x0[i];
+  const ts=[],ys=[],us=[];
+  function dx(s,u){const r=new Float64Array(n);for(let i=0;i<n;i++){for(let j=0;j<n;j++)r[i]+=A[i][j]*s[j];r[i]+=B[i]*u;}return r;}
+  function out(s,u){let y=D*u;for(let i=0;i<n;i++)y+=Cv[i]*s[i];return y;}
+  let blow=false;
+  for(let k=0;k<nPts;k++){
+    const t=k*dt,u=uFn(t);
+    ts.push(t);us.push(u);ys.push(out(x,u));
+    if(Math.abs(ys[ys.length-1])>1e8){blow=true;for(let j=k+1;j<nPts;j++){ts.push(j*dt);ys.push(NaN);us.push(uFn(j*dt));}break;}
+    const k1=dx(x,u),um=uFn(t+dt/2);
+    const x2=new Float64Array(n);for(let i=0;i<n;i++)x2[i]=x[i]+dt/2*k1[i];
+    const k2=dx(x2,um);
+    const x3=new Float64Array(n);for(let i=0;i<n;i++)x3[i]=x[i]+dt/2*k2[i];
+    const k3=dx(x3,um);
+    const ue=uFn(t+dt);
+    const x4=new Float64Array(n);for(let i=0;i<n;i++)x4[i]=x[i]+dt*k3[i];
+    const k4=dx(x4,ue);
+    for(let i=0;i<n;i++)x[i]+=dt/6*(k1[i]+2*k2[i]+2*k3[i]+k4[i]);
+  }
+  return{t:ts,y:ys,u:us,unstable:blow};
+}
+
 /* ========== METRICS ========== */
 function stepMetrics(ts,ys){
   const valid=ys.filter(v=>isFinite(v));
@@ -371,6 +411,8 @@ function updCharts(sys){
   const ss=tf2ss(sys.cl.n,sys.cl.d);
   const stepData=simStep(ss,tEnd,nPts);
   const impData=simImpulse(ss,tEnd,nPts);
+  const uFn=buildInputFn(),x0=parseX0();
+  const simData=simCustom(ss,uFn,tEnd,nPts,x0);
 
   // Open-loop freq response
   const fr=freqResp(sys.ol,freqs);
@@ -378,7 +420,7 @@ function updCharts(sys){
   // Metrics
   const sm=stepMetrics(stepData.t,stepData.y);
   const bm=bodeMetrics(freqs,fr.m,fr.ph);
-  updMetrics(sm,bm);
+  updMetrics(sm,bm,simData);
 
   // Step chart
   mkChart('cStep',{
@@ -423,6 +465,16 @@ function updCharts(sys){
     ]},
     options:scatterOpts('Frequency (Hz)','Phase (\u00b0)',true)
   });
+
+  // Simulator
+  mkChart('cSim',{
+    type:'scatter',
+    data:{datasets:[
+      {label:'Input r(t)',data:simData.t.map((t,i)=>({x:t,y:simData.u[i]})),showLine:true,borderColor:'#3b82f6',borderWidth:1,borderDash:[6,3],pointRadius:0,order:1},
+      {label:'Output y(t)',data:simData.t.map((t,i)=>({x:t,y:simData.y[i]})),showLine:true,borderColor:COLS.main,borderWidth:2,pointRadius:0,order:0}
+    ]},
+    options:scatterOpts('Time (s)','Amplitude',false,simData.unstable)
+  });
 }
 
 function scatterOpts(xLab,yLab,logX,unstable){
@@ -436,7 +488,7 @@ function scatterOpts(xLab,yLab,logX,unstable){
   };
 }
 
-function updMetrics(sm,bm){
+function updMetrics(sm,bm,simData){
   const mb=$('mbar');
   let h='';
   if(curTab==='step'){
@@ -450,6 +502,16 @@ function updMetrics(sm,bm){
   }else if(curTab==='impulse'){
     if(sm.unstable)h='<div class="met"><span class="met-v b">UNSTABLE</span></div>';
     else h+='<div class="met"><span class="met-l">Closed-loop impulse response</span></div>';
+  }else if(curTab==='sim'){
+    if(simData&&simData.unstable)h='<div class="met"><span class="met-v b">UNSTABLE</span></div>';
+    else if(simData){
+      const yv=simData.y.filter(v=>isFinite(v));
+      const pk=Math.max(...yv),mn=Math.min(...yv),fv=yv[yv.length-1],ufv=simData.u[simData.u.length-1];
+      h+=met('Peak',pk.toFixed(3),'');
+      h+=met('Min',mn.toFixed(3),'');
+      h+=met('Final',fv.toFixed(4),'');
+      h+=met('SS Err',(Math.abs(fv-ufv)).toFixed(4),Math.abs(fv-ufv)<.01?'g':Math.abs(fv-ufv)<.05?'w':'b');
+    }
   }else{
     h+=met('GM',bm.gm!==undefined?bm.gm.toFixed(1)+' dB':'&infin;',bm.gm===undefined||bm.gm>6?'g':bm.gm>0?'w':'b');
     h+=met('PM',bm.pm!==undefined?bm.pm.toFixed(1)+'&deg;':'--',bm.pm===undefined?'':bm.pm>45?'g':bm.pm>0?'w':'b');
@@ -494,6 +556,7 @@ function setTab(tab,btn){
   $('wImpulse').classList.toggle('hide',tab!=='impulse');
   $('wMag').classList.toggle('hide',tab!=='bode');
   $('wPhase').classList.toggle('hide',tab!=='bode');
+  $('wSim').classList.toggle('hide',tab!=='sim');
   // Trigger resize after show
   setTimeout(()=>{Object.values(CS).forEach(c=>c.resize());},50);
   update();
@@ -522,6 +585,32 @@ function buildFilters(){
   $('filtersBody').innerHTML=h;
 }
 function tFlt(i){const b=$('fBody'+i);b.classList.toggle('hide');}
+
+function buildInputFn(){
+  const type=$('simSigType').value,amp=+$('simSigAmp').value,off=+$('simSigOff').value;
+  const freq=Math.max(+$('simSigFreq').value||1,1e-6),td=+$('simSigDelay').value,duty=(+$('simSigDuty').value||50)/100;
+  switch(type){
+    case'step':return t=>off+(t>=td?amp:0);
+    case'ramp':return t=>off+(t>=td?amp*(t-td):0);
+    case'sine':return t=>off+amp*Math.sin(2*Math.PI*freq*t);
+    case'square':return t=>off+amp*(((freq*t)%1+1)%1<duty?1:-1);
+    case'sawtooth':return t=>off+amp*(2*(((freq*t)%1+1)%1)-1);
+    default:return()=>off;
+  }
+}
+function parseX0(){
+  const s=$('simX0').value.trim();
+  if(!s||s==='0')return[];
+  return s.split(',').map(v=>+v.trim()).filter(v=>isFinite(v));
+}
+function updSimUI(){
+  const t=$('simSigType').value;
+  const hasFreq=t==='sine'||t==='square'||t==='sawtooth';
+  $('rowSigFreq').style.display=hasFreq?'flex':'none';
+  $('rowSigDelay').style.display=!hasFreq?'flex':'none';
+  $('rowSigDuty').style.display=t==='square'?'flex':'none';
+  $('lblSigAmp').textContent=t==='ramp'?'Slope (/s)':'Amplitude';
+}
 function updFltUI(i){
   const idx=FTYPES.indexOf($('fType'+i).value);
   $('fL1_'+i).innerHTML=FPARAM1[idx];
@@ -532,7 +621,7 @@ function updFltUI(i){
 
 // Attach input listeners
 function attachListeners(){
-  document.querySelectorAll('.sidebar input[type=number],.sidebar select').forEach(el=>{
+  document.querySelectorAll('.sidebar input[type=number],.sidebar input[type=text],.sidebar select').forEach(el=>{
     el.addEventListener('input',sched);
   });
 }
@@ -544,6 +633,7 @@ if('serviceWorker' in navigator){
 
 // Init
 updPlantUI();
+updSimUI();
 buildFilters();
 attachListeners();
 update();
