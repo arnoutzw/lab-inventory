@@ -150,12 +150,21 @@ python3 -m http.server 8080
 
 Configure your GitHub username and preferences in the `CONFIG` object at the top of `index.html`.
 
+## Release Notes
+
+The portfolio footer includes an expandable **Release Notes** panel that shows version history per git commit hash, grouped by date. Each entry links to the corresponding GitHub commit.
+
+A full changelog is maintained in [`RELEASES.md`](RELEASES.md).
+
+The `VERSION_HISTORY` array in `index.html` drives the in-app display, while the pre-commit hook (`.githooks/pre-commit`) auto-updates `BUILD_COMMIT` and `BUILD_DATE` on each commit.
+
 ## Project Structure
 
 ```
 pages/
 ├── index.html                     # Main portfolio page (React SPA)
 ├── README.md
+├── RELEASES.md                    # Full release history
 ├── screenshots/                   # Documentation screenshots
 ├── lab-inventory-app/
 │   ├── index.html                 # Inventory manager
@@ -173,8 +182,14 @@ pages/
 │   └── index.html                 # Datasheet search tool
 ├── model-library/
 │   └── index.html                 # 3D model viewer/library
+├── werktuigbouw-pwa/
+│   ├── index.html                 # Engineering calculators
+│   ├── manifest.json              # PWA manifest
+│   └── sw.js                      # Service worker
 ├── rlc-calculator/
 │   └── rlc-calculator.html        # Analog filter designer
-└── biquad-pwa/
-    └── index.html                 # Digital filter designer
+├── biquad-pwa/
+│   └── index.html                 # Digital filter designer
+└── .githooks/
+    └── pre-commit                 # Auto-updates BUILD_COMMIT and BUILD_DATE
 ```
