@@ -4,12 +4,12 @@
   "description": "PID controller tuner with Bode plots and time-domain response analysis",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#0a0f1a",
-  "theme_color": "#0a0f1a",
+  "background_color": "#09090b",
+  "theme_color": "#09090b",
   "orientation": "any",
   "icons": [
     {
-      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='64' fill='%230a0f1a'/%3E%3Cpath d='M80 350 Q160 350 200 200 Q240 50 280 250 Q320 400 400 180 L430 180' stroke='%233b82f6' stroke-width='16' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='256' cy='256' r='30' fill='none' stroke='%2310b981' stroke-width='8'/%3E%3Cline x1='226' y1='256' x2='200' y2='256' stroke='%2310b981' stroke-width='8'/%3E%3Cline x1='286' y1='256' x2='312' y2='256' stroke='%2310b981' stroke-width='8'/%3E%3C/svg%3E",
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='64' fill='%2309090b'/%3E%3Cpath d='M80 350 Q160 350 200 200 Q240 50 280 250 Q320 400 400 180 L430 180' stroke='%23f59e0b' stroke-width='16' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='256' cy='256' r='30' fill='none' stroke='%2310b981' stroke-width='8'/%3E%3Cline x1='226' y1='256' x2='200' y2='256' stroke='%2310b981' stroke-width='8'/%3E%3Cline x1='286' y1='256' x2='312' y2='256' stroke='%2310b981' stroke-width='8'/%3E%3C/svg%3E",
       "sizes": "512x512",
       "type": "image/svg+xml"
     }

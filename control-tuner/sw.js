@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ctrl-tuner-v1';
+const CACHE_NAME = 'ctrl-tuner-v2';
 const ASSETS = [
   './',
   './index.html',

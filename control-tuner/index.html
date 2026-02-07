@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<meta name="theme-color" content="#0a0f1a">
+<meta name="theme-color" content="#09090b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Control Loop Tuner</title>
 <link rel="manifest" href="manifest.json">
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
-:root{--bg0:#0a0f1a;--bg1:#111827;--bg2:#1e293b;--bg3:#374151;--t0:#f9fafb;--t1:#e5e7eb;--t2:#9ca3af;--acc:#3b82f6;--grn:#10b981;--amb:#f59e0b;--red:#ef4444;--org:#f97316;--brd:#4b5563;--r:6px}
+:root{--bg0:#09090b;--bg1:#18181b;--bg2:#27272a;--bg3:#3f3f46;--t0:#f4f4f5;--t1:#e4e4e7;--t2:#a1a1aa;--acc:#f59e0b;--grn:#22c55e;--amb:#fbbf24;--red:#ef4444;--org:#f97316;--brd:#3f3f46;--r:6px}
 html,body{height:100%;overflow:hidden}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg0);color:var(--t1);line-height:1.4}
 .app{display:flex;flex-direction:column;height:100vh}
@@ -69,7 +69,7 @@ header .sub{font-size:11px;color:var(--t2)}
 <body>
 <div class="app">
 <header>
-<svg viewBox="0 0 512 512"><rect width="512" height="512" rx="64" fill="#0a0f1a"/><path d="M80 350Q160 350 200 200Q240 50 280 250Q320 400 400 180L430 180" stroke="#3b82f6" stroke-width="16" fill="none" stroke-linecap="round"/></svg>
+<svg viewBox="0 0 512 512"><rect width="512" height="512" rx="64" fill="#09090b"/><path d="M80 350Q160 350 200 200Q240 50 280 250Q320 400 400 180L430 180" stroke="#f59e0b" stroke-width="16" fill="none" stroke-linecap="round"/></svg>
 <div><h1>Control Loop Tuner</h1><div class="sub">PID + Filters &middot; Bode &amp; Time Response</div></div>
 </header>
 <div class="main">
@@ -86,11 +86,18 @@ header .sub{font-size:11px;color:var(--t2)}
 <!-- Plant -->
 <div class="pnl"><div class="pnl-h" onclick="tP(this)"><h3>Plant Model G(s)</h3><span class="arr">&#9660;</span></div>
 <div class="pnl-b">
-<div class="pr"><label>Order</label><select id="plantOrd" onchange="updPlantUI();sched()"><option value="1">1st Order</option><option value="2" selected>2nd Order</option></select></div>
-<div class="pr"><label>K</label><input type="number" id="plantK" value="1" step="0.1"></div>
+<div class="pr"><label>Model</label><select id="plantModel" onchange="updPlantUI();sched()"><option value="generic">Generic</option><option value="msd">Mass-Spring-Damper</option><option value="rl">RL Circuit</option><option value="rlc">RLC Circuit</option></select></div>
+<div class="pr" id="rowOrd"><label>Order</label><select id="plantOrd" onchange="updPlantUI();sched()"><option value="1">1st Order</option><option value="2" selected>2nd Order</option></select></div>
+<div class="pr" id="rowK"><label>K</label><input type="number" id="plantK" value="1" step="0.1"></div>
 <div class="pr" id="rowTau" style="display:none"><label>&tau; (s)</label><input type="number" id="plantTau" value="1" min="0.001" step="0.1"></div>
 <div class="pr" id="rowWn"><label>&omega;n (rad/s)</label><input type="number" id="plantWn" value="1" min="0.001" step="0.1"></div>
 <div class="pr" id="rowZeta"><label>&zeta;</label><input type="number" id="plantZeta" value="0.5" min="0" max="20" step="0.05"></div>
+<div class="pr" id="rowM" style="display:none"><label>m (kg)</label><input type="number" id="plantM" value="1" min="0.001" step="0.1"></div>
+<div class="pr" id="rowDamp" style="display:none"><label>c (Ns/m)</label><input type="number" id="plantDamp" value="0.5" min="0" step="0.1"></div>
+<div class="pr" id="rowSpK" style="display:none"><label>k (N/m)</label><input type="number" id="plantSpK" value="1" min="0.001" step="0.1"></div>
+<div class="pr" id="rowR" style="display:none"><label>R (&Omega;)</label><input type="number" id="plantR" value="100" min="0.001" step="1"></div>
+<div class="pr" id="rowL" style="display:none"><label>L (H)</label><input type="number" id="plantL" value="0.1" min="0.001" step="0.01"></div>
+<div class="pr" id="rowCap" style="display:none"><label>C (F)</label><input type="number" id="plantCap" value="0.0001" min="1e-9" step="0.0001"></div>
 </div></div>
 
 <!-- PID -->
@@ -164,6 +171,19 @@ function pTrim(p){
 
 /* ========== TRANSFER FUNCTION BUILDERS ========== */
 function plantTF(){
+  const model=$('plantModel').value;
+  if(model==='msd'){
+    const m=Math.max(+$('plantM').value,1e-6),c=Math.max(+$('plantDamp').value,0),k=Math.max(+$('plantSpK').value,1e-6);
+    return{n:[1],d:[k,c,m]};
+  }
+  if(model==='rl'){
+    const R=Math.max(+$('plantR').value,1e-6),L=Math.max(+$('plantL').value,1e-6);
+    return{n:[1],d:[R,L]};
+  }
+  if(model==='rlc'){
+    const R=Math.max(+$('plantR').value,1e-6),L=Math.max(+$('plantL').value,1e-6),C=Math.max(+$('plantCap').value,1e-12);
+    return{n:[1],d:[1,R*C,L*C]};
+  }
   const ord=+$('plantOrd').value, K=+$('plantK').value;
   if(ord===1){const tau=+$('plantTau').value;return{n:[K],d:[1,Math.max(tau,1e-6)]}}
   const wn=Math.max(+$('plantWn').value,1e-6),z=+$('plantZeta').value;
@@ -321,10 +341,10 @@ function bodeMetrics(f,m,ph){
 
 /* ========== CHART MANAGEMENT ========== */
 const CS={};
-const COLS={main:'#3b82f6',ref:'#f59e0b88',imp:'#10b981',mag:'#3b82f6',phase:'#f97316',zero:'#64748b44'};
+const COLS={main:'#f59e0b',ref:'#3b82f688',imp:'#22c55e',mag:'#f59e0b',phase:'#f97316',zero:'#52525b44'};
 
-Chart.defaults.color='#94a3b8';
-Chart.defaults.borderColor='#1e293b';
+Chart.defaults.color='#a1a1aa';
+Chart.defaults.borderColor='#27272a';
 Chart.defaults.font.size=11;
 Chart.defaults.font.family="'SF Mono',Menlo,monospace";
 
@@ -407,8 +427,8 @@ function scatterOpts(xLab,yLab,logX,unstable){
     responsive:true,maintainAspectRatio:false,animation:{duration:0},
     plugins:{legend:{display:false},tooltip:{mode:'nearest',intersect:false}},
     scales:{
-      x:{type:logX?'logarithmic':'linear',title:{display:true,text:xLab,color:'#94a3b8'},grid:{color:'#1e293b'},ticks:{color:'#64748b'}},
-      y:{type:'linear',title:{display:true,text:yLab,color:'#94a3b8'},grid:{color:'#1e293b'},ticks:{color:'#64748b'}}
+      x:{type:logX?'logarithmic':'linear',title:{display:true,text:xLab,color:'#a1a1aa'},grid:{color:'#27272a'},ticks:{color:'#52525b'}},
+      y:{type:'linear',title:{display:true,text:yLab,color:'#a1a1aa'},grid:{color:'#27272a'},ticks:{color:'#52525b'}}
     }
   };
 }
@@ -448,10 +468,20 @@ function tP(h){
 }
 function tglS(el){el.classList.toggle('on');sched();}
 function updPlantUI(){
-  const is1=+$('plantOrd').value===1;
+  const model=$('plantModel').value;
+  const isGen=model==='generic',isMSD=model==='msd',isRL=model==='rl',isRLC=model==='rlc';
+  const is1=isGen&&+$('plantOrd').value===1;
+  $('rowOrd').style.display=isGen?'flex':'none';
+  $('rowK').style.display=isGen?'flex':'none';
   $('rowTau').style.display=is1?'flex':'none';
-  $('rowWn').style.display=is1?'none':'flex';
-  $('rowZeta').style.display=is1?'none':'flex';
+  $('rowWn').style.display=isGen&&!is1?'flex':'none';
+  $('rowZeta').style.display=isGen&&!is1?'flex':'none';
+  $('rowM').style.display=isMSD?'flex':'none';
+  $('rowDamp').style.display=isMSD?'flex':'none';
+  $('rowSpK').style.display=isMSD?'flex':'none';
+  $('rowR').style.display=isRL||isRLC?'flex':'none';
+  $('rowL').style.display=isRL||isRLC?'flex':'none';
+  $('rowCap').style.display=isRLC?'flex':'none';
 }
 function setTab(tab,btn){
   curTab=tab;
